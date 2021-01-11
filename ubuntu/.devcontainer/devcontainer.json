@@ -1,8 +1,8 @@
 {
 	"name": "Ubuntu",
 	"build": {
-		"dockerfile": "ubuntu.Dockerfile",
-		"args": { "VARIANT": "focal" }
+		"dockerfile": "Dockerfile",
+		"args": { "VARIANT": "base" }
 	},
 
 	"settings": { 
