@@ -1,8 +1,10 @@
-// See https://github.com/julia-vscode/julia-devcontainer/blob/master/Dockerfile for image contents
 {
-	"name": "Julia (Community)",
-	"image": "ghcr.io/julia-vscode/julia-devcontainer",
+	"name": "Julia",
+  "build": {
+		"dockerfile": "Dockerfile",
+		"args": { "VERSION": "new" }
+	},
 	"extensions": ["julialang.language-julia"],
-	"postCreateCommand": "/julia-devcontainer-scripts/postcreate.jl",
+	"postCreateCommand": "/scripts/postcreate.jl",
 	"remoteUser": "vscode"
 }
