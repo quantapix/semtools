@@ -1,4 +1,4 @@
-FROM qbrn.reg/ubu-run:last
+FROM qbrn.reg/ubu-run:std
 RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \

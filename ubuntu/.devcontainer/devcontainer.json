@@ -2,7 +2,7 @@
 	"name": "Ubuntu",
 	"build": {
 		"dockerfile": "Dockerfile",
-		"args": { "VARIANT": "dev" }
+		"args": { "VARIANT": "run" }
 	},
 	"settings": { 
 		"terminal.integrated.shell.linux": "/bin/bash"
@@ -10,5 +10,5 @@
 	"extensions": [],
 	// "forwardPorts": [],
 	// "postCreateCommand": "uname -a",
-	"remoteUser": "vscode"
+	// "remoteUser": "vscode"
 }

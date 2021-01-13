@@ -1,16 +1,21 @@
 FROM ubuntu:focal
 RUN set -eux; \
 	apt-get update; \
-  apt-get upgrade; \
+  apt-get dist-upgrade -y --no-install-recommends; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 		ca-certificates \
 		curl \
+		netbase \
+		wget \
+		tzdata \
+	; \
+	rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+  apt-get update; \
+	apt-get install -y --no-install-recommends \
 		openssh-client \
 		procps \
-		# netbase \
-		# tzdata \
-		# wget \
 	; \
 	rm -rf /var/lib/apt/lists/*
 
