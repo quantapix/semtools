@@ -1,0 +1,7 @@
+.devcontainer
+.orig
+test-project
+.dockerignore
+Dockerfile
+Dockerfile.dev
+Makefile
