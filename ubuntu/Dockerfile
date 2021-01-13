@@ -16,7 +16,7 @@ RUN set -eux; \
 
 
 # RUN set -eux; \
-# 	savedAptMark="$(apt-mark showmanual)"; \
+# 	aptMark="$(apt-mark showmanual)"; \
 # 	if ! command -v gpg > /dev/null; then \
 # 		apt-get update; \
 # 		apt-get install -y --no-install-recommends \
@@ -27,6 +27,6 @@ RUN set -eux; \
 # 	fi; \
 
 # 	apt-mark auto '.*' > /dev/null; \
-# 	[ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+# 	[ -z "$aptMark" ] || apt-mark manual $aptMark; \
 # 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 

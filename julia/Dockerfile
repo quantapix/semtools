@@ -1,5 +1,5 @@
 ARG VERSION=1.5.3
-FROM qbrn.reg/ubu-run:last
+FROM qbrn.reg/ubu-run:std
 
 ENV JULIA_PATH /usr/local/julia
 ENV PATH $JULIA_PATH/bin:$PATH

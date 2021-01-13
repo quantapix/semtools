@@ -1,5 +1,5 @@
 REG = qbrn.reg
-TAG = last
+TAG = std
 
 all: 
 	docker build --pull -t $(REG)/ubu-run:$(TAG) - < Dockerfile
