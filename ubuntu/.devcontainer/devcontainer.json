@@ -2,7 +2,7 @@
 	"name": "Ubuntu",
 	"build": {
 		"dockerfile": "Dockerfile",
-		"args": { "VARIANT": "base" }
+		"args": { "VARIANT": "dev" }
 	},
 	"settings": { 
 		"terminal.integrated.shell.linux": "/bin/bash"

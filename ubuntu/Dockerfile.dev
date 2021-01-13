@@ -1,4 +1,4 @@
-FROM qbrn.reg/ubu-slim:last
+FROM qbrn.reg/ubu-run:last
 RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
@@ -9,6 +9,7 @@ RUN set -ex; \
 		file \
 		g++ \
 		gcc \
+    git \
 		imagemagick \
 		libbz2-dev \
 		libc6-dev \

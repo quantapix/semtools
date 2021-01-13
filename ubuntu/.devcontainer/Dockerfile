@@ -1,4 +1,4 @@
-ARG VARIANT="slim"
+ARG VARIANT="run"
 FROM qbrn.reg/ubu-${VARIANT}:last
 
 ARG INSTALL_ZSH="true"
