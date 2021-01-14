@@ -1,39 +1,57 @@
-REG = qbrn.reg
-TAG = std
+REGISTRY?=qbrn.reg
+DOCKERFILES=$(shell find * -type f -name Dockerfile -not -path "*/.devcontainer/*" -not -path "other/*")
+NAMES=$(subst /,\:,$(subst /Dockerfile,,$(DOCKERFILES)))
+IMAGES=$(addprefix $(subst :,\:,$(REGISTRY))/,$(NAMES))
+DEPENDS=.depends.mk
+MAKEFLAGS += -rR
 
-all: 
-	docker build --pull -t $(REG)/ubu-run:$(TAG) - < Dockerfile
-	docker push $(REG)/ubu-run:$(TAG)
-	docker build --pull -t $(REG)/ubu-dev:$(TAG) - < Dockerfile.dev
-	docker push $(REG)/ubu-dev:$(TAG)
+.PHONY: all clean push pull run exec check checkrebuild pull-base ci $(NAMES) $(IMAGES)
 
-clean:
-
-
-REG = qbrn.reg
-
-all: qold.std qnew.std qdev.src
-
-qold.std: ../ubuntu/qrun.flag
-	docker build --pull --build-arg VERSION=1.5.3 -t $(REG)/jul-old:std - < Dockerfile
-	docker push $(REG)/jul-old:std
-	touch qold.std
-
-qnew.std: 
-	docker build --pull --build-arg VERSION=1.6.0-beta1 -t $(REG)/jul-new:std - < Dockerfile
-	docker push $(REG)/jul-new:std
-	touch qnew.std
-
-upstream: 
-	git clone https://github.com/JuliaLang/julia.git upstream
-	(cd upstream && git branch qold v1.5.3)
-	(cd upstream && git branch qnew v1.6.0-beta1)
-	(cd upstream && git branch --track qdev master)
-
-qdev.src: upstream 
-	(cd upstream && git checkout qdev)
-	docker build --pull -t $(REG)/jul-dev:src -f Dockerfile.dev .
-	docker push $(REG)/jul-dev:src
-	touch qdev.src
+all: $(NAMES)
 
 clean:
+	rm -f $(DEPENDS)
+
+pull-base:
+	# used by debian:buster-slim
+	docker pull debian:buster-slim
+	# used by keycloak
+	docker pull jboss/keycloak:12.0.1
+	# imago
+	docker pull philpep/imago
+
+ci:
+	$(MAKE) pull-base checkrebuild push all
+
+.PHONY: $(DEPENDS)
+$(DEPENDS): $(DOCKERFILES)
+	grep '^FROM \$$REGISTRY/' $(DOCKERFILES) | \
+		awk -F '/Dockerfile:FROM \\$$REGISTRY/' '{ print $$1 " " $$2 }' | \
+		sed 's@[:/]@\\:@g' | awk '{ print "$(subst :,\\:,$(REGISTRY))/" $$1 ": " "$(subst :,\\:,$(REGISTRY))/" $$2 }' > $@
+
+sinclude $(DEPENDS)
+
+$(NAMES): %: $(REGISTRY)/%
+ifeq (push,$(filter push,$(MAKECMDGOALS)))
+	docker push $<
+endif
+ifeq (run,$(filter run,$(MAKECMDGOALS)))
+	docker run --rm -it $<
+endif
+ifeq (exec,$(filter exec,$(MAKECMDGOALS)))
+	docker run --entrypoint sh --rm -it $<
+endif
+ifeq (check,$(filter check,$(MAKECMDGOALS)))
+	duuh $<
+endif
+
+$(IMAGES): %:
+ifeq (pull,$(filter pull,$(MAKECMDGOALS)))
+	docker pull $@
+else
+	docker build --build-arg REGISTRY=$(REGISTRY) -t $@ $(subst :,/,$(subst $(REGISTRY)/,,$@))
+endif
+ifeq (checkrebuild,$(filter checkrebuild,$(MAKECMDGOALS)))
+	which duuh >/dev/null || (>&2 echo "checkrebuild require duuh command to be installed in PATH" && exit 1)
+	duuh $@ || (docker build --build-arg REGISTRY=$(REGISTRY) --no-cache -t $@ $(subst :,/,$(subst $(REGISTRY)/,,$@)) && duuh $@)
+endif

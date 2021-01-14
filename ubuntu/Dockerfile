@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:focal AS ubu_std
 RUN set -eux; \
 	apt-get update; \
   apt-get dist-upgrade -y --no-install-recommends; \
@@ -34,7 +34,9 @@ RUN set -eux; \
 # 	[ -z "$aptMark" ] || apt-mark manual $aptMark; \
 # 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 
-FROM qbrn.reg/ubu-run:std
+
+ARG REGISTRY
+FROM $REGISTRY/ubu_std AS ubu_dev
 RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \

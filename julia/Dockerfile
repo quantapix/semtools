@@ -1,10 +1,13 @@
-FROM qbrn.reg/ubu-run:std
+ARG REGISTRY
+ARG NEW
+ARG SRC
+FROM $REGISTRY/ubu_std AS jl_${NEW:-old}_${SRC:-std}
 ARG VERSION
 
 ENV JULIA_PATH=/usr/local/julia
 ENV PATH=$JULIA_PATH/bin:$PATH
 
-ENV JULIA_VERSION=$VERSION
+ENV JULIA_VERSION=$(( $VERSION == old ? 1.5.3 : 1.6.0-beta1))
 ENV JULIA_GPG=3673DF529D9049477F76B37566E3C7DC03D6E495
 
 RUN set -eux; \
@@ -46,15 +49,13 @@ RUN set -eux; \
 CMD ["julia"]
 
 
-FROM qbrn.reg/ubu-dev:std
-
+ARG REGISTRY
+FROM $REGISTRY/ubu-dev:std AS jl_new_src
 ENV JULIA_PATH /usr/local/julia
 ENV PATH $JULIA_PATH/bin:$PATH
-
-ADD upstream julia
-
+ADD upstream upstream
 RUN set -eux; \
-  cd julia; \
+  cd upstream; \
   make -j $(nproc); \
   make install prefix=${JULIA_PATH}
 
