@@ -1,24 +1,27 @@
 REG = qbrn.reg
-TAG = std
 
-all: old new dev
+all: qold.std qnew.std qdev.src
 
-old: 
+qold.std: ../ubuntu/qrun.flag
 	docker build --pull --build-arg VERSION=1.5.3 -t $(REG)/jul-old:std - < Dockerfile
 	docker push $(REG)/jul-old:std
+	touch qold.std
 
-new: 
+qnew.std: 
 	docker build --pull --build-arg VERSION=1.6.0-beta1 -t $(REG)/jul-new:std - < Dockerfile
 	docker push $(REG)/jul-new:std
+	touch qnew.std
 
-# git clone https://github.com/JuliaLang/julia.git upstream
-# (cd upstream && git checkout -B qold v1.5.3)
-# (cd upstream && git checkout -B qnew v1.6.0-beta1)
-# (cd upstream && git checkout -B qdev --track master)
+upstream: 
+	git clone https://github.com/JuliaLang/julia.git upstream
+	(cd upstream && git branch qold v1.5.3)
+	(cd upstream && git branch qnew v1.6.0-beta1)
+	(cd upstream && git branch --track qdev master)
 
-dev:
+qdev.src: upstream 
 	(cd upstream && git checkout qdev)
 	docker build --pull -t $(REG)/jul-dev:src -f Dockerfile.dev .
 	docker push $(REG)/jul-dev:src
+	touch qdev.src
 
 clean:
