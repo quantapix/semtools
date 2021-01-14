@@ -1,13 +1,29 @@
-REGISTRY?=qbrn.reg
+REG?=qbrn.reg
+TAG=std
+ARGS=--build-arg REG=$(REG) --build-arg TAG=$(TAG)
+
 DOCKERFILES=$(shell find * -type f -name Dockerfile -not -path "*/.devcontainer/*" -not -path "other/*")
 NAMES=$(subst /,\:,$(subst /Dockerfile,,$(DOCKERFILES)))
-IMAGES=$(addprefix $(subst :,\:,$(REGISTRY))/,$(NAMES))
+IMAGES=$(addprefix $(subst :,\:,$(REG))/,$(NAMES))
 DEPENDS=.depends.mk
 MAKEFLAGS += -rR
 
 .PHONY: all clean push pull run exec check checkrebuild pull-base ci $(NAMES) $(IMAGES)
 
-all: $(NAMES)
+all: 
+	(cd ubuntu; \
+		docker build -t $(REG)/ubu-base:$(TAG) --pull --target=ubu-base $(ARGS) - < Dockerfile; \
+		docker push $(REG)/ubu-base:$(TAG); \
+		docker build -t $(REG)/ubu-dev:$(TAG) --pull --target=ubu-dev $(ARGS) - < Dockerfile; \
+		docker push $(REG)/ubu-dev:$(TAG))
+	(cd julia; \
+		chmod a+x pkgs.sh; \
+		docker build -t $(REG)/jl_old_pkg:$(TAG) --pull --target=jl_old_pkg $(ARGS) .; \
+		docker push $(REG)/jl_old_pkg:$(TAG); \
+		docker build -t $(REG)/jl_new_pkg:$(TAG) --pull --target=jl_new_pkg $(ARGS) .; \
+		docker push $(REG)/jl_new_pkg:$(TAG))
+
+# all: $(NAMES)
 
 clean:
 	rm -f $(DEPENDS)
@@ -25,13 +41,13 @@ ci:
 
 .PHONY: $(DEPENDS)
 $(DEPENDS): $(DOCKERFILES)
-	grep '^FROM \$$REGISTRY/' $(DOCKERFILES) | \
-		awk -F '/Dockerfile:FROM \\$$REGISTRY/' '{ print $$1 " " $$2 }' | \
-		sed 's@[:/]@\\:@g' | awk '{ print "$(subst :,\\:,$(REGISTRY))/" $$1 ": " "$(subst :,\\:,$(REGISTRY))/" $$2 }' > $@
+	grep '^FROM \$$REG/' $(DOCKERFILES) | \
+		awk -F '/Dockerfile:FROM \\$$REG/' '{ print $$1 " " $$2 }' | \
+		sed 's@[:/]@\\:@g' | awk '{ print "$(subst :,\\:,$(REG))/" $$1 ": " "$(subst :,\\:,$(REG))/" $$2 }' > $@
 
 sinclude $(DEPENDS)
 
-$(NAMES): %: $(REGISTRY)/%
+$(NAMES): %: $(REG)/%
 ifeq (push,$(filter push,$(MAKECMDGOALS)))
 	docker push $<
 endif
@@ -49,9 +65,9 @@ $(IMAGES): %:
 ifeq (pull,$(filter pull,$(MAKECMDGOALS)))
 	docker pull $@
 else
-	docker build --build-arg REGISTRY=$(REGISTRY) -t $@ $(subst :,/,$(subst $(REGISTRY)/,,$@))
+	docker build --build-arg REG=$(REG) -t $@ $(subst :,/,$(subst $(REG)/,,$@))
 endif
 ifeq (checkrebuild,$(filter checkrebuild,$(MAKECMDGOALS)))
 	which duuh >/dev/null || (>&2 echo "checkrebuild require duuh command to be installed in PATH" && exit 1)
-	duuh $@ || (docker build --build-arg REGISTRY=$(REGISTRY) --no-cache -t $@ $(subst :,/,$(subst $(REGISTRY)/,,$@)) && duuh $@)
+	duuh $@ || (docker build --build-arg REG=$(REG) --no-cache -t $@ $(subst :,/,$(subst $(REG)/,,$@)) && duuh $@)
 endif

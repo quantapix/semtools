@@ -1,62 +1,38 @@
-ARG REGISTRY
-ARG NEW
-ARG SRC
-FROM $REGISTRY/ubu_std AS jl_${NEW:-old}_${SRC:-std}
-ARG VERSION
+ARG REG
+ARG TAG
 
-ENV JULIA_PATH=/usr/local/julia
+FROM $REG/ubu-base:$TAG AS jl_old_pkg
+ENV JULIA_VERSION=1.5.3
+ENV JULIA_PATH=/usr/local/julia_${JULIA_VERSION}/
 ENV PATH=$JULIA_PATH/bin:$PATH
+ADD pkgs pkgs
+COPY pkgs.sh .
+RUN ./pkgs.sh ${JULIA_VERSION}
 
-ENV JULIA_VERSION=$(( $VERSION == old ? 1.5.3 : 1.6.0-beta1))
-ENV JULIA_GPG=3673DF529D9049477F76B37566E3C7DC03D6E495
+FROM $REG/ubu-base:$TAG AS jl_new_pkg
+ENV JULIA_VERSION=1.6.0-beta1
+ENV JULIA_PATH=/usr/local/julia_${JULIA_VERSION}/
+ENV PATH=$JULIA_PATH/bin:$PATH
+ADD pkgs pkgs
+COPY pkgs.sh .
+RUN ./pkgs.sh ${JULIA_VERSION}
 
-RUN set -eux; \
-	aptMark="$(apt-mark showmanual)"; \
- 	if ! command -v gpg > /dev/null; then \
- 		apt-get update; \
- 		apt-get install -y --no-install-recommends \
- 			gnupg \
- 			dirmngr \
- 		; \
- 		rm -rf /var/lib/apt/lists/*; \
- 	fi; \
-	\
-	tarArch='x86_64'; dirArch='x64'; \
-	folder="$(echo "$JULIA_VERSION" | cut -d. -f1-2)"; \
-	curl -fL -o julia.tar.gz.asc "https://julialang-s3.julialang.org/bin/linux/${dirArch}/${folder}/julia-${JULIA_VERSION}-linux-${tarArch}.tar.gz.asc"; \
-	curl -fL -o julia.tar.gz     "https://julialang-s3.julialang.org/bin/linux/${dirArch}/${folder}/julia-${JULIA_VERSION}-linux-${tarArch}.tar.gz"; \
-	\
-  sha256_1='f190c938dd6fed97021953240523c9db448ec0a6760b574afd4e9924ab5615f1'; \
-  sha256_2='30b214c7f544c6589a20104eaa6764eb368cadac5fa834b7454b747043e5a2b8'; \
-	echo "${sha256_1} *julia.tar.gz" | sha256sum -c - || echo "${sha256_2} *julia.tar.gz" | sha256sum -c -; \
-	\
-	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$JULIA_GPG"; \
-	gpg --batch --verify julia.tar.gz.asc julia.tar.gz; \
-	command -v gpgconf > /dev/null && gpgconf --kill all; \
-	rm -rf "$GNUPGHOME" julia.tar.gz.asc; \
-	\
-	mkdir "$JULIA_PATH"; \
-	tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1; \
-	rm julia.tar.gz; \
-  \
- 	apt-mark auto '.*' > /dev/null; \
-	[ -z "$aptMark" ] || apt-mark manual $aptMark; \
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	\
-	julia --version
-
-CMD ["julia"]
-
-
-ARG REGISTRY
-FROM $REGISTRY/ubu-dev:std AS jl_new_src
-ENV JULIA_PATH /usr/local/julia
+FROM $REG/ubu-dev:$TAG AS jl_old_src
+ENV JULIA_VERSION=1.6.0-beta1
+ENV JULIA_PATH /usr/local/julia_${JULIA_VERSION}/
 ENV PATH $JULIA_PATH/bin:$PATH
-ADD upstream upstream
+ADD srcs srcs
 RUN set -eux; \
   cd upstream; \
   make -j $(nproc); \
   make install prefix=${JULIA_PATH}
 
-CMD ["bash"]
+FROM $REG/ubu-dev:$TAG AS jl_new_src
+ENV JULIA_VERSION=1.7.0
+ENV JULIA_PATH /usr/local/julia_${JULIA_VERSION}/
+ENV PATH $JULIA_PATH/bin:$PATH
+ADD srcs srcs
+RUN set -eux; \
+  cd upstream; \
+  make -j $(nproc); \
+  make install prefix=${JULIA_PATH}

@@ -1,17 +1,14 @@
 {
-	"name": "Ubuntu",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": { "VARIANT": "run" }
-	},
-	"settings": { 
-		"terminal.integrated.shell.linux": "/bin/bash"
-	},
-	"extensions": [
-    "mutantdino.resourcemonitor",
-    "redhat.vscode-yaml",
-  ],
-	// "forwardPorts": [],
-	// "postCreateCommand": "uname -a",
-	// "remoteUser": "vscode"
+  "name": "Ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": { "REG": "qbrn.reg", "VER": "base", "TAG": "std" }
+  },
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+  "extensions": ["mutantdino.resourcemonitor", "redhat.vscode-yaml"]
+  // "forwardPorts": [],
+  // "postCreateCommand": "uname -a",
+  // "remoteUser": "vscode"
 }

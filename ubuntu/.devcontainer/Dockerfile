@@ -1,5 +1,8 @@
-ARG VARIANT="run"
-FROM qbrn.reg/ubu-${VARIANT}:std
+ARG REG
+ARG VER
+ARG TAG
+
+FROM $REG/ubu-$VER:$TAG
 
 ARG INSTALL_ZSH="true"
 ARG UPGRADE_PACKAGES="true"

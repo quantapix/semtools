@@ -1,4 +1,7 @@
-FROM ubuntu:focal AS ubu_std
+ARG REG
+ARG TAG
+
+FROM ubuntu:focal AS ubu-base
 RUN set -eux; \
 	apt-get update; \
   apt-get dist-upgrade -y --no-install-recommends; \
@@ -35,8 +38,7 @@ RUN set -eux; \
 # 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 
 
-ARG REGISTRY
-FROM $REGISTRY/ubu_std AS ubu_dev
+FROM $REG/ubu-base:$TAG AS ubu-dev
 RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
