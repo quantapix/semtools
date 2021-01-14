@@ -1,7 +1,5 @@
 .devcontainer
-.orig
+deps
 test-project
 .dockerignore
 Dockerfile
-Dockerfile.dev
-Makefile

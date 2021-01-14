@@ -44,3 +44,18 @@ RUN set -eux; \
 	julia --version
 
 CMD ["julia"]
+
+
+FROM qbrn.reg/ubu-dev:std
+
+ENV JULIA_PATH /usr/local/julia
+ENV PATH $JULIA_PATH/bin:$PATH
+
+ADD upstream julia
+
+RUN set -eux; \
+  cd julia; \
+  make -j $(nproc); \
+  make install prefix=${JULIA_PATH}
+
+CMD ["bash"]
