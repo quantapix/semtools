@@ -32,7 +32,8 @@ load() {
     gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$JULIA_GPG"
     gpg --batch --verify julia.tar.gz.asc julia.tar.gz
     command -v gpgconf > /dev/null && gpgconf --kill all
-    # rm -rf "$GNUPGHOME" julia.tar.gz.asc
+    rm -rf "$GNUPGHOME"
+    # rm julia.tar.gz.asc
 
     JULIA_PATH=$2
     mkdir -p "$JULIA_PATH"
@@ -45,8 +46,7 @@ load() {
 }
 
 reset() {
-    rm -rf pkgs
-    mkdir -p pkgs
+    rm -rf pkgs/*
 }
 
 show_usage() {

@@ -21,12 +21,12 @@ show_usage() {
 main() {
     local OPTIND=1
     local INIT=
-    local LOAD=
+    local BUILD=
     local RESET=
-    while getopts "ilrh" opt; do
+    while getopts "ibrh" opt; do
               case $opt in
-                  l) INIT=true;;
-                  o) LOAD=true;;
+                  i) INIT=true;;
+                  b) BUILD=true;;
                   r) RESET=true;;
                   *) show_usage; return 1;;
               esac
@@ -35,7 +35,7 @@ main() {
     if [[ -n "$INIT" ]]; then
           init
     fi
-    if [[ -n "$LOAD" ]]; then
+    if [[ -n "$BUILD" ]]; then
           build $1
     fi
     if [[ -n "$RESET" ]]; then

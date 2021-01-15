@@ -1,5 +1,5 @@
 .devcontainer
-srcs/.git
-test-project
 .dockerignore
 Dockerfile
+srcs/.git
+test
