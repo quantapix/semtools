@@ -17,11 +17,17 @@ all:
 		docker build -t $(REG)/ubu-dev:$(TAG) --pull --target=ubu-dev $(ARGS) - < Dockerfile; \
 		docker push $(REG)/ubu-dev:$(TAG))
 	(cd julia; \
-		chmod a+x pkgs.sh; \
 		docker build -t $(REG)/jl_old_pkg:$(TAG) --pull --target=jl_old_pkg $(ARGS) .; \
 		docker push $(REG)/jl_old_pkg:$(TAG); \
 		docker build -t $(REG)/jl_new_pkg:$(TAG) --pull --target=jl_new_pkg $(ARGS) .; \
-		docker push $(REG)/jl_new_pkg:$(TAG))
+		docker push $(REG)/jl_new_pkg:$(TAG); \
+		chmod u+x srcs.sh; \
+		./srcs.sh -i old .; \
+		docker build -t $(REG)/jl_old_src:$(TAG) --pull --target=jl_old_src $(ARGS) .; \
+		docker push $(REG)/jl_old_src:$(TAG); \
+		./srcs.sh -i new .; \
+		docker build -t $(REG)/jl_new_src:$(TAG) --pull --target=jl_new_src $(ARGS) .; \
+		docker push $(REG)/jl_new_src:$(TAG))
 
 # all: $(NAMES)
 
