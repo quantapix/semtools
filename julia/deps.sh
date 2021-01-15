@@ -10,24 +10,24 @@ build() {
 
 }
 
-reset() {
+clean() {
 
 }
 
 show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-b] [-r] ver"
+    echo "Usage: $(basename "$0") [-i] [-b] [-c] ver"
 }
 
 main() {
     local OPTIND=1
     local INIT=
     local BUILD=
-    local RESET=
+    local CLEAN=
     while getopts "ibrh" opt; do
               case $opt in
                   i) INIT=true;;
                   b) BUILD=true;;
-                  r) RESET=true;;
+                  c) CLEAN=true;;
                   *) show_usage; return 1;;
               esac
     done
@@ -38,8 +38,8 @@ main() {
     if [[ -n "$BUILD" ]]; then
           build $1
     fi
-    if [[ -n "$RESET" ]]; then
-          reset
+    if [[ -n "$CLEAN" ]]; then
+          clean
     fi
 }
 

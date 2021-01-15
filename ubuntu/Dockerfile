@@ -1,7 +1,7 @@
 ARG REG
 ARG TAG
 
-FROM ubuntu:focal AS ubu-base
+FROM ubuntu:focal AS tmp-base
 RUN set -eux; \
 	apt-get update; \
   apt-get dist-upgrade -y --no-install-recommends; \
@@ -13,8 +13,6 @@ RUN set -eux; \
 		wget \
 		tzdata \
 	; \
-	rm -rf /var/lib/apt/lists/*
-RUN set -eux; \
   apt-get update; \
 	apt-get install -y --no-install-recommends \
 		openssh-client \
@@ -22,23 +20,10 @@ RUN set -eux; \
 	; \
 	rm -rf /var/lib/apt/lists/*
 
-# RUN set -eux; \
-# 	aptMark="$(apt-mark showmanual)"; \
-# 	if ! command -v gpg > /dev/null; then \
-# 		apt-get update; \
-# 		apt-get install -y --no-install-recommends \
-# 			gnupg \
-# 			dirmngr \
-# 		; \
-# 		rm -rf /var/lib/apt/lists/*; \
-# 	fi; \
+FROM scratch as ubu-base
+COPY --from=tmp-base . .
 
-# 	apt-mark auto '.*' > /dev/null; \
-# 	[ -z "$aptMark" ] || apt-mark manual $aptMark; \
-# 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-
-
-FROM $REG/ubu-base:$TAG AS ubu-dev
+FROM $REG/ubu-base:$TAG AS tmp-dev
 RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
@@ -50,7 +35,7 @@ RUN set -ex; \
     gfortran \
     git \
     pkg-config \
-    python \
+    python3 \
     unzip \
     wget \
     zlib1g-dev \
@@ -91,3 +76,6 @@ RUN set -ex; \
 #		) \
 	; \
 	rm -rf /var/lib/apt/lists/*
+
+FROM scratch as ubu-dev
+COPY --from=tmp-dev . .

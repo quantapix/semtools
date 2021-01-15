@@ -46,23 +46,23 @@ load() {
 }
 
 reset() {
-    rm -rf pkgs/*
+    rm -rf pkgs
 }
 
 show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-l] [-r] ver dst"
+    echo "Usage: $(basename "$0") [-i] [-l] [-c] ver dst"
 }
 
 main() {
     local OPTIND=1
     local INIT=
     local LOAD=
-    local RESET=
-    while getopts "ilrh" opt; do
+    local CLEAN=
+    while getopts "ilch" opt; do
               case $opt in
                   i) INIT=true;;
                   l) LOAD=true;;
-                  r) RESET=true;;
+                  c) CLEAN=true;;
                   *) show_usage; return 1;;
               esac
     done
@@ -73,8 +73,8 @@ main() {
     if [[ -n "$LOAD" ]]; then
           load $1 $2
     fi
-    if [[ -n "$RESET" ]]; then
-          reset
+    if [[ -n "$CLEAN" ]]; then
+          clean
     fi
 }
 

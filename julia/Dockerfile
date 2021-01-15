@@ -46,7 +46,7 @@ ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_old_src ${JULIA_PATH} ${JULIA_PATH}
 
 FROM $REG/ubu-dev:$TAG AS tmp_new_src
-ENV VER=1.7.0
+ENV VER=1.7.0-dev
 ENV DST /usr/local/julia/
 WORKDIR /var/lib/julia
 # COPY deps* .
@@ -56,7 +56,7 @@ COPY srcs.sh .
 RUN chmod u+x srcs.sh; ./srcs.sh -b new ${DST}
 
 FROM $REG/ubu-base:$TAG AS jl_new_src
-ENV JULIA_VERSION=1.7.0
+ENV JULIA_VERSION=1.7.0-dev
 ENV JULIA_PATH /usr/local/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_new_src ${JULIA_PATH} ${JULIA_PATH}

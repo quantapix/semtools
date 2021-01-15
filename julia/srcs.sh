@@ -3,17 +3,20 @@
 set -eux
 
 init() {
-    if [ ! -e srcs ]; then
-      	git clone https://github.com/JuliaLang/julia.git srcs
-        cd srcs
-        git branch qold v1.6.0-beta1
-        git branch --track qnew master
-    else
-        cd srcs
-        git checkout master
-        git pull
+    if [ ! -e upstream ]; then
+      	git clone https://github.com/JuliaLang/julia.git upstream
+        (cd upstream
+          git branch qold v1.6.0-beta1
+          git checkout --track -B qnew master)
     fi
-    git checkout $1
+    if [ $1 == "pull" ]; then
+        (cd upstream
+          git checkout qnew
+          git pull)
+    else
+        rm -rf srcs
+        git clone -b $1 --depth 1 ./upstream srcs
+    fi
 }
 
 build() {
@@ -22,27 +25,24 @@ build() {
   make install prefix=$1
 }
 
-reset() {
-  cd srcs
-  git clean -xfd
-  git reset --hard
-  git checkout master
+clean() {
+  rm -rf srcs
 }
 
 show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-b] [-r] {old|new} dst"
+    echo "Usage: $(basename "$0") [-i] [-b] [-c] {old|new|pull} dst"
 }
 
 main() {
     local OPTIND=1
     local INIT=
     local BUILD=
-    local RESET=
-    while getopts "ibrh" opt; do
+    local CLEAN=
+    while getopts "ibch" opt; do
               case $opt in
                   i) INIT=true;;
                   b) BUILD=true;;
-                  r) RESET=true;;
+                  c) CLEAN=true;;
                   *) show_usage; return 1;;
               esac
     done
@@ -51,14 +51,15 @@ main() {
         case "$1" in
             old) init "qold";;
             new) init "qnew";;
+            pull) init $1;;
             *) show_usage; exit 1;;
         esac
     fi
     if [[ -n "$BUILD" ]]; then
         build $2
     fi
-    if [[ -n "$RESET" ]]; then
-        reset
+    if [[ -n "$CLEAN" ]]; then
+        clean
     fi
 }
 
