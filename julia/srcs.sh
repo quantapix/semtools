@@ -17,8 +17,6 @@ init() {
 }
 
 build() {
-  echo $(pwd)
-  echo $(ls)
   cd srcs
   make -j $(nproc)
   make install prefix=$1

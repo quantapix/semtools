@@ -34,7 +34,7 @@ load() {
     command -v gpgconf > /dev/null && gpgconf --kill all
     # rm -rf "$GNUPGHOME" julia.tar.gz.asc
 
-    JULIA_PATH=/usr/local/julia_$JULIA_VERSION
+    JULIA_PATH=$2
     mkdir -p "$JULIA_PATH"
     tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1
     # rm julia.tar.gz
@@ -50,7 +50,7 @@ reset() {
 }
 
 show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-l] [-r] ver"
+    echo "Usage: $(basename "$0") [-i] [-l] [-r] ver dst"
 }
 
 main() {
@@ -71,7 +71,7 @@ main() {
           init
     fi
     if [[ -n "$LOAD" ]]; then
-          load $1
+          load $1 $2
     fi
     if [[ -n "$RESET" ]]; then
           reset
