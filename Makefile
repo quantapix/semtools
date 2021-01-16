@@ -11,6 +11,18 @@ MAKEFLAGS += -rR
 .PHONY: all clean push pull run exec check checkrebuild pull-base ci $(NAMES) $(IMAGES)
 
 all: 
+	(cd ubuntu/deps; \
+		docker build -t $(REG)/qpx-base:$(TAG) --pull --target=qpx-base $(ARGS) - < Dockerfile; \
+		docker push $(REG)/ubu-base:$(TAG); \
+		docker build -t $(REG)/qpx-dev:$(TAG) --pull --target=qpx-dev $(ARGS) - < Dockerfile; \
+		docker push $(REG)/qpx-dev:$(TAG)
+		chmod u+x deps.sh; \
+		./deps.sh -i srcs; \
+		docker build -t $(REG)/qpx_src:$(TAG) --pull --target=qpx_src $(ARGS) .; \
+		docker push $(REG)/qpx_src:$(TAG); \
+		)
+
+all2: 
 	(cd ubuntu; \
 		docker build -t $(REG)/ubu-base:$(TAG) --pull --target=ubu-base $(ARGS) - < Dockerfile; \
 		docker push $(REG)/ubu-base:$(TAG); \
@@ -29,7 +41,7 @@ all:
 		docker build -t $(REG)/jl_new_src:$(TAG) --pull --target=jl_new_src $(ARGS) .; \
 		docker push $(REG)/jl_new_src:$(TAG))
 
-# all: $(NAMES)
+# all3: $(NAMES)
 
 clean:
 	rm -f $(DEPENDS)

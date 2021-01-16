@@ -23,17 +23,6 @@ RUN set -eux; \
 FROM scratch as ubu-base
 COPY --from=tmp-base . .
 
-FROM $REG/ubu-base:$TAG AS tmp-mkl
-RUN set -ex; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-    intel-mkl \
-	; \
-	rm -rf /var/lib/apt/lists/*
-
-FROM scratch as ubu-mkl
-COPY --from=tmp-mkl . .
-
 FROM $REG/ubu-base:$TAG AS tmp-dev
 RUN set -ex; \
 	apt-get update; \

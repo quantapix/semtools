@@ -3,25 +3,19 @@
 set -eux
 
 init() {
-    CURL_BRANCH=curl-7_73_0
     DSFMT_BRANCH=v2.2.4
     LAPACK_BRANCH=v3.9.0
-    LIBGIT2_BRANCH=v1.1.0
-    LIBSSH2_BRANCH=libssh2-1.9.0
     LIBUV_BRANCH=julia-uv2-1.39.0
-    LIBWHICH_BRANCH=master
     LLVM_BRANCH=llvmorg-11.0.1
     MBEDTLS_BRANCH=v2.24.0
-    NGHTTP2_BRANCH=v1.41.0
     OPENBLAS_BRANCH=v0.3.10 
     OPENLIBM_BRANCH=v0.7.3
     PATCHELF_BRANCH=0.9
     SUITESPARSE_BRANCH=v5.4.0
     UNWIND_BRANCH=v1.3.2
     UTF8PROC_BRANCH=v2.6.1
-    ZLIB_BRANCH=v1.2.11
     LLVM_RV_GIT_VER=release_90
-    
+
     CLANG_VER=11.0.1
     GMP_VER=6.2.0
     MPFR_VER=4.1.0
@@ -54,22 +48,16 @@ init() {
     if [ ! -e upstream ]; then
         mkdir upstream
         (cd upstream
-      	    git clone https://github.com/libgit2/libgit2.git
             git clone https://github.com/ARMmbed/mbedtls.git
-            git clone https://github.com/curl/curl.git
             git clone https://github.com/DrTimothyAldenDavis/SuiteSparse.git
             git clone https://github.com/JuliaLang/libuv.git
             git clone https://github.com/JuliaLang/utf8proc.git
             git clone https://github.com/JuliaMath/openlibm.git
-            git clone https://github.com/libssh2/libssh2.git
             git clone https://github.com/libunwind/libunwind.git
             git clone https://github.com/llvm/llvm-project.git
-            git clone https://github.com/madler/zlib.git
             git clone https://github.com/MersenneTwister-Lab/dSFMT.git
-            git clone https://github.com/nghttp2/nghttp2.git
             git clone https://github.com/NixOS/patchelf.git
             git clone https://github.com/Reference-LAPACK/lapack.git
-            git clone https://github.com/vtjnash/libwhich.git
             git clone https://github.com/xianyi/OpenBLAS.git
             git clone https://github.com/cdl-saarland/rv
         )
@@ -83,23 +71,17 @@ init() {
     else
         mkdir srcs
         cd srcs
-        git clone -b $CURL_BRANCH --depth 1 ../upstream/curl
         git clone -b $DSFMT_BRANCH --depth 1 ../upstream/dSFMT
         git clone -b $LAPACK_BRANCH --depth 1 ../upstream/lapack
-        git clone -b $LIBGIT2_BRANCH --depth 1 ../upstream/libgit2
-        git clone -b $LIBSSH2_BRANCH --depth 1 ../upstream/libssh2
         git clone -b $LIBUV_BRANCH --depth 1 ../upstream/libuv
-        git clone -b $LIBWHICH_BRANCH --depth 1 ../upstream/libwhich
         git clone -b $LLVM_BRANCH --depth 1 ../upstream/llvm-project
         git clone -b $MBEDTLS_BRANCH --depth 1 ../upstream/mbedtls
-        git clone -b $NGHTTP2_BRANCH --depth 1 ../upstream/nghttp2
         git clone -b $OPENBLAS_BRANCH --depth 1 ../upstream/OpenBLAS
         git clone -b $OPENLIBM_BRANCH --depth 1 ../upstream/openlibm
         git clone -b $PATCHELF_BRANCH --depth 1 ../upstream/patchelf
         git clone -b $SUITESPARSE_BRANCH --depth 1 ../upstream/SuiteSparse
         git clone -b $UNWIND_BRANCH --depth 1 ../upstream/libunwind
         git clone -b $UTF8PROC_BRANCH --depth 1 ../upstream/utf8proc
-        git clone -b $ZLIB_BRANCH --depth 1 ../upstream/zlib
         git clone -b $LLVM_RV_GIT_VER --depth 1 ../upstream/rv
     fi
 }

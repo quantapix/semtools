@@ -4,12 +4,12 @@ ARG TAG
 
 FROM $REG/ubu-$VER:$TAG
 
-ARG INSTALL_ZSH="true"
-ARG UPGRADE_PACKAGES="true"
+# ARG INSTALL_ZSH="true"
+# ARG UPGRADE_PACKAGES="true"
 
-ARG USERNAME=vscode
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
+# ARG USERNAME=vscode
+# ARG USER_UID=1000
+# ARG USER_GID=$USER_UID
 
 # COPY scripts/*.sh /tmp/scripts/
 # RUN bash /tmp/scripts/config.sh "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" \

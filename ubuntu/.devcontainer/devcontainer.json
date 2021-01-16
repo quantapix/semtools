@@ -7,7 +7,7 @@
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash"
   },
-  "extensions": ["mutantdino.resourcemonitor", "redhat.vscode-yaml"]
+  // "extensions": ["mutantdino.resourcemonitor", "redhat.vscode-yaml"]
   // "forwardPorts": [],
   // "postCreateCommand": "uname -a",
   // "remoteUser": "vscode"

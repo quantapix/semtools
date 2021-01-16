@@ -4,12 +4,17 @@ set -eux
 
 init() {
     NINJA_BRANCH=v1.10.2
+    CMAKE_BRANCH=v3.19.3
+    ZLIB_BRANCH=v1.2.11
 
     cd deps
     if [ ! -e upstream ]; then
         mkdir upstream
         (cd upstream
       	    git clone https://github.com/ninja-build/ninja.git
+            git clone https://github.com/Kitware/CMake.git
+            git clone https://github.com/madler/zlib.git
+
         )
     fi
     rm -rf srcs
@@ -22,6 +27,9 @@ init() {
         mkdir srcs
         cd srcs
         git clone -b $NINJA_BRANCH --depth 1 ../upstream/ninja
+        git clone -b $CMAKE_BRANCH --depth 1 ../upstream/ninja
+        git clone -b $ZLIB_BRANCH --depth 1 ../upstream/zlib
+
     fi
 }
 
