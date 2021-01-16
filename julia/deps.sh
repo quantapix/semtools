@@ -4,66 +4,71 @@ set -eux
 
 init() {
     CURL_BRANCH=curl-7_73_0
+    DSFMT_BRANCH=v2.2.4
     LAPACK_BRANCH=v3.9.0
     LIBGIT2_BRANCH=v1.1.0
     LIBSSH2_BRANCH=libssh2-1.9.0
     LIBUV_BRANCH=julia-uv2-1.39.0
     LIBWHICH_BRANCH=master
+    LLVM_BRANCH=llvmorg-11.0.1
+    MBEDTLS_BRANCH=v2.24.0
+    NGHTTP2_BRANCH=v1.41.0
     OPENBLAS_BRANCH=v0.3.10 
     OPENLIBM_BRANCH=v0.7.3
+    PATCHELF_BRANCH=0.9
+    SUITESPARSE_BRANCH=v5.4.0
+    UNWIND_BRANCH=v1.3.2
     UTF8PROC_BRANCH=v2.6.1
     ZLIB_BRANCH=v1.2.11
 
+    CLANG_VER=11.0.1
+    GMP_VER=6.2.0
+    MPFR_VER=4.1.0
+    OBJCONV_VER=2.49.1
+    P7ZIP_VER=16.2.0
+    PCRE_VER=10.35
+
     CLANG_JLL=Clang
-    CLANG_VER=11.0.0
     CURL_JLL=LibCURL
     DSFMT_JLL=dSFMT
-    DSFMT_VER=2.2.4
     GMP_JLL=GMP
-    GMP_VER=6.2.0
     LIBGIT2_JLL=LibGit2
     LIBSSH2_JLL=LibSSH2
     LIBUV_JLL=LibUV
     LLVM_JLL=libLLVM
     LLVM_TOOLS_JLL=LLVM
-    LLVM_VER=11.0.0
     MBEDTLS_JLL=MbedTLS
-    MBEDTLS_VER=2.24.0
-    MOZILLA_CACERT_VERSION=2020-10-14
     MPFR_JLL=MPFR
-    MPFR_VER=4.1.0
     NGHTTP2_JLL=nghttp2
-    NGHTTP2_VER=1.41.0
     OBJCONV_JLL=Objconv
-    OBJCONV_VER=2.49.1
     OPENBLAS_JLL=OpenBLAS
     OPENLIBM_JLL=OpenLibm
-    OSXUNWIND_JLL=LibOSXUnwind
-    OSXUNWIND_VER=0.0.6
     P7ZIP_JLL=p7zip
-    P7ZIP_VER=16.2.0
-    PATCHELF_VER=0.9
     PCRE_JLL=PCRE2
-    PCRE_VER=10.35
     SUITESPARSE_JLL=SuiteSparse
-    SUITESPARSE_VER=5.4.0
     UNWIND_JLL=LibUnwind
-    UNWIND_VER=1.3.2
     ZLIB_JLL=Zlib
 
     cd deps
     if [ ! -e upstream ]; then
         mkdir upstream
         (cd upstream
-      	    git clone http://github.com/libgit2/libgit2.git
-            git clone git://github.com/vtjnash/libwhich.git
+      	    git clone https://github.com/libgit2/libgit2.git
+            git clone https://github.com/ARMmbed/mbedtls.git
             git clone https://github.com/curl/curl.git
+            git clone https://github.com/DrTimothyAldenDavis/SuiteSparse.git
             git clone https://github.com/JuliaLang/libuv.git
             git clone https://github.com/JuliaLang/utf8proc.git
             git clone https://github.com/JuliaMath/openlibm.git
             git clone https://github.com/libssh2/libssh2.git
+            git clone https://github.com/libunwind/libunwind.git
+            git clone https://github.com/llvm/llvm-project.git
             git clone https://github.com/madler/zlib.git
+            git clone https://github.com/MersenneTwister-Lab/dSFMT.git
+            git clone https://github.com/nghttp2/nghttp2.git
+            git clone https://github.com/NixOS/patchelf.git
             git clone https://github.com/Reference-LAPACK/lapack.git
+            git clone https://github.com/vtjnash/libwhich.git
             git clone https://github.com/xianyi/OpenBLAS.git
         )
     fi
@@ -77,22 +82,23 @@ init() {
         mkdir srcs
         cd srcs
         git clone -b $CURL_BRANCH --depth 1 ../upstream/curl
+        git clone -b $DSFMT_BRANCH --depth 1 ../upstream/dSFMT
         git clone -b $LAPACK_BRANCH --depth 1 ../upstream/lapack
         git clone -b $LIBGIT2_BRANCH --depth 1 ../upstream/libgit2
         git clone -b $LIBSSH2_BRANCH --depth 1 ../upstream/libssh2
         git clone -b $LIBUV_BRANCH --depth 1 ../upstream/libuv
         git clone -b $LIBWHICH_BRANCH --depth 1 ../upstream/libwhich
+        git clone -b $LLVM_BRANCH --depth 1 ../upstream/llvm-project
+        git clone -b $MBEDTLS_BRANCH --depth 1 ../upstream/mbedtls
+        git clone -b $NGHTTP2_BRANCH --depth 1 ../upstream/nghttp2
         git clone -b $OPENBLAS_BRANCH --depth 1 ../upstream/OpenBLAS
         git clone -b $OPENLIBM_BRANCH --depth 1 ../upstream/openlibm
+        git clone -b $PATCHELF_BRANCH --depth 1 ../upstream/patchelf
+        git clone -b $SUITESPARSE_BRANCH --depth 1 ../upstream/SuiteSparse
+        git clone -b $UNWIND_BRANCH --depth 1 ../upstream/libunwind
         git clone -b $UTF8PROC_BRANCH --depth 1 ../upstream/utf8proc
         git clone -b $ZLIB_BRANCH --depth 1 ../upstream/zlib
     fi
-}
-
-libgit2() {
-  source upstream/deps/libgit2.version
-  cd deps/upstream/libgit2 || (git clone http://github.com/libgit2/libgit2.git && cd deps/upstream/libgit2)
-  git checkout
 }
 
 build() {
@@ -473,4 +479,495 @@ libwhich() {
     $(eval $(call staged-install, \
       libwhich,$(LIBWHICH_SRC_DIR), \
       LIBWHICH_INSTALL,,,))
+}
+
+unwind() {
+    LIBUNWIND_CFLAGS := -U_FORTIFY_SOURCE $(fPIC)
+    LIBUNWIND_CPPFLAGS :=
+
+    $(SRCCACHE)/libunwind-$(UNWIND_VER)/source-extracted: $(SRCCACHE)/libunwind-$(UNWIND_VER).tar.gz
+      $(JLCHECKSUM) $<
+      cd $(dir $<) && $(TAR) xfz $<
+      touch -c $(SRCCACHE)/libunwind-$(UNWIND_VER)/configure # old target
+      echo 1 > $@
+
+    $(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-prefer-extbl.patch-applied: $(SRCCACHE)/libunwind-$(UNWIND_VER)/source-extracted
+      cd $(SRCCACHE)/libunwind-$(UNWIND_VER) && patch -p1 -f < $(SRCDIR)/patches/libunwind-prefer-extbl.patch
+      echo 1 > $@
+
+    $(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-static-arm.patch-applied: $(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-prefer-extbl.patch-applied
+      cd $(SRCCACHE)/libunwind-$(UNWIND_VER) && patch -p1 -f < $(SRCDIR)/patches/libunwind-static-arm.patch
+      echo 1 > $@
+
+    $(BUILDDIR)/libunwind-$(UNWIND_VER)/build-configured: $(SRCCACHE)/libunwind-$(UNWIND_VER)/source-extracted $(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-static-arm.patch-applied
+      mkdir -p $(dir $@)
+      cd $(dir $@) && \
+      $(dir $<)/configure $(CONFIGURE_COMMON) CPPFLAGS="$(CPPFLAGS) $(LIBUNWIND_CPPFLAGS)" CFLAGS="$(CFLAGS) $(LIBUNWIND_CFLAGS)" --disable-shared --disable-minidebuginfo --disable-tests
+      echo 1 > $@
+
+    $(BUILDDIR)/libunwind-$(UNWIND_VER)/build-compiled: $(BUILDDIR)/libunwind-$(UNWIND_VER)/build-configured
+      $(MAKE) -C $(dir $<)
+      echo 1 > $@
+
+    $(BUILDDIR)/libunwind-$(UNWIND_VER)/build-checked: $(BUILDDIR)/libunwind-$(UNWIND_VER)/build-compiled
+      $(MAKE) -C $(dir $@) check
+
+    $(eval $(call staged-install, \
+      unwind,libunwind-$(UNWIND_VER), \
+      MAKE_INSTALL,,,))
+}
+
+csl() {
+    STD_LIB_PATH := $(shell LANG=C $(FC) -print-search-dirs | grep '^programs: =' | sed -e "s/^programs: =//")
+    STD_LIB_PATH += :$(shell LANG=C $(FC) -print-search-dirs | grep '^libraries: =' | sed -e "s/^libraries: =//")
+
+    define pathsearch
+    $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(2)))))
+    endef
+
+    define copy_csl
+    install-csl: | $$(build_shlibdir) $$(build_shlibdir)/$(1)
+    $$(build_shlibdir)/$(1): | $$(build_shlibdir)
+      -@SRC_LIB=$$(call pathsearch,$(1),$$(STD_LIB_PATH)); \
+      [ -n "$$$${SRC_LIB}" ] && cp $$$${SRC_LIB} $$(build_shlibdir)
+    endef
+
+    define gen_libname
+    $$(if $(2),lib$(1).$(SHLIB_EXT).$(2),lib$(1).$(SHLIB_EXT))
+    endef
+
+    $(eval $(call copy_csl,$(call gen_libname,gfortran,3)))
+    $(eval $(call copy_csl,$(call gen_libname,gfortran,4)))
+    $(eval $(call copy_csl,$(call gen_libname,gfortran,5)))
+
+    $(eval $(call copy_csl,$(call gen_libname,quadmath,0)))
+    $(eval $(call copy_csl,$(call gen_libname,stdc++,6)))
+    $(eval $(call copy_csl,$(call gen_libname,ssp,0)))
+    $(eval $(call copy_csl,$(call gen_libname,atomic,1)))
+    $(eval $(call copy_csl,$(call gen_libname,gomp,1)))
+
+    $(eval $(call copy_csl,$(call gen_libname,gcc_s,1)))
+    $(eval $(call copy_csl,$(call gen_libname,pthread,0)))
+}
+
+dsfmt() {
+    DSFMT_CFLAGS := $(CFLAGS) -DNDEBUG -DDSFMT_MEXP=19937 $(fPIC) -DDSFMT_DO_NOT_USE_OLD_NAMES -DDSFMT_SHLIB
+    DSFMT_CFLAGS += -O3 -finline-functions -fomit-frame-pointer -fno-strict-aliasing \
+        --param max-inline-insns-single=1800 -Wall  -std=c99 -shared
+    DSFMT_CFLAGS += -msse2 -DHAVE_SSE2
+
+    $(BUILDDIR)/dsfmt-$(DSFMT_VER)/source-extracted: $(SRCCACHE)/dsfmt-$(DSFMT_VER).tar.gz
+      $(JLCHECKSUM) $<
+      -rm -r $(dir $@)
+      mkdir -p $(dir $@)
+      $(TAR) -C $(dir $@) --strip-components 1 -xf $<
+      echo 1 > $@
+
+    $(BUILDDIR)/dsfmt-$(DSFMT_VER)/build-compiled: $(BUILDDIR)/dsfmt-$(DSFMT_VER)/source-extracted
+      cd $(dir $<) && \
+      $(CC) $(CPPFLAGS) $(DSFMT_CFLAGS) $(LDFLAGS) dSFMT.c -o libdSFMT.$(SHLIB_EXT)
+      echo 1 > $@
+
+    $(BUILDDIR)/dsfmt-$(DSFMT_VER)/build-checked: $(BUILDDIR)/dsfmt-$(DSFMT_VER)/build-compiled
+      $(MAKE) -C $(dir $@) std-check sse2-check
+
+    define DSFMT_INSTALL
+      mkdir -p $2/$$(build_includedir)
+      mkdir -p $2/$$(build_shlibdir)
+      cp $1/dSFMT.h $2/$$(build_includedir)
+      cp $1/libdSFMT.$$(SHLIB_EXT) $2/$$(build_shlibdir)
+    endef
+    $(eval $(call staged-install, \
+      dsfmt,dsfmt-$(DSFMT_VER), \
+      DSFMT_INSTALL,, \
+      $$(DSFMT_OBJ_TARGET), \
+      $$(INSTALL_NAME_CMD)libdSFMT.$$(SHLIB_EXT) $$(build_shlibdir)/libdSFMT.$$(SHLIB_EXT)))
+}
+
+gmp() {
+    ifeq ($(SANITIZE),1)
+    GMP_CONFIGURE_OPTS += --disable-assembly
+    endif
+
+    $(SRCCACHE)/gmp-$(GMP_VER).tar.bz2: | $(SRCCACHE)
+      $(JLDOWNLOAD) $@ https://gmplib.org/download/gmp/$(notdir $@)
+
+    $(SRCCACHE)/gmp-$(GMP_VER)/source-extracted: $(SRCCACHE)/gmp-$(GMP_VER).tar.bz2
+      $(JLCHECKSUM) $<
+      cd $(dir $<) && $(TAR) -jxf $<
+      touch -c $(SRCCACHE)/gmp-$(GMP_VER)/configure # old target
+      echo 1 > $@
+
+    $(SRCCACHE)/gmp-$(GMP_VER)/build-patched: $(SRCCACHE)/gmp-$(GMP_VER)/source-extracted
+      cd $(dir $@) && patch -p1 < $(SRCDIR)/patches/gmp-exception.patch
+      cd $(dir $@) && patch -p1 < $(SRCDIR)/patches/gmp_alloc_overflow_func.patch
+      cd $(dir $@) && patch -p1 < $(SRCDIR)/patches/gmp-apple-arm64.patch
+      echo 1 > $@
+
+    $(BUILDDIR)/gmp-$(GMP_VER)/build-configured: $(SRCCACHE)/gmp-$(GMP_VER)/source-extracted
+      mkdir -p $(dir $@)
+      cd $(dir $@) && \
+      $(dir $<)/configure $(CONFIGURE_COMMON) F77= --enable-cxx --enable-shared --disable-static $(GMP_CONFIGURE_OPTS)
+      echo 1 > $@
+
+    $(BUILDDIR)/gmp-$(GMP_VER)/build-compiled: $(BUILDDIR)/gmp-$(GMP_VER)/build-configured
+      $(MAKE) -C $(dir $<) $(LIBTOOL_CCLD)
+      echo 1 > $@
+
+    $(BUILDDIR)/gmp-$(GMP_VER)/build-checked: $(BUILDDIR)/gmp-$(GMP_VER)/build-compiled
+      $(MAKE) -C $(dir $@) $(LIBTOOL_CCLD) check
+
+    define GMP_INSTALL
+      mkdir -p $2/$(build_shlibdir) $2/$(build_includedir)
+      $(INSTALL_M) $1/.libs/libgmp*$(SHLIB_EXT)* $2/$(build_shlibdir)
+      $(INSTALL_F) $1/gmp.h $2/$(build_includedir)
+    endef
+    $(eval $(call staged-install, \
+      gmp,gmp-$(GMP_VER), \
+      GMP_INSTALL,,, \
+      $$(INSTALL_NAME_CMD)libgmp.$$(SHLIB_EXT) $$(build_shlibdir)/libgmp.$$(SHLIB_EXT)))
+}
+
+mbedtls() {
+    MBEDTLS_OPTS := $(CMAKE_COMMON) -DUSE_SHARED_MBEDTLS_LIBRARY=ON \
+        -DUSE_STATIC_MBEDTLS_LIBRARY=OFF -DENABLE_PROGRAMS=OFF -DCMAKE_BUILD_TYPE=Release
+    MBEDTLS_OPTS += -DENABLE_ZLIB_SUPPORT=OFF
+    MBEDTLS_OPTS += -DCMAKE_INSTALL_RPATH="\$$ORIGIN"
+
+    $(SRCCACHE)/$(MBEDTLS_SRC)/source-extracted: $(SRCCACHE)/$(MBEDTLS_SRC).tar.gz
+      $(JLCHECKSUM) $<
+      mkdir -p $(dir $@) && \
+      $(TAR) -C $(dir $@) --strip-components 1 -xf $<
+      # Force-enable MD4
+      sed -i.org "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" $(SRCCACHE)/$(MBEDTLS_SRC)/include/mbedtls/config.h
+      touch -c $(SRCCACHE)/$(MBEDTLS_SRC)/CMakeLists.txt # old target
+      echo 1 > $@
+
+    $(SRCCACHE)/$(MBEDTLS_SRC)/mbedtls-cmake-findpy.patch-applied: $(SRCCACHE)/$(MBEDTLS_SRC)/source-extracted
+      # Apply workaround for CMake 3.18.2 bug (https://github.com/ARMmbed/mbedtls/pull/3691).
+      # This patch merged upstream shortly after MBedTLS's 2.25.0 minor release, so chances
+      # are it will be included at least in their next minor release (2.26.0?).
+      cd $(SRCCACHE)/$(MBEDTLS_SRC) && \
+        patch -p1 -f < $(SRCDIR)/patches/mbedtls-cmake-findpy.patch
+      echo 1 > $@
+
+    $(BUILDDIR)/$(MBEDTLS_SRC)/build-configured: \
+      $(SRCCACHE)/$(MBEDTLS_SRC)/mbedtls-cmake-findpy.patch-applied
+
+    $(BUILDDIR)/$(MBEDTLS_SRC)/build-configured: $(SRCCACHE)/$(MBEDTLS_SRC)/source-extracted
+      mkdir -p $(dir $@)
+      cd $(dir $@) && \
+      $(CMAKE) $(dir $<) $(MBEDTLS_OPTS)
+      echo 1 > $@
+
+    $(BUILDDIR)/$(MBEDTLS_SRC)/build-compiled: $(BUILDDIR)/$(MBEDTLS_SRC)/build-configured
+      $(MAKE) -C $(dir $<)
+      echo 1 > $@
+
+    $(BUILDDIR)/$(MBEDTLS_SRC)/build-checked: $(BUILDDIR)/$(MBEDTLS_SRC)/build-compiled
+      $(MAKE) -C $(dir $@) test
+
+    define MBEDTLS_INSTALL
+      $(call MAKE_INSTALL,$1,$2,)
+    endef
+    $(eval $(call staged-install, \
+      mbedtls,$(MBEDTLS_SRC), \
+      MBEDTLS_INSTALL,,, \
+      $$(INSTALL_NAME_CMD)libmbedx509.$$(SHLIB_EXT) $$(build_shlibdir)/libmbedx509.$$(SHLIB_EXT) && \
+      $$(INSTALL_NAME_CMD)libmbedtls.$$(SHLIB_EXT) $$(build_shlibdir)/libmbedtls.$$(SHLIB_EXT) && \
+      $$(INSTALL_NAME_CHANGE_CMD) libmbedx509.0.dylib @rpath/libmbedx509.$$(SHLIB_EXT) $$(build_shlibdir)/libmbedtls.$$(SHLIB_EXT) && \
+      $$(INSTALL_NAME_CHANGE_CMD) libmbedcrypto.3.dylib @rpath/libmbedcrypto.$$(SHLIB_EXT) $$(build_shlibdir)/libmbedtls.$$(SHLIB_EXT) && \
+      $$(INSTALL_NAME_CHANGE_CMD) libmbedcrypto.3.dylib @rpath/libmbedcrypto.$$(SHLIB_EXT) $$(build_shlibdir)/libmbedx509.$$(SHLIB_EXT) && \
+      $$(INSTALL_NAME_CMD)libmbedcrypto.$$(SHLIB_EXT) $$(build_shlibdir)/libmbedcrypto.$$(SHLIB_EXT)))
+}
+
+mpfr() {
+    ifeq ($(USE_SYSTEM_GMP), 0)
+    $(BUILDDIR)/mpfr-$(MPFR_VER)/build-configured: | $(build_prefix)/manifest/gmp
+    endif
+
+    MPFR_OPTS := --enable-thread-safe --enable-shared-cache --disable-float128 --disable-decimal-float
+    ifeq ($(USE_SYSTEM_GMP), 0)
+    MPFR_OPTS += --with-gmp-include=$(abspath $(build_includedir)) --with-gmp-lib=$(abspath $(build_shlibdir))
+    endif
+
+    ifeq ($(SANITIZE),1)
+    # Force generic C build
+    MPFR_OPTS += --host=none-unknown-linux
+    endif
+
+    $(SRCCACHE)/mpfr-$(MPFR_VER).tar.bz2: | $(SRCCACHE)
+      $(JLDOWNLOAD) $@ https://www.mpfr.org/mpfr-$(MPFR_VER)/$(notdir $@)
+    $(SRCCACHE)/mpfr-$(MPFR_VER)/source-extracted: $(SRCCACHE)/mpfr-$(MPFR_VER).tar.bz2
+      $(JLCHECKSUM) $<
+      cd $(dir $<) && $(TAR) -jxf $<
+      cp $(SRCDIR)/patches/config.sub $(SRCCACHE)/mpfr-$(MPFR_VER)/config.sub
+      touch -c $(SRCCACHE)/mpfr-$(MPFR_VER)/configure # old target
+      echo 1 > $@
+
+    $(BUILDDIR)/mpfr-$(MPFR_VER)/build-configured: $(SRCCACHE)/mpfr-$(MPFR_VER)/source-extracted
+      mkdir -p $(dir $@)
+      cd $(dir $@) && \
+      $(dir $<)/configure $(CONFIGURE_COMMON) $(MPFR_OPTS) F77= --enable-shared --disable-static
+      echo 1 > $@
+
+    $(BUILDDIR)/mpfr-$(MPFR_VER)/build-compiled: $(BUILDDIR)/mpfr-$(MPFR_VER)/build-configured
+      $(MAKE) -C $(dir $<) $(LIBTOOL_CCLD)
+      echo 1 > $@
+
+    $(BUILDDIR)/mpfr-$(MPFR_VER)/build-checked: $(BUILDDIR)/mpfr-$(MPFR_VER)/build-compiled
+      $(MAKE) -C $(dir $@) $(LIBTOOL_CCLD) check $(MPFR_CHECK_MFLAGS)
+
+    $(eval $(call staged-install, \
+      mpfr,mpfr-$(MPFR_VER), \
+      MAKE_INSTALL,$$(LIBTOOL_CCLD),, \
+      $$(INSTALL_NAME_CMD)libmpfr.$$(SHLIB_EXT) $$(build_shlibdir)/libmpfr.$$(SHLIB_EXT)))
+}
+
+nghttp2() {
+    $(SRCCACHE)/nghttp2-$(NGHTTP2_VER)/source-extracted: $(SRCCACHE)/nghttp2-$(NGHTTP2_VER).tar.bz2
+      $(JLCHECKSUM) $<
+      cd $(dir $<) && $(TAR) -jxf $<
+      touch -c $(SRCCACHE)/nghttp2-$(NGHTTP2_VER)/configure # old target
+      echo 1 > $@
+
+    $(BUILDDIR)/nghttp2-$(NGHTTP2_VER)/build-configured: $(SRCCACHE)/nghttp2-$(NGHTTP2_VER)/source-extracted
+      mkdir -p $(dir $@)
+      cd $(dir $@) && \
+      $(dir $<)/configure $(CONFIGURE_COMMON) --enable-lib-only
+      echo 1 > $@
+
+    $(BUILDDIR)/nghttp2-$(NGHTTP2_VER)/build-compiled: $(BUILDDIR)/nghttp2-$(NGHTTP2_VER)/build-configured
+      $(MAKE) -C $(dir $<)
+      echo 1 > $@
+
+    $(BUILDDIR)/nghttp2-$(NGHTTP2_VER)/build-checked: $(BUILDDIR)/nghttp2-$(NGHTTP2_VER)/build-compiled
+      $(MAKE) -C $(dir $@) check $(NGHTTP2_CHECK_MFLAGS)
+
+    $(eval $(call staged-install, \
+      nghttp2,nghttp2-$(NGHTTP2_VER), \
+      MAKE_INSTALL,,, \
+      $$(INSTALL_NAME_CMD)libnghttp2.$$(SHLIB_EXT) $$(build_shlibdir)/libnghttp2.$$(SHLIB_EXT)))
+}
+
+objconv() {
+    $(SRCCACHE)/objconv.zip: | $(SRCCACHE)
+      $(JLDOWNLOAD) $@ https://www.agner.org/optimize/objconv.zip
+
+    $(BUILDDIR)/objconv/source-extracted: $(SRCCACHE)/objconv.zip
+      -rm -r $(dir $@)
+      mkdir -p $(BUILDDIR)
+      unzip -d $(dir $@) $<
+      cd $(dir $@) && unzip source.zip
+      echo 1 > $@
+
+    $(BUILDDIR)/objconv/build-compiled: $(BUILDDIR)/objconv/source-extracted
+      cd $(dir $<) && $(CXX) -o objconv -O2 *.cpp
+      echo 1 > $@
+
+    $(eval $(call staged-install, \
+      objconv,objconv, \
+      BINFILE_INSTALL,$$(BUILDDIR)/objconv/objconv,,))
+}
+
+p7zip() {
+    # Force optimization for P7ZIP flags (Issue #11668)
+    $(SRCCACHE)/p7zip-$(P7ZIP_VER).tar.bz2: | $(SRCCACHE)
+      $(JLDOWNLOAD) $@ https://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2
+
+    $(BUILDDIR)/p7zip-$(P7ZIP_VER)/source-extracted: $(SRCCACHE)/p7zip-$(P7ZIP_VER).tar.bz2
+      $(JLCHECKSUM) $<
+      mkdir -p $(dir $@)
+      cd $(dir $@) && $(TAR) --strip-components 1 -jxf $<
+      echo $1 > $@
+
+    checksum-p7zip: $(SRCCACHE)/p7zip-$(P7ZIP_VER).tar.bz2
+      $(JLCHECKSUM) $<
+
+    $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-12-CVE-2016-9296.patch-applied: $(BUILDDIR)/p7zip-$(P7ZIP_VER)/source-extracted
+      cd $(dir $@) && patch -p1 -f < $(SRCDIR)/patches/p7zip-12-CVE-2016-9296.patch
+      echo 1 > $@
+
+    $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-13-CVE-2017-17969.patch-applied: $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-12-CVE-2016-9296.patch-applied
+      cd $(dir $@) && patch -p1 -f < $(SRCDIR)/patches/p7zip-13-CVE-2017-17969.patch
+      echo 1 > $@
+
+    $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-15-Enhanced-encryption-strength.patch-applied: $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-13-CVE-2017-17969.patch-applied
+      cd $(dir $@) && patch -p4 -f < $(SRCDIR)/patches/p7zip-15-Enhanced-encryption-strength.patch
+      echo 1 > $@
+
+    $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-Windows_ErrorMsg.patch-applied: $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-15-Enhanced-encryption-strength.patch-applied
+      cd $(dir $@) && patch -p0 -f < $(SRCDIR)/patches/p7zip-Windows_ErrorMsg.patch
+      echo 1 > $@
+
+    $(BUILDDIR)/p7zip-$(P7ZIP_VER)/build-configured: $(BUILDDIR)/p7zip-$(P7ZIP_VER)/p7zip-Windows_ErrorMsg.patch-applied
+    $(BUILDDIR)/p7zip-$(P7ZIP_VER)/build-compiled: $(BUILDDIR)/p7zip-$(P7ZIP_VER)/build-configured
+      $(MAKE) -C $(dir $<) $(MAKE_COMMON) CC="$(CC)" CXX="$(CXX)" 7za
+      echo 1 > $@
+
+    define P7ZIP_INSTALL
+      mkdir -p $2/$$(build_bindir)
+      cp -a $1/bin/7za $2/$$(build_bindir)/7z
+    endef
+    $(eval $(call staged-install, \
+      p7zip,p7zip-$(P7ZIP_VER), \
+      P7ZIP_INSTALL,,,))
+
+}
+
+patchelf() {
+      $(JLCHECKSUM) $<
+      cd $(dir $<) && $(TAR) zxf $<
+      touch -c $(SRCCACHE)/patchelf-$(PATCHELF_VER)/configure # old target
+      echo 1 > $@
+
+    $(BUILDDIR)/patchelf-$(PATCHELF_VER)/build-configured: $(SRCCACHE)/patchelf-$(PATCHELF_VER)/source-extracted | $(LIBCXX_DEPENDENCY)
+      mkdir -p $(dir $@)
+      cd $(dir $@) && \
+      $(dir $<)/configure $(CONFIGURE_COMMON) LDFLAGS="$(CXXLDFLAGS)" CPPFLAGS="$(CPPFLAGS)"
+      echo 1 > $@
+
+    $(BUILDDIR)/patchelf-$(PATCHELF_VER)/build-compiled: $(BUILDDIR)/patchelf-$(PATCHELF_VER)/build-configured
+      $(MAKE) -C $(dir $<)
+      echo 1 > $@
+
+    $(BUILDDIR)/patchelf-$(PATCHELF_VER)/build-checked: $(BUILDDIR)/patchelf-$(PATCHELF_VER)/build-compiled
+    ifeq ($(OS),$(BUILD_OS))
+      # disabled due to bug in v0.6
+      #$(MAKE) -C $(dir $@) check
+    endif
+      echo 1 > $@
+
+    $(eval $(call staged-install, \
+      patchelf,patchelf-$(PATCHELF_VER), \
+      MAKE_INSTALL,$$(LIBTOOL_CCLD),,))
+}
+
+pcre() {
+    PCRE_CFLAGS := -O3
+    PCRE_LDFLAGS := $(RPATH_ESCAPED_ORIGIN)
+
+    $(SRCCACHE)/pcre2-$(PCRE_VER).tar.bz2: | $(SRCCACHE)
+      $(JLDOWNLOAD) $@ https://ftp.pcre.org/pub/pcre/pcre2-$(PCRE_VER).tar.bz2
+
+    $(SRCCACHE)/pcre2-$(PCRE_VER)/source-extracted: $(SRCCACHE)/pcre2-$(PCRE_VER).tar.bz2
+      $(JLCHECKSUM) $<
+      cd $(dir $<) && $(TAR) jxf $(notdir $<)
+      cp $(SRCDIR)/patches/config.sub $(SRCCACHE)/pcre2-$(PCRE_VER)/config.sub
+      cd $(SRCCACHE)/pcre2-$(PCRE_VER) && patch -p1 -f < $(SRCDIR)/patches/pcre2-cet-flags.patch
+      # Fix some old targets modified by the patching
+      touch -c $(SRCCACHE)/pcre2-$(PCRE_VER)/Makefile.am
+      touch -c $(SRCCACHE)/pcre2-$(PCRE_VER)/Makefile.in
+      touch -c $(SRCCACHE)/pcre2-$(PCRE_VER)/aclocal.m4
+      touch -c $(SRCCACHE)/pcre2-$(PCRE_VER)/configure
+      echo $1 > $@
+
+    checksum-pcre2: $(SRCCACHE)/pcre2-$(PCRE_VER).tar.bz2
+      $(JLCHECKSUM) $<
+
+    $(BUILDDIR)/pcre2-$(PCRE_VER)/build-configured: $(SRCCACHE)/pcre2-$(PCRE_VER)/source-extracted
+      mkdir -p $(dir $@)
+      cd $(dir $@) && \
+      $(dir $<)/configure $(CONFIGURE_COMMON) --enable-jit --includedir=$(build_includedir) CFLAGS="$(CFLAGS) $(PCRE_CFLAGS)" LDFLAGS="$(LDFLAGS) $(PCRE_LDFLAGS)"
+      echo 1 > $@
+
+    $(BUILDDIR)/pcre2-$(PCRE_VER)/build-compiled: $(BUILDDIR)/pcre2-$(PCRE_VER)/build-configured
+      $(MAKE) -C $(dir $<) $(LIBTOOL_CCLD)
+      echo 1 > $@
+
+    $(BUILDDIR)/pcre2-$(PCRE_VER)/build-checked: $(BUILDDIR)/pcre2-$(PCRE_VER)/build-compiled
+      $(MAKE) -C $(dir $@) check -j1
+
+    $(eval $(call staged-install, \
+      pcre,pcre2-$$(PCRE_VER), \
+      MAKE_INSTALL,$$(LIBTOOL_CCLD),, \
+      rm $$(build_shlibdir)/libpcre2-posix.* && \
+      $$(INSTALL_NAME_CMD)libpcre2-8.$$(SHLIB_EXT) $$(build_shlibdir)/libpcre2-8.$$(SHLIB_EXT)))
+}
+
+SUITESPARSE() {
+    ifeq ($(USE_BLAS64), 1)
+    UMFPACK_CONFIG := -DLONGBLAS='long long'
+    CHOLMOD_CONFIG := -DLONGBLAS='long long'
+    SPQR_CONFIG := -DLONGBLAS='long long'
+    ifeq ($(OPENBLAS_SYMBOLSUFFIX), 64_)
+    UMFPACK_CONFIG += -DSUN64
+    CHOLMOD_CONFIG += -DSUN64
+    SPQR_CONFIG += -DSUN64
+    endif
+    endif
+
+    # Disable trying to link against libmetis
+    CHOLMOD_CONFIG += -DNPARTITION
+
+    SUITESPARSE_PROJECTS := AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR
+    SUITESPARSE_LIBS := $(addsuffix .*$(SHLIB_EXT)*,suitesparseconfig amd btf camd ccolamd colamd cholmod klu ldl umfpack rbio spqr)
+
+    SUITE_SPARSE_LIB := $(LDFLAGS) -L"$(abspath $(BUILDDIR))/SuiteSparse-$(SUITESPARSE_VER)/lib"
+    SUITESPARSE_MFLAGS := CC="$(CC)" CXX="$(CXX)" F77="$(FC)" AR="$(AR)" RANLIB="$(RANLIB)" BLAS="$(LIBBLAS)" LAPACK="$(LIBLAPACK)" \
+        LDFLAGS="$(SUITE_SPARSE_LIB)" CFOPENMP="" CUDA=no CUDA_PATH="" \
+        UMFPACK_CONFIG="$(UMFPACK_CONFIG)" CHOLMOD_CONFIG="$(CHOLMOD_CONFIG)" SPQR_CONFIG="$(SPQR_CONFIG)"
+    SUITESPARSE_MFLAGS += UNAME=$(OS)
+
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/source-extracted: $(SRCCACHE)/SuiteSparse-$(SUITESPARSE_VER).tar.gz
+      $(JLCHECKSUM) $<
+      mkdir -p $(dir $@)
+      $(TAR) -C $(dir $@) --strip-components 1 -zxf $<
+      echo 1 > $@
+
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/SuiteSparse-winclang.patch-applied: $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/source-extracted
+      cd $(dir $@) && patch -p0 < $(SRCDIR)/patches/SuiteSparse-winclang.patch
+      echo 1 > $@
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/SuiteSparse-shlib.patch-applied: $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/source-extracted
+      cd $(dir $@) && patch -p1 < $(SRCDIR)/patches/SuiteSparse-shlib.patch
+      echo 1 > $@
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-compiled: $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/SuiteSparse-winclang.patch-applied
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-compiled: $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/SuiteSparse-shlib.patch-applied
+
+    ifeq ($(USE_SYSTEM_BLAS), 0)
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-compiled: | $(build_prefix)/manifest/openblas
+    else ifeq ($(USE_SYSTEM_LAPACK), 0)
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-compiled: | $(build_prefix)/manifest/lapack
+    endif
+
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-compiled: $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/source-extracted
+      $(MAKE) -C $(dir $<)SuiteSparse_config library config $(SUITESPARSE_MFLAGS)
+      $(INSTALL_NAME_CMD)libsuitesparseconfig.$(SHLIB_EXT) $(dir $<)lib/libsuitesparseconfig.$(SHLIB_EXT)
+      for PROJ in $(SUITESPARSE_PROJECTS); do \
+        $(MAKE) -C $(dir $<)$${PROJ} library $(SUITESPARSE_MFLAGS) || exit 1; \
+        $(INSTALL_NAME_CMD)lib`echo $${PROJ} | tr A-Z a-z`.$(SHLIB_EXT) $(dir $<)lib/lib`echo $${PROJ} | tr A-Z a-z`.$(SHLIB_EXT) || exit 1; \
+      done
+      echo 1 > $@
+
+    SUITESPARSE_SHLIB_ENV:=LD_LIBRARY_PATH="$(build_shlibdir)"
+    $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-checked: $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-compiled
+      for PROJ in $(SUITESPARSE_PROJECTS); do \
+        $(SUITESPARSE_SHLIB_ENV) $(MAKE) -C $(dir $<)$${PROJ} default $(SUITESPARSE_MFLAGS) || exit 1; \
+      done
+      echo 1 > $@
+
+    $(build_prefix)/manifest/suitesparse: $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/build-compiled | $(build_prefix)/manifest $(build_shlibdir)
+      for lib in $(SUITESPARSE_LIBS); do \
+        cp -a $(dir $<)lib/lib$${lib} $(build_shlibdir) || exit 1; \
+      done
+      #cp -a $(dir $<)lib/* $(build_shlibdir)
+      #cp -a $(dir $<)include/* $(build_includedir)
+      echo $(SUITESPARSE_VER) > $@
+
+    # SUITESPARSE WRAPPER
+
+    ifeq ($(USE_SYSTEM_SUITESPARSE), 1)
+    SUITESPARSE_INC := -I $(LOCALBASE)/include/suitesparse
+    SUITESPARSE_LIB := -lumfpack -lcholmod -lamd -lcamd -lcolamd -lspqr
+    else
+    SUITESPARSE_INC := -I $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/CHOLMOD/Include -I $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/SuiteSparse_config -I $(BUILDDIR)/SuiteSparse-$(SUITESPARSE_VER)/SPQR/Include
+    SUITESPARSE_LIB := -L$(build_shlibdir) -lcholmod -lumfpack -lspqr $(RPATH_ORIGIN)
+    $(build_shlibdir)/libsuitesparse_wrapper.$(SHLIB_EXT): $(build_prefix)/manifest/suitesparse
+    endif
+
+    $(build_shlibdir)/libsuitesparse_wrapper.$(SHLIB_EXT): $(SRCDIR)/SuiteSparse_wrapper.c
+      mkdir -p $(build_shlibdir)
+      $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -O2 -shared $(fPIC) $(SUITESPARSE_INC) $< -o $@ $(SUITESPARSE_LIB)
+      $(INSTALL_NAME_CMD)libsuitesparse_wrapper.$(SHLIB_EXT) $@
+      touch -c $@
 }

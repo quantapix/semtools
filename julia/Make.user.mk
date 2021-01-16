@@ -5,9 +5,10 @@ JULIA_CPU_TARGET=native
 
 prefix=/usr/local/julia
 
-# julia julia-common libdsfmt-19937-1 libgit2-28 libhttp-parser2.9 
-# libjulia1 libllvm8 libmbedcrypto3 libmbedtls12 libmbedx509-0
-# libopenlibm3 libssh2-1 libutf8proc2
+LLVM_VER = 11.0.1
+LLVM_CONFIG=/usr/bin/llvm-config-$(LLVM_VER) 
+LLVM_DEBUG = Release
+LLVM_ASSERTIONS = 1
 
 USE_BINARYBUILDER=0
 USE_BLAS64=1
@@ -47,24 +48,21 @@ USE_SYSTEM_UTF8PROC=1
 SHLIBDEPS += -lutf8proc
 USE_SYSTEM_ZLIB=1
 
-LLVM_VER = $(shell grep -e 'llvm-.*-dev' debian/control | cut -d- -f2)
-
-COMMON_FLAGS = \
-	sysconfdir=/etc \
-	LLVM_CONFIG=/usr/bin/llvm-config-$(LLVM_VER) \
-	LLVM_VER=$(LLVM_VER)
-
 ifeq ($(USE_INTEL_MKL),1)
-	COMMON_FLAGS += LIBBLAS=-lmkl_rt LIBBLASNAME=libmkl_rt \
-                	LIBLAPACK=-lmkl_rt LIBLAPACKNAME=libmkl_rt \
-									MKLROOT=/usr MKLLIB=/usr/lib/$(DEB_HOST_MULTIARCH)
+	LIBBLAS=-lmkl_rt LIBBLASNAME=libmkl_rt \
+  LIBLAPACK=-lmkl_rt LIBLAPACKNAME=libmkl_rt \
+	MKLROOT=/usr MKLLIB=/usr/lib/$(DEB_HOST_MULTIARCH)
 endif
 
-COMMON_FLAGS += LIBBLAS=-lblas LIBBLASNAME=libblas \
-                LIBLAPACK=-llapack LIBLAPACKNAME=liblapack
+LIBBLAS=-lblas LIBBLASNAME=libblas
+LIBLAPACK=-llapack LIBLAPACKNAME=liblapack
 
 export LC_ALL=C.UTF-8
 export HOME=/tmp
 
+# apt install p7zip patchelf
 
+# julia julia-common libdsfmt-19937-1 libgit2-28 libhttp-parser2.9 
+# libjulia1 libllvm8 libmbedcrypto3 libmbedtls12 libmbedx509-0
+# libopenlibm3 libssh2-1 libutf8proc2
 

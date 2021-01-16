@@ -23,41 +23,9 @@ INSTALL_M := $(JULIAHOME)/contrib/install.sh 755
 JLDOWNLOAD := $(JULIAHOME)/deps/tools/jldownload
 JLCHECKSUM := $(JULIAHOME)/deps/tools/jlchecksum
 
-JULIACODEGEN := LLVM
-
-ifeq ($(origin LLVM_CONFIG), undefined)
-ifeq ($(USE_SYSTEM_LLVM), 1)
-LLVM_CONFIG := llvm-config$(EXE)
-else
-LLVM_CONFIG := $(build_depsbindir)/llvm-config$(EXE)
-endif
-endif # LLVM_CONFIG undefined
-
 ifeq ($(USE_SYSTEM_LLVM), 1)
 JCPPFLAGS+=-DSYSTEM_LLVM
 endif # SYSTEM_LLVM
-
-# Windows builds need a little help finding the LLVM libraries for llvm-config
-LLVM_CONFIG_PATH_FIX :=
-ifeq ($(OS),WINNT)
-LLVM_CONFIG_PATH_FIX := PATH="$(PATH):$(build_bindir)"
-endif
-
-ifeq ($(BUILD_OS),$(OS))
-LLVM_CONFIG_HOST := $(LLVM_CONFIG)
-else
-LLVM_CONFIG_HOST := $(basename $(LLVM_CONFIG))-host$(BUILD_EXE)
-ifeq (exists, $(shell [ -f '$(LLVM_CONFIG_HOST)' ] && echo exists ))
-ifeq ($(shell $(LLVM_CONFIG_PATH_FIX) $(LLVM_CONFIG_HOST) --version),3.3)
-# llvm-config-host <= 3.3 is broken, use llvm-config instead (in an emulator)
-# use delayed expansion (= not :=) because spawn isn't defined until later
-LLVM_CONFIG_HOST = $(LLVM_CONFIG_PATH_FIX) $(call spawn,$(LLVM_CONFIG))
-endif
-else
-# llvm-config-host does not exist (cmake build)
-LLVM_CONFIG_HOST = $(LLVM_CONFIG_PATH_FIX) $(call spawn,$(LLVM_CONFIG))
-endif
-endif
 
 ifeq ($(USE_SYSTEM_PCRE), 1)
 PCRE_CONFIG := pcre2-config
@@ -85,15 +53,8 @@ endif
 endif
 
 ifeq ($(USE_SYSTEM_BLAS), 1)
-ifeq ($(OS), Darwin)
-USE_BLAS64 := 0
-USE_SYSTEM_LAPACK := 0
-LIBBLAS := -L$(build_libdir) -lgfortblas
-LIBBLASNAME := libgfortblas
-else
 LIBBLAS ?= -lblas
 LIBBLASNAME ?= libblas
-endif
 else
 LIBBLAS := -L$(build_shlibdir) -lopenblas
 LIBBLASNAME := libopenblas
@@ -138,17 +99,6 @@ else
   UTF8PROC_INC := $(build_includedir)
 endif
 
-# BinaryBuilder options.  We default to "on" for all the projects listed in BB_PROJECTS,
-# but only if contrib/normalize_triplet.py works for our requested triplet.
-ifeq ($(shell $(call invoke_python,$(JULIAHOME)/contrib/normalize_triplet.py) $(or $(XC_HOST),$(XC_HOST),$(BUILD_MACHINE)) >/dev/null 2>/dev/null; echo $$?),0)
-USE_BINARYBUILDER ?= 1
-else
-ifneq ($(shell $(call invoke_python,$(JULIAHOME)/contrib/normalize_triplet.py) x86_64-linux-gnu),x86_64-linux-gnu)
-$(warning normalize_triplet.py appears to be non-functional (used python interpreter "$(PYTHON)"), so BinaryBuilder disabled)
-endif
-USE_BINARYBUILDER ?= 0
-endif
-
 # Auto-detect triplet once, create different versions that we use as defaults below for each BB install target
 BB_TRIPLET_LIBGFORTRAN_CXXABI := $(shell $(call invoke_python,$(JULIAHOME)/contrib/normalize_triplet.py) $(or $(XC_HOST),$(XC_HOST),$(BUILD_MACHINE)) "$(shell $(FC) --version | head -1)" "$(or $(shell echo '\#include <string>' | $(CXX) $(CXXFLAGS) -x c++ -dM -E - | grep _GLIBCXX_USE_CXX11_ABI | awk '{ print $$3 }' ),1)")
 BB_TRIPLET_LIBGFORTRAN := $(subst $(SPACE),-,$(filter-out cxx%,$(subst -,$(SPACE),$(BB_TRIPLET_LIBGFORTRAN_CXXABI))))
@@ -171,12 +121,6 @@ endif
 endif
 endef
 $(foreach proj,$(BB_PROJECTS),$(eval $(call SET_BB_DEFAULT,$(proj))))
-
-
-
-# Use the Assertions build
-BINARYBUILDER_LLVM_ASSERTS ?= 0
-
 
 # ATLAS
 
@@ -207,7 +151,6 @@ LIBBLASNAME := $(LIBBLASNAME)$(OPENBLAS_LIBNAMESUFFIX)
 LIBLAPACKNAME := $(LIBBLASNAME)
 endif
 endif
-
 
 # Some special restrictions on BB usage:
 ifeq ($(USE_SYSTEM_BLAS),1)
