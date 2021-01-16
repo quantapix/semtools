@@ -5,7 +5,8 @@ JULIA_CPU_TARGET=native
 
 prefix=/usr/local/julia
 
-LLVM_VER = 11.0.1
+LLVM_VER = svn
+LLVM_GIT_VER = 11.0.1
 LLVM_CONFIG=/usr/bin/llvm-config-$(LLVM_VER) 
 LLVM_DEBUG = Release
 LLVM_ASSERTIONS = 1

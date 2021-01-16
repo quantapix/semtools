@@ -20,7 +20,8 @@ init() {
     UNWIND_BRANCH=v1.3.2
     UTF8PROC_BRANCH=v2.6.1
     ZLIB_BRANCH=v1.2.11
-
+    LLVM_RV_GIT_VER=release_90
+    
     CLANG_VER=11.0.1
     GMP_VER=6.2.0
     MPFR_VER=4.1.0
@@ -70,6 +71,7 @@ init() {
             git clone https://github.com/Reference-LAPACK/lapack.git
             git clone https://github.com/vtjnash/libwhich.git
             git clone https://github.com/xianyi/OpenBLAS.git
+            git clone https://github.com/cdl-saarland/rv
         )
     fi
     rm -rf srcs
@@ -98,6 +100,7 @@ init() {
         git clone -b $UNWIND_BRANCH --depth 1 ../upstream/libunwind
         git clone -b $UTF8PROC_BRANCH --depth 1 ../upstream/utf8proc
         git clone -b $ZLIB_BRANCH --depth 1 ../upstream/zlib
+        git clone -b $LLVM_RV_GIT_VER --depth 1 ../upstream/rv
     fi
 }
 

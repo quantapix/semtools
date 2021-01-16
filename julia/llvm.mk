@@ -1,53 +1,24 @@
-## LLVM ##
 LLVM_VER_MAJ:=$(word 1, $(subst ., ,$(LLVM_VER)))
 LLVM_VER_MIN:=$(word 2, $(subst ., ,$(LLVM_VER)))
-# define a "short" LLVM version for easy comparisons
-ifeq ($(LLVM_VER),svn)
 LLVM_VER_SHORT:=svn
-else
-LLVM_VER_SHORT:=$(LLVM_VER_MAJ).$(LLVM_VER_MIN)
-endif
 LLVM_VER_PATCH:=$(word 3, $(subst ., ,$(LLVM_VER)))
 ifeq ($(LLVM_VER_PATCH),)
-LLVM_VER_PATCH := 0
+LLVM_VER_PATCH:=0
 endif
 
 LLVM_GIT_URL ?= https://github.com/llvm/llvm-project.git
 
 ifeq ($(BUILD_LLDB), 1)
 BUILD_LLVM_CLANG := 1
-# because it's a build requirement
 endif
-
 ifeq ($(USE_RV),1)
 BUILD_LLVM_CLANG := 1
-# because it's a build requirement
 endif
-
-
-ifeq ($(USE_SYSTEM_LLVM),0)
-ifneq ($(LLVM_VER),svn)
-ifeq ($(USE_POLLY),1)
-$(error USE_POLLY=1 requires LLVM_VER=svn)
-endif
-
-ifeq ($(USE_MLIR),1)
-$(error USE_MLIR=1 requires LLVM_VER=svn)
-endif
-
-ifeq ($(USE_RV),1)
-$(error USE_RV=1 requires LLVM_VER=svn)
-endif
-endif
-endif
-
 ifneq ($(USE_RV),)
 LLVM_RV_GIT_URL ?= https://github.com/cdl-saarland/rv
 LLVM_RV_GIT_VER ?= release_90
 endif
 
-
-# for Monorepo
 LLVM_ENABLE_PROJECTS :=
 LLVM_EXTERNAL_PROJECTS :=
 ifeq ($(BUILD_LLVM_CLANG), 1)
@@ -88,17 +59,11 @@ LLVM_BUILDTYPE := $(LLVM_BUILDTYPE)+ASAN
 endif
 endif
 
-
-ifeq ($(LLVM_VER),svn)
 LLVM_BARESRC_DIR:=$(SRCCACHE)/llvm-project-bare
 LLVM_MONOSRC_DIR:=$(SRCCACHE)/llvm-project-$(LLVM_VER)-${LLVM_GIT_VER}
 LLVM_SRC_DIR:=$(LLVM_MONOSRC_DIR)/llvm
 LIBCXX_ROOT_DIR:=$(LLVM_MONOSRC_DIR)
-else
-LLVM_MONOSRC_DIR:=
-LLVM_SRC_DIR:=$(SRCCACHE)/llvm-$(LLVM_VER)
-LIBCXX_ROOT_DIR:=$(LLVM_SRC_DIR)/projects
-endif
+
 LLVM_BUILD_DIR:=$(BUILDDIR)/llvm-$(LLVM_VER)
 LLVM_BUILDDIR_withtype := $(LLVM_BUILD_DIR)/build_$(LLVM_BUILDTYPE)
 
@@ -111,32 +76,6 @@ LLVM_VER_SPLIT := $(subst -rc, ,$(LLVM_VER))
 LLVM_TAR_EXT:=$(word 1,$(LLVM_VER_SPLIT))rc$(word 2,$(LLVM_VER_SPLIT)).src.tar.xz
 endif
 
-ifneq ($(LLVM_VER),svn)
-LLVM_TAR:=$(SRCCACHE)/llvm-$(LLVM_TAR_EXT)
-
-ifeq ($(BUILD_LLDB),1)
-LLVM_LLDB_TAR:=$(SRCCACHE)/lldb-$(LLVM_TAR_EXT)
-endif # BUILD_LLDB
-
-ifeq ($(BUILD_LLVM_CLANG),1)
-ifeq ($(LLVM_VER_MAJ).$(LLVM_VER_MIN),9.0)
-LLVM_CLANG_TAR:=$(SRCCACHE)/cfe-$(LLVM_TAR_EXT)
-else
-LLVM_CLANG_TAR:=$(SRCCACHE)/clang-$(LLVM_TAR_EXT)
-endif
-LLVM_COMPILER_RT_TAR:=$(SRCCACHE)/compiler-rt-$(LLVM_TAR_EXT)
-else
-LLVM_CLANG_TAR:=
-LLVM_COMPILER_RT_TAR:=
-LLVM_LIBCXX_TAR:=
-endif # BUILD_LLVM_CLANG
-
-ifeq ($(BUILD_CUSTOM_LIBCXX),1)
-LLVM_LIBCXX_TAR:=$(SRCCACHE)/libcxx-$(LLVM_TAR_EXT)
-endif
-endif # LLVM_VER != svn
-
-# Figure out which targets to build
 LLVM_TARGETS := host;NVPTX;AMDGPU;WebAssembly;BPF
 
 LLVM_CFLAGS :=
@@ -145,18 +84,13 @@ LLVM_CPPFLAGS :=
 LLVM_LDFLAGS :=
 LLVM_CMAKE :=
 
-# MONOREPO
-ifeq ($(LLVM_VER),svn)
 LLVM_CMAKE += -DLLVM_ENABLE_PROJECTS="$(LLVM_ENABLE_PROJECTS)"
 LLVM_CMAKE += -DLLVM_EXTERNAL_PROJECTS="$(LLVM_EXTERNAL_PROJECTS)"
-
 ifeq ($(USE_RV),1)
 LLVM_CMAKE += -DLLVM_EXTERNAL_RV_SOURCE_DIR=$(LLVM_MONOSRC_DIR)/rv
 LLVM_CMAKE += -DLLVM_CXX_STD=c++14
 endif
-endif
 
-# Allow adding LLVM specific flags
 LLVM_CFLAGS += $(CFLAGS)
 LLVM_CXXFLAGS += $(CXXFLAGS)
 LLVM_CPPFLAGS += $(CPPFLAGS)
@@ -173,16 +107,10 @@ LLVM_CMAKE += -DLLVM_INCLUDE_UTILS=ON -DLLVM_INSTALL_UTILS=ON
 LLVM_CMAKE += -DLLVM_BINDINGS_LIST="" -DLLVM_INCLUDE_DOCS=Off -DLLVM_ENABLE_TERMINFO=Off -DHAVE_HISTEDIT_H=Off -DHAVE_LIBEDIT=Off
 ifeq ($(LLVM_ASSERTIONS), 1)
 LLVM_CMAKE += -DLLVM_ENABLE_ASSERTIONS:BOOL=ON
-endif # LLVM_ASSERTIONS
-ifeq ($(OS), WINNT)
-LLVM_CPPFLAGS += -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE
-endif # OS == WINNT
+endif
 ifneq ($(HOSTCC),$(CC))
 LLVM_CMAKE += -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_C_COMPILER=$$(which $(HOSTCC));-DCMAKE_CXX_COMPILER=$$(which $(HOSTCXX))"
 endif
-ifeq ($(OS), emscripten)
-LLVM_CMAKE += -DCMAKE_TOOLCHAIN_FILE=$(EMSCRIPTEN)/cmake/Modules/Platform/Emscripten.cmake -DLLVM_INCLUDE_TOOLS=OFF -DLLVM_BUILD_TOOLS=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_ENABLE_THREADS=OFF -DLLVM_BUILD_UTILS=OFF
-endif # OS == emscripten
 ifeq ($(USE_LLVM_SHLIB),1)
 # NOTE: we could also --disable-static here (on the condition we link tools
 #       against libLLVM) but there doesn't seem to be a CMake counterpart option
@@ -190,29 +118,21 @@ LLVM_CMAKE += -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON -DLLVM_LINK_LLVM_DYLIB:BOOL=ON
 endif
 ifeq ($(USE_INTEL_JITEVENTS), 1)
 LLVM_CMAKE += -DLLVM_USE_INTEL_JITEVENTS:BOOL=ON
-endif # USE_INTEL_JITEVENTS
-
+endif
 ifeq ($(USE_OPROFILE_JITEVENTS), 1)
 LLVM_CMAKE += -DLLVM_USE_OPROFILE:BOOL=ON
-endif # USE_OPROFILE_JITEVENTS
-
+endif
 ifeq ($(USE_PERF_JITEVENTS), 1)
 	LLVM_CMAKE += -DLLVM_USE_PERF:BOOL=ON
-endif # USE_PERF_JITEVENTS
+endif
 
 ifeq ($(BUILD_LLDB),1)
 ifeq ($(USECLANG),0)
 LLVM_CXXFLAGS += -std=c++0x
-endif # USECLANG
+endif
 ifeq ($(LLDB_DISABLE_PYTHON),1)
 LLVM_CXXFLAGS += -DLLDB_DISABLE_PYTHON
 LLVM_CMAKE += -DLLDB_DISABLE_PYTHON=ON
-endif # LLDB_DISABLE_PYTHON
-endif # BUILD_LLDB
-
-ifneq (,$(filter $(ARCH), powerpc64le ppc64le))
-ifeq (${USECLANG},0)
-LLVM_CXXFLAGS += -mminimal-toc
 endif
 endif
 
@@ -228,12 +148,12 @@ LLVM_LDFLAGS += -fsanitize=address
 LLVM_CXXFLAGS += -fsanitize=address
 LLVM_CMAKE += -DLLVM_USE_SANITIZER="Address"
 endif
-endif # LLVM_SANITIZE
+endif
 
 ifeq ($(LLVM_LTO),1)
 LLVM_CPPFLAGS += -flto
 LLVM_LDFLAGS += -flto
-endif # LLVM_LTO
+endif
 
 ifeq ($(fPIC),)
 LLVM_CMAKE += -DLLVM_ENABLE_PIC=OFF
@@ -249,59 +169,19 @@ LLVM_CPPFLAGS += -I$(build_includedir)
 # We don't want to link to libc++ while trying to build it, so we define these
 # flags separately so that we can still pass them to the main LLVM build
 LLVM_LIBCXX_LDFLAGS := -lc++ -lc++abi
-ifeq ($(USEICC),1)
-LLVM_LDFLAGS += -no_cpprt
-endif # USEICC
 else
 LLVM_LIBCXX_LDFLAGS :=
-endif # BUILD_CUSTOM_LIBCXX
+endif
 
 LLVM_CMAKE += -DCMAKE_C_FLAGS="$(LLVM_CPPFLAGS) $(LLVM_CFLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(LLVM_CPPFLAGS) $(LLVM_CXXFLAGS)"
-ifeq ($(OS),Darwin)
-# Explicitly use the default for -mmacosx-version-min=10.9 and later
-LLVM_CMAKE += -DLLVM_ENABLE_LIBCXX=ON
-endif
 
 ifeq ($(BUILD_LLVM_CLANG),0)
-# block default building of Clang
 LLVM_CMAKE += -DLLVM_TOOL_CLANG_BUILD=OFF
 LLVM_CMAKE += -DLLVM_TOOL_COMPILER_RT_BUILD=OFF
 endif
 ifeq ($(BUILD_LLDB),0)
-# block default building of lldb
 LLVM_CMAKE += -DLLVM_TOOL_LLDB_BUILD=OFF
-endif
-
-ifneq ($(LLVM_VER),svn)
-LLVM_SRC_URL := https://github.com/llvm/llvm-project/releases/download/llvmorg-$(LLVM_VER)
-
-ifneq ($(LLVM_CLANG_TAR),)
-$(LLVM_CLANG_TAR): | $(SRCCACHE)
-	$(JLDOWNLOAD) $@ $(LLVM_SRC_URL)/$(notdir $@)
-endif
-ifneq ($(LLVM_COMPILER_RT_TAR),)
-$(LLVM_COMPILER_RT_TAR): | $(SRCCACHE)
-	$(JLDOWNLOAD) $@ $(LLVM_SRC_URL)/$(notdir $@)
-endif
-
-ifneq ($(LLVM_LIBCXX_TAR),)
-$(LLVM_LIBCXX_TAR): | $(SRCCACHE)
-	$(JLDOWNLOAD) $@ $(LLVM_SRC_URL)/$(notdir $@)
-endif
-ifneq ($(LLVM_VER),svn)
-$(LLVM_TAR): | $(SRCCACHE)
-	$(JLDOWNLOAD) $@ $(LLVM_SRC_URL)/$(notdir $@)
-endif
-
-ifneq ($(LLVM_LLDB_TAR),)
-$(LLVM_LLDB_TAR): | $(SRCCACHE)
-	$(JLDOWNLOAD) $@ $(LLVM_SRC_URL)/$(notdir $@)
-endif
-ifeq ($(BUILD_LLDB),1)
-$(LLVM_SRC_DIR)/tools/lldb:
-$(LLVM_SRC_DIR)/source-extracted: $(LLVM_SRC_DIR)/tools/lldb
-endif
 endif
 
 # LLDB still relies on plenty of python 2.x infrastructure, without checking
@@ -316,26 +196,15 @@ $(llvm_python_workaround):
 
 ifeq ($(BUILD_CUSTOM_LIBCXX),1)
 
-# Take a snapshot of the CMake flags before linking to -lc++ and -lc++abi
-# These are added to the LLVM CMake flags further down
 LLVM_CMAKE_LIBCXX := $(LLVM_CMAKE) \
 	-DCMAKE_EXE_LINKER_FLAGS="$(LLVM_LDFLAGS)" \
 	-DCMAKE_SHARED_LINKER_FLAGS="$(LLVM_LDFLAGS)"
 
-ifeq ($(USEICC),1)
-LIBCXX_EXTRA_FLAGS := -Bstatic -lirc -Bdynamic
-endif
-
-# These libraries require unwind.h from the libunwind dependency
 ifeq ($(USE_SYSTEM_LIBUNWIND),0)
-ifeq ($(OS),Darwin)
-BUILT_UNWIND := $(build_prefix)/manifest/osxunwind
-else
 BUILT_UNWIND := $(build_prefix)/manifest/unwind
-endif # Darwin
 else
 BUILT_UNWIND :=
-endif # Building libunwind
+endif
 
 $(LIBCXX_ROOT_DIR)/libcxx: $(LLVM_LIBCXX_TAR) | $(LLVM_SRC_DIR)/source-extracted
 $(LIBCXX_ROOT_DIR)/libcxxabi: $(LLVM_LIBCXXABI_TAR) | $(LLVM_SRC_DIR)/source-extracted
@@ -380,15 +249,11 @@ distclean-libcxx:
 distclean-libcxxabi:
 	-rm -rf $(LLVM_LIBCXXABI_TAR) $(LLVM_SRC_DIR)/projects/libcxxabi $(LLVM_BUILD_DIR)/libcxxabi-build
 
-
 # We want to ensure that the libcxx linking flags don't get passed to the libcxx build, since it will
 # error on a fresh build
 LLVM_CMAKE += -DCMAKE_EXE_LINKER_FLAGS="$(LLVM_LDFLAGS) $(LLVM_LIBCXX_LDFLAGS)" \
 	-DCMAKE_SHARED_LINKER_FLAGS="$(LLVM_LDFLAGS) $(LLVM_LIBCXX_LDFLAGS)"
 
-# change the SONAME of Julia's private LLVM
-# i.e. libLLVM-6.0jl.so
-# see #32462
 LLVM_CMAKE += -DLLVM_VERSION_SUFFIX:STRING="jl"
 
 ifeq ($(BUILD_CUSTOM_LIBCXX),1)
@@ -396,86 +261,27 @@ LIBCXX_DEPENDENCY := $(build_libdir)/libc++abi.so.1.0 $(build_libdir)/libc++.so.
 get-llvm: get-libcxx get-libcxxabi
 endif
 
-checksum-llvm: $(LLVM_TAR) $(LLVM_CLANG_TAR) $(LLVM_COMPILER_RT_TAR) $(LLVM_LIBCXX_TAR) $(LLVM_LLDB_TAR)
-ifneq ($(LLVM_CLANG_TAR),)
-	$(JLCHECKSUM) $(LLVM_CLANG_TAR)
-endif
-ifneq ($(LLVM_COMPILER_RT_TAR),)
-	$(JLCHECKSUM) $(LLVM_COMPILER_RT_TAR)
-endif
-ifneq ($(LLVM_LIBCXX_TAR),)
-	$(JLCHECKSUM) $(LLVM_LIBCXX_TAR)
-endif
-ifneq ($(LLVM_VER),svn)
-	$(JLCHECKSUM) $(LLVM_TAR)
-endif
-ifneq ($(LLVM_LLDB_TAR),)
-	$(JLCHECKSUM) $(LLVM_LLDB_TAR)
-endif
-
 $(LLVM_SRC_DIR)/source-extracted: | $(LLVM_TAR) $(LLVM_CLANG_TAR) $(LLVM_COMPILER_RT_TAR) $(LLVM_LIBCXX_TAR) $(LLVM_LLDB_TAR)
-ifneq ($(LLVM_CLANG_TAR),)
-	$(JLCHECKSUM) $(LLVM_CLANG_TAR)
-endif
-ifneq ($(LLVM_COMPILER_RT_TAR),)
-	$(JLCHECKSUM) $(LLVM_COMPILER_RT_TAR)
-endif
-ifneq ($(LLVM_LIBCXX_TAR),)
-	$(JLCHECKSUM) $(LLVM_LIBCXX_TAR)
-endif
-ifneq ($(LLVM_VER),svn)
-	$(JLCHECKSUM) $(LLVM_TAR)
-endif
-ifneq ($(LLVM_LLDB_TAR),)
-	$(JLCHECKSUM) $(LLVM_LLDB_TAR)
-endif
 	-rm -rf $(LLVM_SRC_DIR)
-ifneq ($(LLVM_VER),svn)
-	mkdir -p $(LLVM_SRC_DIR)
-	$(TAR) -C $(LLVM_SRC_DIR) --strip-components 1 -xf $(LLVM_TAR)
-else
 	([ ! -d $(LLVM_BARESRC_DIR) ] && \
 		git clone --bare $(LLVM_GIT_URL) $(LLVM_BARESRC_DIR) ) || \
-		(cd $(LLVM_BARESRC_DIR) && \
-		git fetch)
+		(cd $(LLVM_BARESRC_DIR) && git fetch)
 	([ ! -d $(LLVM_MONOSRC_DIR) ] && \
 		git clone --dissociate --reference $(LLVM_BARESRC_DIR) $(LLVM_GIT_URL) $(LLVM_MONOSRC_DIR) ) || \
-		(cd $(LLVM_MONOSRC_DIR) && \
-		git pull --ff-only)
+		(cd $(LLVM_MONOSRC_DIR) && git pull --ff-only)
 ifneq ($(LLVM_GIT_VER),)
-	(cd $(LLVM_MONOSRC_DIR) && \
-		git checkout $(LLVM_GIT_VER))
-endif # LLVM_GIT_VER
-	# Debug output only. Disable pager and ignore error.
-	(cd $(LLVM_SRC_DIR) && \
-		git show HEAD --stat | cat) || true
+	(cd $(LLVM_MONOSRC_DIR) && git checkout $(LLVM_GIT_VER))
+endif
+	(cd $(LLVM_SRC_DIR) && git show HEAD --stat | cat) || true
 ifeq ($(USE_RV),1)
 	git clone -b $(LLVM_RV_GIT_VER) $(LLVM_RV_GIT_URL) $(LLVM_MONOSRC_DIR)/rv
-	(cd $(LLVM_MONOSRC_DIR)/rv && \
-		git submodule update --init) || true
+	(cd $(LLVM_MONOSRC_DIR)/rv && git submodule update --init) || true
 endif
-endif # LLVM_VER
-ifneq ($(LLVM_VER),svn)
-ifneq ($(LLVM_CLANG_TAR),)
-	mkdir -p $(LLVM_SRC_DIR)/tools/clang
-	$(TAR) -C $(LLVM_SRC_DIR)/tools/clang --strip-components 1 -xf $(LLVM_CLANG_TAR)
-endif # LLVM_CLANG_TAR
-ifneq ($(LLVM_COMPILER_RT_TAR),)
-	mkdir -p $(LLVM_SRC_DIR)/projects/compiler-rt
-	$(TAR) -C $(LLVM_SRC_DIR)/projects/compiler-rt --strip-components 1 -xf $(LLVM_COMPILER_RT_TAR)
-endif # LLVM_COMPILER_RT_TAR
-ifneq ($(LLVM_LLDB_TAR),)
-	mkdir -p $(LLVM_SRC_DIR)/tools/lldb
-	$(TAR) -C $(LLVM_SRC_DIR)/tools/lldb --strip-components 1 -xf $(LLVM_LLDB_TAR)
-endif # LLVM_LLDB_TAR
-endif # LLVM_VER
-	# touch some extra files to ensure bisect works pretty well
 	touch -c $(LLVM_SRC_DIR).extracted
 	touch -c $(LLVM_SRC_DIR)/configure
 	touch -c $(LLVM_SRC_DIR)/CMakeLists.txt
 	echo 1 > $@
 
-# Apply version-specific LLVM patches sequentially
 LLVM_PATCH_PREV :=
 define LLVM_PATCH
 $$(LLVM_SRC_DIR)/$1.patch-applied: $$(LLVM_SRC_DIR)/source-extracted | $$(SRCDIR)/patches/$1.patch $$(LLVM_PATCH_PREV)
@@ -514,12 +320,6 @@ $(eval $(call LLVM_PATCH,llvm-11-ppc-sp-from-bp)) # remove for LLVM 12
 $(eval $(call LLVM_PATCH,llvm-rGb498303066a6-gcc11-header-fix)) # remove for LLVM 12
 endif # LLVM_VER 11.0
 
-# Add a JL prefix to the version map. DO NOT REMOVE
-ifneq ($(LLVM_VER), svn)
-$(eval $(call LLVM_PATCH,llvm7-symver-jlprefix))
-endif
-
-# declare that all patches must be applied before running ./configure
 $(LLVM_BUILDDIR_withtype)/build-configured: | $(LLVM_PATCH_PREV)
 
 $(LLVM_BUILDDIR_withtype)/build-configured: $(LLVM_SRC_DIR)/source-extracted | $(llvm_python_workaround) $(LIBCXX_DEPENDENCY)
@@ -539,12 +339,9 @@ $(LLVM_BUILDDIR_withtype)/build-compiled: $(LLVM_BUILDDIR_withtype)/build-config
 	echo 1 > $@
 
 $(LLVM_BUILDDIR_withtype)/build-checked: $(LLVM_BUILDDIR_withtype)/build-compiled | $(llvm_python_workaround)
-ifeq ($(OS),$(BUILD_OS))
 	cd $(LLVM_BUILDDIR_withtype) && \
 		export PATH=$(llvm_python_workaround):"$$PATH" && \
 		  $(CMAKE) --build . --target check
-endif
-	echo 1 > $@
 
 $(build_prefix)/manifest/llvm: | $(llvm_python_workaround)
 
@@ -552,13 +349,6 @@ LLVM_INSTALL = \
 	cd $1 && mkdir -p $2$$(build_depsbindir) && \
     cp -r $$(LLVM_SRC_DIR)/utils/lit $2$$(build_depsbindir)/ && \
     $$(CMAKE) -DCMAKE_INSTALL_PREFIX="$2$$(build_prefix)" -P cmake_install.cmake
-ifeq ($(OS), WINNT)
-LLVM_INSTALL += && cp $2$$(build_shlibdir)/LLVM.dll $2$$(build_depsbindir)
-endif
-ifeq ($(OS),Darwin)
-# https://github.com/JuliaLang/julia/issues/29981
-LLVM_INSTALL += && ln -s libLLVM.dylib $2$$(build_shlibdir)/libLLVM-$$(LLVM_VER_SHORT).dylib
-endif
 
 $(eval $(call staged-install,llvm,llvm-$$(LLVM_VER)/build_$$(LLVM_BUILDTYPE), \
 	LLVM_INSTALL,,,))
@@ -570,12 +360,9 @@ fastcheck-llvm: #none
 check-llvm: $(LLVM_BUILDDIR_withtype)/build-checked
 #todo: LLVM make check target is broken on julia.mit.edu (and really slow elsewhere)
 
-
-ifeq ($(LLVM_VER),svn)
 update-llvm:
 	(cd $(LLVM_BARESRC_DIR) && \
 		git fetch)
 	(cd $(LLVM_MONOSRC_DIR) && \
 		git fetch $(LLVM_BARESRC_DIR) +refs/remotes/*:refs/remotes/* && \
 		git pull --ff-only)
-endif
