@@ -1,0 +1,11 @@
+{
+  "name": "Julia",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": { "VERSION": "new" }
+  },
+  "workspaceMount": "src=${localWorkspaceFolder}/julia/upstream,dst=/julia,type=bind,ro=true,consistency=cached",
+  "extensions": ["julialang.language-julia", "ms-vscode.cpptools"]
+  //"postCreateCommand": "/scripts/postcreate.jl",
+  //"remoteUser": "vscode"
+}
