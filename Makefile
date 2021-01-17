@@ -11,23 +11,39 @@ MAKEFLAGS += -rR
 .PHONY: all clean push pull run exec check checkrebuild pull-base ci $(NAMES) $(IMAGES)
 
 all: 
+	(cd ubuntu; \
+		docker build -t $(REG)/ubu-lts:$(TAG) --pull --target=ubu-lts $(ARGS) - < Dockerfile; \
+		docker push $(REG)/ubu-lts:$(TAG); \
+		\
+		docker build -t $(REG)/old-run:$(TAG) --pull --target=old-run $(ARGS) - < Dockerfile; \
+		docker push $(REG)/old-run:$(TAG); \
+		docker build -t $(REG)/old-dev:$(TAG) --pull --target=old-dev $(ARGS) - < Dockerfile; \
+		docker push $(REG)/old-dev:$(TAG); \
+		\
+		chmod u+x pkgs.sh; ./pkgs.sh -i; \
+		docker build -t $(REG)/new-run:$(TAG) --pull --target=new-run $(ARGS) .; \
+		docker push $(REG)/new-run:$(TAG); \
+		docker build -t $(REG)/new-dev:$(TAG) --pull --target=new-dev $(ARGS) .; \
+		docker push $(REG)/new-dev:$(TAG) \
+		)
+
 	(cd ubuntu/deps; \
 		docker build -t $(REG)/qpx-base:$(TAG) --pull --target=qpx-base $(ARGS) - < Dockerfile; \
-		docker push $(REG)/ubu-base:$(TAG); \
+		docker push $(REG)/old-run:$(TAG); \
 		docker build -t $(REG)/qpx-dev:$(TAG) --pull --target=qpx-dev $(ARGS) - < Dockerfile; \
-		docker push $(REG)/qpx-dev:$(TAG)
-		chmod u+x deps.sh; \
-		./deps.sh -i srcs; \
+		docker push $(REG)/qpx-dev:$(TAG); \
+		\
+		chmod u+x deps.sh; ./deps.sh -i srcs; \
 		docker build -t $(REG)/qpx_src:$(TAG) --pull --target=qpx_src $(ARGS) .; \
 		docker push $(REG)/qpx_src:$(TAG); \
 		)
 
 all2: 
 	(cd ubuntu; \
-		docker build -t $(REG)/ubu-base:$(TAG) --pull --target=ubu-base $(ARGS) - < Dockerfile; \
-		docker push $(REG)/ubu-base:$(TAG); \
-		docker build -t $(REG)/ubu-dev:$(TAG) --pull --target=ubu-dev $(ARGS) - < Dockerfile; \
-		docker push $(REG)/ubu-dev:$(TAG))
+		docker build -t $(REG)/old-run:$(TAG) --pull --target=old-run $(ARGS) - < Dockerfile; \
+		docker push $(REG)/old-run:$(TAG); \
+		docker build -t $(REG)/old-dev:$(TAG) --pull --target=old-dev $(ARGS) - < Dockerfile; \
+		docker push $(REG)/old-dev:$(TAG))
 	(cd julia; \
 		docker build -t $(REG)/jl_old_pkg:$(TAG) --pull --target=jl_old_pkg $(ARGS) .; \
 		docker push $(REG)/jl_old_pkg:$(TAG); \

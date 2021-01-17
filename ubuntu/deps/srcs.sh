@@ -84,3 +84,8 @@ main() {
 }
 
 main "$@"
+
+
+http://archive.ubuntu.com/ubuntu/pool/restricted/n/nvidia-graphics-drivers-460/nvidia-graphics-drivers-460_460.32.03.orig-amd64.tar.gz
+http://archive.ubuntu.com/ubuntu/pool/restricted/n/nvidia-graphics-drivers-460/nvidia-graphics-drivers-460_460.32.03.orig.tar.gz
+http://archive.ubuntu.com/ubuntu/pool/restricted/n/nvidia-graphics-drivers-460/nvidia-graphics-drivers-460_460.32.03-0ubuntu1.debian.tar.xz

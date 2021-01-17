@@ -2,7 +2,7 @@ ARG REG
 ARG VER
 ARG TAG
 
-FROM $REG/ubu-$VER:$TAG
+FROM ubuntu:hirsute
 
 # ARG INSTALL_ZSH="true"
 # ARG UPGRADE_PACKAGES="true"

@@ -28,8 +28,8 @@ load() {
     echo "${sha256_1} *julia.tar.gz" | sha256sum -c - || echo "${sha256_2} *julia.tar.gz" | sha256sum -c -
 
     export GNUPGHOME="$(mktemp -d)"
-    JULIA_GPG=3673DF529D9049477F76B37566E3C7DC03D6E495
-    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$JULIA_GPG"
+    GPG=3673DF529D9049477F76B37566E3C7DC03D6E495
+    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
     gpg --batch --verify julia.tar.gz.asc julia.tar.gz
     command -v gpgconf > /dev/null && gpgconf --kill all
     rm -rf "$GNUPGHOME"

@@ -1,45 +1,57 @@
 #!/bin/bash
-
-set -eux
+set -Eeuxo pipefail
 
 init() {
     mkdir -p pkgs
+    cd pkgs
+
+    base="ubuntu-hirsute-core-cloudimg-amd64"
+    tar="$base-root.tar.gz"
+    url="https://partner-images.canonical.com/core/hirsute/current"
+		wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
+		wget -N --progress=dot:giga "$url/$tar"
+
+  	export GNUPGHOME="$(mktemp -d)"
+    GPG=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
+	  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
+  	for s in sha256 sha1 md5; do
+        f="${s^^}SUMS"
+        gpg --batch --verify "$f.gpg" "$f"
+        c="${s}sum"
+        grep " *$tar\$" "$f" | "$c" -c -
+	  done
+    command -v gpgconf > /dev/null && gpgconf --kill all
+    rm -rf "$GNUPGHOME"
 }
 
 load() {
     aptMark="$(apt-mark showmanual)"
     if ! command -v gpg > /dev/null; then 
         apt-get update
-        apt-get install -y --no-install-recommends gnupg dirmngr
+        apt-get install -y --no-install-recommends wget gnupg dirmngr
         rm -rf /var/lib/apt/lists/*
     fi; 
 
-    JULIA_VERSION=$1
-    mkdir -p pkgs/$JULIA_VERSION
-    cd pkgs/$JULIA_VERSION
-    if [ ! -f julia.tar.gz ]; then
-        tarArch='x86_64'; dirArch='x64'; folder="$(echo "$JULIA_VERSION" | cut -d. -f1-2)"
-        curl -fL -o julia.tar.gz.asc "https://julialang-s3.julialang.org/bin/linux/${dirArch}/${folder}/julia-${JULIA_VERSION}-linux-${tarArch}.tar.gz.asc"
-        curl -fL -o julia.tar.gz     "https://julialang-s3.julialang.org/bin/linux/${dirArch}/${folder}/julia-${JULIA_VERSION}-linux-${tarArch}.tar.gz"
-    fi
+    base="ubuntu-hirsute-core-cloudimg-amd64"
+    tar="$base-root.tar.gz"
+    url="https://partner-images.canonical.com/core/hirsute/current"
 
-    sha256_1='f190c938dd6fed97021953240523c9db448ec0a6760b574afd4e9924ab5615f1' # 1.5.3
-    sha256_2='30b214c7f544c6589a20104eaa6764eb368cadac5fa834b7454b747043e5a2b8' # 1.6.0-beta1
-    echo "${sha256_1} *julia.tar.gz" | sha256sum -c - || echo "${sha256_2} *julia.tar.gz" | sha256sum -c -
+	  cd pkgs
+		wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
+		wget -N --progress=dot:giga "$url/$tar"
 
-    export GNUPGHOME="$(mktemp -d)"
-    JULIA_GPG=3673DF529D9049477F76B37566E3C7DC03D6E495
-    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$JULIA_GPG"
-    gpg --batch --verify julia.tar.gz.asc julia.tar.gz
+  	export GNUPGHOME="$(mktemp -d)"
+    GPG=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
+	  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
+  	for s in sha256 sha1 md5; do
+        f="${s^^}SUMS"
+        gpg --batch --verify "$f.gpg" "$f"
+        c="${s}sum"
+        grep " *$tar\$" "$f" | "$c" -c -
+	  done
     command -v gpgconf > /dev/null && gpgconf --kill all
     rm -rf "$GNUPGHOME"
-    # rm julia.tar.gz.asc
 
-    JULIA_PATH=$2
-    mkdir -p "$JULIA_PATH"
-    tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1
-    # rm julia.tar.gz
-      
     apt-mark auto '.*' > /dev/null
     [ -z "$aptMark" ] || apt-mark manual $aptMark
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
@@ -50,7 +62,7 @@ reset() {
 }
 
 show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-l] [-c] ver dst"
+    echo "Usage: $(basename "$0") [-i] [-l] [-c]"
 }
 
 main() {
@@ -71,7 +83,7 @@ main() {
           init
     fi
     if [[ -n "$LOAD" ]]; then
-          load $1 $2
+          load
     fi
     if [[ -n "$CLEAN" ]]; then
           clean

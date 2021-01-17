@@ -1,3 +1,11 @@
+qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
+qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
+qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
+qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
+qbrn.reg/clang: qbrn.reg/ubu-dev\:$TAG
+qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
+qbrn.reg/clang: qbrn.reg/ubu-dev\:$TAG
+qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
 qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
 qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
 qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
@@ -6,4 +14,9 @@ qbrn.reg/julia: qbrn.reg/ubu-dev\:$TAG
 qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
 qbrn.reg/julia: qbrn.reg/ubu-dev\:$TAG
 qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/ubuntu: qbrn.reg/ubu-base\:$TAG
+qbrn.reg/ubuntu: qbrn.reg/ubu-lts\:$TAG
+qbrn.reg/ubuntu: qbrn.reg/old-run\:$TAG
+qbrn.reg/ubuntu: qbrn.reg/new-run\:$TAG
+qbrn.reg/ubuntu\:deps: qbrn.reg/qpx-dev\:$TAG
+qbrn.reg/ubuntu\:deps: qbrn.reg/qpx-base\:$TAG
+qbrn.reg/ubuntu\:deps: qbrn.reg/qpx-base\:$TAG
