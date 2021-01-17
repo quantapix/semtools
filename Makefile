@@ -12,17 +12,16 @@ MAKEFLAGS += -rR
 
 all: 
 	(cd ubuntu; \
-		docker build -t $(REG)/ubu-lts:$(TAG) --pull --target=ubu-lts $(ARGS) - < Dockerfile; \
-		docker push $(REG)/ubu-lts:$(TAG); \
+		mkdir -p pkgs; \
+		docker build --pull --target=pkgs $(ARGS) -o pkgs .; \
 		\
-		docker build -t $(REG)/old-run:$(TAG) --pull --target=old-run $(ARGS) - < Dockerfile; \
-		docker push $(REG)/old-run:$(TAG); \
-		docker build -t $(REG)/old-dev:$(TAG) --pull --target=old-dev $(ARGS) - < Dockerfile; \
+		docker build -t $(REG)/old:$(TAG) --pull --target=old $(ARGS) .; \
+		docker push $(REG)/old:$(TAG); \
+		docker build -t $(REG)/old-dev:$(TAG) --pull --target=old-dev $(ARGS) .; \
 		docker push $(REG)/old-dev:$(TAG); \
 		\
-		chmod u+x pkgs.sh; ./pkgs.sh -i; \
-		docker build -t $(REG)/new-run:$(TAG) --pull --target=new-run $(ARGS) .; \
-		docker push $(REG)/new-run:$(TAG); \
+		docker build -t $(REG)/new:$(TAG) --pull --target=new $(ARGS) .; \
+		docker push $(REG)/new:$(TAG); \
 		docker build -t $(REG)/new-dev:$(TAG) --pull --target=new-dev $(ARGS) .; \
 		docker push $(REG)/new-dev:$(TAG) \
 		)

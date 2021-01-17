@@ -2,59 +2,52 @@
 set -Eeuxo pipefail
 
 init() {
-    mkdir -p pkgs/hirsute
-    cd pkgs/hirsute
-
-    base="ubuntu-hirsute-core-cloudimg-amd64"
-    tar="$base-root.tar.gz"
-    url="https://partner-images.canonical.com/core/hirsute/current"
-		wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
-		wget -N --progress=dot:giga "$url/$tar"
-
-  	export GNUPGHOME="$(mktemp -d)"
+    export GNUPGHOME="$(mktemp -d)"
     GPG=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
 	  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
-  	for sums in sha256 sha1 md5; do
-        file="${sums^}SUMS"
-        gpg --batch --verify "$file.gpg" "$file"
-        cmd="${sums}sum"
-        grep " *$tar\$" "$file" | "$cmd" -c -
-	  done
+
+    for v in focal hirsute; do
+        base="ubuntu-$v-core-cloudimg-amd64"
+        tar="$base-root.tar.gz"
+        url="https://partner-images.canonical.com/core/$v/current"
+        mkdir -p pkgs/$v
+        (cd pkgs/$v
+            wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
+            wget -N --progress=dot:giga "$url/$tar"
+            for s in sha256 sha1 md5; do
+                f="${s^^}SUMS"
+                gpg --batch --verify "$f.gpg" "$f"
+                c="${s}sum"
+                grep " *$tar\$" "$f" | "$c" -c -
+            done)
+    done
+
     command -v gpgconf > /dev/null && gpgconf --kill all
     rm -rf "$GNUPGHOME"
 }
 
 load() {
-    aptMark="$(apt-mark showmanual)"
-    if ! command -v gpg > /dev/null; then 
-        apt-get update
-        apt-get install -y --no-install-recommends wget gnupg dirmngr
-        rm -rf /var/lib/apt/lists/*
-    fi; 
+    echo '#!/bin/sh' > /usr/sbin/policy-rc.d
+    echo 'exit 101' >> /usr/sbin/policy-rc.d
+    chmod +x /usr/sbin/policy-rc.d
 
-    base="ubuntu-hirsute-core-cloudimg-amd64"
-    tar="$base-root.tar.gz"
-    url="https://partner-images.canonical.com/core/hirsute/current"
-
-	  cd pkgs/hirsute
-		wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
-		wget -N --progress=dot:giga "$url/$tar"
-
-  	export GNUPGHOME="$(mktemp -d)"
-    GPG=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
-	  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
-  	for s in sha256 sha1 md5; do
-        f="${s^^}SUMS"
-        gpg --batch --verify "$f.gpg" "$f"
-        c="${s}sum"
-        grep " *$tar\$" "$f" | "$c" -c -
-	  done
-    command -v gpgconf > /dev/null && gpgconf --kill all
-    rm -rf "$GNUPGHOME"
-
-    apt-mark auto '.*' > /dev/null
-    [ -z "$aptMark" ] || apt-mark manual $aptMark
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+    dpkg-divert --local --rename --add /sbin/initctl
+    cp -a /usr/sbin/policy-rc.d /sbin/initctl
+    sed -i 's/^exit.*/exit 0/' /sbin/initctl
+    
+    echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup
+  
+    echo 'DPkg::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' > /etc/apt/apt.conf.d/docker-clean
+    echo 'APT::Update::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' >> /etc/apt/apt.conf.d/docker-clean
+    echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' >> /etc/apt/apt.conf.d/docker-clean
+    
+    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/docker-no-languages
+    
+    echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes
+    
+    echo 'Apt::AutoRemove::SuggestsImportant "false";' > /etc/apt/apt.conf.d/docker-autoremove-suggests
+    [ -z "$(apt-get indextargets)" ]
+    mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 }
 
 reset() {
