@@ -30,7 +30,7 @@ WORKDIR /var/lib
 COPY pkgs.sh .
 RUN set -eux; \
     chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh; \
-    apt-get update && apt-get dist-upgrade -y --no-install-recommends; \
+    apt-get update && apt-get dist-upgrade -y --install-recommends; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as old
@@ -59,7 +59,7 @@ WORKDIR /var/lib
 COPY pkgs.sh .
 RUN set -eux; \
     chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh; \
-    apt-get update && apt-get dist-upgrade -y --no-install-recommends; \
+    apt-get update && apt-get dist-upgrade -y --install-recommends; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as new
