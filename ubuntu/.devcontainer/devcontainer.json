@@ -2,7 +2,7 @@
   "name": "Ubuntu",
   "build": {
     "dockerfile": "Dockerfile",
-    "args": { "REG": "qbrn.reg", "VER": "base", "TAG": "std" }
+    "args": { "REG": "qbrn.reg", "IMG": "new-run", "TAG": "std" }
   },
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash"

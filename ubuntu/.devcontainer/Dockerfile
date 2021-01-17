@@ -1,8 +1,8 @@
 ARG REG
-ARG VER
+ARG IMG
 ARG TAG
 
-FROM ubuntu:hirsute
+FROM $REG/$IMG:$TAG
 
 # ARG INSTALL_ZSH="true"
 # ARG UPGRADE_PACKAGES="true"

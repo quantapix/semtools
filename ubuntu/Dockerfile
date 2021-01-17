@@ -54,7 +54,7 @@ COPY --from=tmp-old-dev . .
 
 
 FROM scratch as tmp-new-run
-ADD pkgs/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
+ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 RUN set -xe \
 	\
 	&& echo '#!/bin/sh' > /usr/sbin/policy-rc.d \

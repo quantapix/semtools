@@ -2,8 +2,8 @@
 set -Eeuxo pipefail
 
 init() {
-    mkdir -p pkgs
-    cd pkgs
+    mkdir -p pkgs/hirsute
+    cd pkgs/hirsute
 
     base="ubuntu-hirsute-core-cloudimg-amd64"
     tar="$base-root.tar.gz"
@@ -14,11 +14,11 @@ init() {
   	export GNUPGHOME="$(mktemp -d)"
     GPG=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
 	  gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
-  	for s in sha256 sha1 md5; do
-        f="${s^^}SUMS"
-        gpg --batch --verify "$f.gpg" "$f"
-        c="${s}sum"
-        grep " *$tar\$" "$f" | "$c" -c -
+  	for sums in sha256 sha1 md5; do
+        file="${sums^}SUMS"
+        gpg --batch --verify "$file.gpg" "$file"
+        cmd="${sums}sum"
+        grep " *$tar\$" "$file" | "$cmd" -c -
 	  done
     command -v gpgconf > /dev/null && gpgconf --kill all
     rm -rf "$GNUPGHOME"
@@ -36,7 +36,7 @@ load() {
     tar="$base-root.tar.gz"
     url="https://partner-images.canonical.com/core/hirsute/current"
 
-	  cd pkgs
+	  cd pkgs/hirsute
 		wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
 		wget -N --progress=dot:giga "$url/$tar"
 
