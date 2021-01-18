@@ -1,3 +1,6 @@
+sudo apt-get update
+sudo apt-get install build-essential devscripts
+
 sudo ufw enable
 sudo ufw allow ssh
 # sudo ufw allow from 192.168.1.0/24
@@ -25,14 +28,14 @@ sudo systemctl enable docker
 
 # registry
 
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
+
 mkdir certs
 openssl req \
   -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key \
   -x509 -days 365 -out certs/domain.crt
 
 sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain certs/domain.crt
-
-docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
 docker run -d \
   --restart=always \
@@ -48,7 +51,8 @@ docker container stop registry && docker container rm -v registry
 
 # cuda
 
-sudo apt-get install build-essential linux-headers-$(uname -r)
+sudo apt-get update
+sudo apt-get install build-essential devscripts linux-headers-$(uname -r)
 
 /etc/modprobe.d/blacklist-nouveau.conf:
     blacklist nouveau

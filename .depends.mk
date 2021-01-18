@@ -1,21 +1,21 @@
-qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/clang: qbrn.reg/ubu-dev\:$TAG
-qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/clang: qbrn.reg/ubu-dev\:$TAG
-qbrn.reg/clang: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-dev\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-dev\:$TAG
-qbrn.reg/julia: qbrn.reg/ubu-base\:$TAG
-qbrn.reg/ubuntu: qbrn.reg/old\:$TAG
-qbrn.reg/ubuntu: qbrn.reg/new\:$TAG
-qbrn.reg/ubuntu\:deps: qbrn.reg/qpx-dev\:$TAG
-qbrn.reg/ubuntu\:deps: qbrn.reg/qpx-base\:$TAG
-qbrn.reg/ubuntu\:deps: qbrn.reg/qpx-base\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-dev\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-dev\:$TAG
+localhost\:5000 /clang: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-dev\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-dev\:$TAG
+localhost\:5000 /julia: localhost\:5000 /ubu-base\:$TAG
+localhost\:5000 /ubuntu: localhost\:5000 /old\:$TAG
+localhost\:5000 /ubuntu: localhost\:5000 /new\:$TAG
+localhost\:5000 /ubuntu\:deps: localhost\:5000 /qpx-dev\:$TAG
+localhost\:5000 /ubuntu\:deps: localhost\:5000 /qpx-base\:$TAG
+localhost\:5000 /ubuntu\:deps: localhost\:5000 /qpx-base\:$TAG

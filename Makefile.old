@@ -1,35 +1,26 @@
-REG?=localhost\:5000
+REG?=localhost\:5000 
 # REG?=qbrn.reg
 TAG=0
 ARGS=--build-arg REG=$(REG) --build-arg TAG=$(TAG)
 
 PKGS=$(shell find * -type f -name pkgs.sh)
 
+DOCKERFILES=$(shell find * -type f -name Dockerfile -not -path "*/.devcontainer/*" -not -path "other/*")
+NAMES=$(subst /,\:,$(subst /Dockerfile,,$(DOCKERFILES)))
+IMAGES=$(addprefix $(subst :,\:,$(REG))/,$(NAMES))
+DEPENDS=.depends.mk
 MAKEFLAGS += -rR
 
-.PHONY: all clean pkgs
+.PHONY: all clean push pull run exec check checkrebuild pull-base ci $(NAMES) $(IMAGES)
 
 pkgs: 
-	DF=$(shell pwd)/Dockerfile; \
-	docker build -t $(REG)/ubu:$(TAG) --pull --target=ubu $(ARGS) - < $$DF; \
-	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
-		echo $$d; \
-		(cd $$d; \
+		echo $d; \
+		(cd $d; \
 			mkdir -p pkgs; \
-			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
-		) \
-	done
+		)
 
-clean-pkgs: 
-	for d in $(subst /pkgs.sh,,$(PKGS)); do \
-		echo $$d; \
-		(cd $$d; \
-			echo ./pkgs.sh -c; \
-		) \
-	done
-
-imgs: 
+all: 
 	(cd ubuntu; \
 		mkdir -p pkgs; \
 		docker build --pull --target=pkgs $(ARGS) -o pkgs .; \
@@ -56,7 +47,7 @@ imgs:
 		docker push $(REG)/qpx_src:$(TAG); \
 		)
 
-imgs2: 
+all2: 
 	(cd ubuntu; \
 		docker build -t $(REG)/old-run:$(TAG) --pull --target=old-run $(ARGS) - < Dockerfile; \
 		docker push $(REG)/old-run:$(TAG); \
@@ -78,3 +69,48 @@ imgs2:
 # all3: $(NAMES)
 
 clean:
+	rm -f $(DEPENDS)
+
+pull-base:
+	# used by debian:buster-slim
+	docker pull debian:buster-slim
+	# used by keycloak
+	docker pull jboss/keycloak:12.0.1
+	# imago
+	docker pull philpep/imago
+
+ci:
+	$(MAKE) pull-base checkrebuild push all
+
+.PHONY: $(DEPENDS)
+$(DEPENDS): $(DOCKERFILES)
+	grep '^FROM \$$REG/' $(DOCKERFILES) | \
+		awk -F '/Dockerfile:FROM \\$$REG/' '{ print $$1 " " $$2 }' | \
+		sed 's@[:/]@\\:@g' | awk '{ print "$(subst :,\\:,$(REG))/" $$1 ": " "$(subst :,\\:,$(REG))/" $$2 }' > $@
+
+sinclude $(DEPENDS)
+
+$(NAMES): %: $(REG)/%
+ifeq (push,$(filter push,$(MAKECMDGOALS)))
+	docker push $<
+endif
+ifeq (run,$(filter run,$(MAKECMDGOALS)))
+	docker run --rm -it $<
+endif
+ifeq (exec,$(filter exec,$(MAKECMDGOALS)))
+	docker run --entrypoint sh --rm -it $<
+endif
+ifeq (check,$(filter check,$(MAKECMDGOALS)))
+	duuh $<
+endif
+
+$(IMAGES): %:
+ifeq (pull,$(filter pull,$(MAKECMDGOALS)))
+	docker pull $@
+else
+	docker build --build-arg REG=$(REG) -t $@ $(subst :,/,$(subst $(REG)/,,$@))
+endif
+ifeq (checkrebuild,$(filter checkrebuild,$(MAKECMDGOALS)))
+	which duuh >/dev/null || (>&2 echo "checkrebuild require duuh command to be installed in PATH" && exit 1)
+	duuh $@ || (docker build --build-arg REG=$(REG) --no-cache -t $@ $(subst :,/,$(subst $(REG)/,,$@)) && duuh $@)
+endif
