@@ -1,0 +1,87 @@
+
+# cuda
+
+sudo apt-get install build-essential linux-headers-$(uname -r)
+
+/etc/modprobe.d/blacklist-nouveau.conf:
+    blacklist nouveau
+    options nouveau modeset=0
+sudo update-initramfs -u
+
+sudo apt-get update
+sudo apt-get install nvidia-headless-460
+sudo apt-get install linux-modules-nvidia-460-generic-hwe-20.04
+sudo apt-get install nvidia-utils-460 libnvidia-common-460 libnvidia-extra-460
+
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID | sed -e 's/\.//g')
+wget https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/cuda-$distribution.pin
+sudo mv cuda-$distribution.pin /etc/apt/preferences.d/cuda-repository-pin-600
+
+# sudo apt-get install cuda-drivers
+
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/7fa2af80.pub
+echo "deb http://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
+
+# wget https://developer.download.nvidia.com/compute/cuda/11.2.0/local_installers/cuda-repo-ubuntu2004-11-2-local_11.2.0-460.27.04-1_amd64.deb
+# sudo dpkg -i cuda-repo-ubuntu2004-11-2-local_11.2.0-460.27.04-1_amd64.deb
+# sudo apt-key add /var/cuda-repo-ubuntu2004-11-2-local/7fa2af80.pub
+# sudo apt-get update
+# sudo apt-get install cuda
+
+wget https://developer.download.nvidia.com/compute/cuda/11.2.0/local_installers/cuda_11.2.0_460.27.04_linux.run
+sudo sh cuda_11.2.0_460.27.04_linux.run
+
+# nvidia-docker
+
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+   && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
+   && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+sudo apt-get update
+sudo apt-get install nvidia-docker2
+
+/etc/docker/daemon.json:
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "features": { "buildkit": true }
+}
+sudo systemctl restart docker
+
+sudo docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+
+# docker
+
+/etc/docker/daemon.json:
+    { "features": { "buildkit": true } }
+
+# registry
+
+mkdir certs
+openssl req \
+  -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key \
+  -x509 -days 365 -out certs/domain.crt
+
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain certs/domain.crt
+
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
+
+docker run -d \
+  --restart=always \
+  --name registry \
+  -v "$(pwd)"/certs:/certs \
+  -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+  -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+  -p 443:443 \
+  registry:2
+
+docker container stop registry && docker container rm -v registry
+
+
+mkdir -p $GOPATH/src/github.com/docker
+cd $GOPATH/src/github.com/docker
+git clone https://github.com/docker/distribution.git
