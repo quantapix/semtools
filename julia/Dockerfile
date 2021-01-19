@@ -1,3 +1,5 @@
+# julia
+
 ARG REG
 ARG TAG
 
@@ -15,6 +17,7 @@ ENV JULIA_PATH /usr/local/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_old_pkg ${JULIA_PATH} ${JULIA_PATH}
 
+
 FROM $REG/pkg-dev:$TAG AS tmp_new_pkg
 ENV VER=1.6.0-beta1
 ENV DST=/usr/local/julia/
@@ -28,6 +31,7 @@ ENV JULIA_VERSION=1.6.0-beta1
 ENV JULIA_PATH /usr/local/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_new_pkg ${JULIA_PATH} ${JULIA_PATH}
+
 
 FROM $REG/pkg-dev:$TAG AS tmp_old_src
 ENV VER=1.6.0-beta1
@@ -44,6 +48,7 @@ ENV JULIA_VERSION=1.6.0-beta1
 ENV JULIA_PATH /usr/local/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_old_src ${JULIA_PATH} ${JULIA_PATH}
+
 
 FROM $REG/src-dev:$TAG AS tmp_new_src
 ENV VER=1.7.0-dev

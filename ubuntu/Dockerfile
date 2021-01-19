@@ -1,3 +1,5 @@
+# ubuntu
+
 ARG REG
 ARG TAG
 
@@ -24,6 +26,7 @@ RUN set -ex; \
     ca-certificates \
     devscripts \
     git \
+    pkg-config \
 	; \
 	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
@@ -53,6 +56,7 @@ RUN set -ex; \
     ca-certificates \
     devscripts \
     git \
+    pkg-config \
 	; \
 	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 

@@ -10,15 +10,16 @@ init() {
     sha256_2='30b214c7f544c6589a20104eaa6764eb368cadac5fa834b7454b747043e5a2b8' # 1.6.0-beta1
 
     for v in 1.5.3 1.6.0-beta1; do
-        mkdir -p pkgs/$v
-        (cd pkgs/$v
-            if [ ! -f julia.tar.gz ]; then
-                t='x86_64'; d='x64'; f="$(echo "$v" | cut -d. -f1-2)"
-                curl -fL -o julia.tar.gz.asc "https://julialang-s3.julialang.org/bin/linux/${d}/${f}/julia-${v}-linux-${t}.tar.gz.asc"
-                curl -fL -o julia.tar.gz     "https://julialang-s3.julialang.org/bin/linux/${d}/${f}/julia-${v}-linux-${t}.tar.gz"
-            fi
-            gpg --batch --verify julia.tar.gz.asc julia.tar.gz || exit
-            echo "${sha256_1} *julia.tar.gz" | sha256sum -c - || echo "${sha256_2} *julia.tar.gz" | sha256sum -c - || exit
+        tar="julia-$v-linux-x86_64.tar.gz"
+        d="$(echo "$v" | cut -d. -f1-2)"
+        url="https://julialang-s3.julialang.org/bin/linux/x64/$d"
+        
+        mkdir -p pkgs
+        (cd pkgs
+            wget -qN "$url/$tar.asc"
+	          wget -N --progress=dot:giga "$url/$tar" 
+            gpg --batch --verify "$tar.asc" "$tar" || exit
+            echo "${sha256_1} *$tar" | sha256sum -c - || echo "${sha256_2} *$tar" | sha256sum -c - || exit
         )
     done
 
@@ -27,10 +28,9 @@ init() {
 }
 
 load() {
-    cd pkgs/$1 || exit
-    DST=$2
-    mkdir -p "$DST"
-    tar -xzf julia.tar.gz -C "$DST" --strip-components 1
+    cd pkgs || exit
+    mkdir -p "$2"
+    tar -xzf "julia-$1-linux-x86_64.tar.gz" -C "$2" --strip-components 1
 }
 
 clean() {

@@ -7,13 +7,13 @@ init() {
 	  gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
 
     for v in focal hirsute; do
-        base="ubuntu-$v-core-cloudimg-amd64"
-        tar="$base-root.tar.gz"
+        b="ubuntu-$v-core-cloudimg-amd64"
+        tar="$b-root.tar.gz"
         url="https://partner-images.canonical.com/core/$v/current"
         
         mkdir -p pkgs/$v
         (cd pkgs/$v
-            wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
+            wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$b.manifest",'unpacked/build-info.txt'}
             wget -N --progress=dot:giga "$url/$tar"
             for s in sha256 sha1 md5; do
                 f="${s^^}SUMS"
