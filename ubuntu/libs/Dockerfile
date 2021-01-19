@@ -17,7 +17,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
 COPY pkgs.sh .
 RUN chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh
-COPY srcs srcs
+COPY srcs .
 COPY srcs.sh .
 RUN chmod u+x srcs.sh; ./srcs.sh -b; rm srcs.sh
 

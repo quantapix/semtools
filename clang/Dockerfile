@@ -5,7 +5,7 @@ FROM $REG/ubu-base:$TAG AS tmp_old_pkg
 ENV VER=1.5.3
 ENV DST=/usr/local/julia/
 WORKDIR /var/lib/julia
-COPY pkgs pkgs
+COPY pkgs .
 COPY pkgs.sh .
 RUN chmod u+x pkgs.sh; ./pkgs.sh -l ${VER} ${DST}
 
@@ -19,7 +19,7 @@ FROM $REG/ubu-base:$TAG AS tmp_new_pkg
 ENV VER=1.6.0-beta1
 ENV DST=/usr/local/julia/
 WORKDIR /var/lib/julia
-COPY pkgs pkgs
+COPY pkgs .
 COPY pkgs.sh .
 RUN chmod u+x pkgs.sh; ./pkgs.sh -l ${VER} ${DST}
 
@@ -35,7 +35,7 @@ ENV DST /usr/local/julia/
 WORKDIR /var/lib/julia
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b old ${DST}
-COPY srcs srcs
+COPY srcs .
 COPY srcs.sh .
 RUN chmod u+x srcs.sh; ./srcs.sh -b old ${DST}
 
@@ -51,7 +51,7 @@ ENV DST /usr/local/julia/
 WORKDIR /var/lib/julia
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b new ${DST}
-COPY srcs srcs
+COPY srcs .
 COPY srcs.sh .
 RUN chmod u+x srcs.sh; ./srcs.sh -b new ${DST}
 
