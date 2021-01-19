@@ -1,6 +1,8 @@
 #!/bin/bash
 set -Eeuo pipefail
 
+# ubuntu/libs
+
 init() {
     if [ ! -e upstream ]; then
         mkdir upstream
@@ -45,41 +47,10 @@ init() {
     fi
 }
 
-build() {
-    echo "build"
+run() {
+    echo "run"
 }
 
 clean() {
     rm -rf srcs
 }
-
-show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-b] [-c] {pull|srcs} dst"
-}
-
-main() {
-    local OPTIND=1
-    local INIT=
-    local BUILD=
-    local CLEAN=
-    while getopts "ibch" opt; do
-        case $opt in
-            i) INIT=true;;
-            b) BUILD=true;;
-            c) CLEAN=true;;
-            *) show_usage; return 1;;
-        esac
-    done
-    shift $((OPTIND-1))
-    if [[ -n "$INIT" ]]; then
-        init $1
-    fi
-    if [[ -n "$BUILD" ]]; then
-        build $2
-    fi
-    if [[ -n "$CLEAN" ]]; then
-        clean
-    fi
-}
-
-main "$@"

@@ -7,8 +7,8 @@ ARG TAG
 FROM $REG/old-dev:$TAG AS tmp-pkg-dev
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
-COPY pkgs.sh .
-RUN chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh
+COPY pkgs .
+RUN pkgs/run.sh -r; rm pkgs/run.sh
 
 FROM scratch as pkg-dev
 COPY --from=tmp-pkg-dev . .
@@ -17,11 +17,10 @@ COPY --from=tmp-pkg-dev . .
 FROM $REG/new-dev:$TAG AS tmp-src-dev
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
-COPY pkgs.sh .
-RUN chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh
+COPY pkgs .
+RUN pkgs/run.sh -r; rm pkgs/run.sh
 COPY srcs .
-COPY srcs.sh .
-RUN chmod u+x srcs.sh; ./srcs.sh -b; rm srcs.sh
+RUN srcs/run.sh -r; rm srcs/run.sh
 
 FROM $REG/new-dev:$TAG AS src-dev
 COPY --from=tmp-src-dev /usr/local /usr/local

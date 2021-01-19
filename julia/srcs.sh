@@ -1,5 +1,4 @@
-#!/bin/bash
-set -Eeuo pipefail
+# julia
 
 init() {
     if [ ! -e upstream ]; then
@@ -19,48 +18,23 @@ init() {
     fi
 }
 
-build() {
+run() {
+    goEnv="$(go env | sed -rn -e '/^GO(OS|ARCH|ARM|386)=/s//export \0/p')"
+		eval "$goEnv"; [ -n "$GOOS" ]; [ -n "$GOARCH" ]
     cd srcs
-    make -j $(nproc)
-    make install prefix=$1
+		./make.bash
+    go install std
+		go install -race std
+		rm -rf \
+			/usr/local/go/pkg/*/cmd \
+			/usr/local/go/pkg/bootstrap \
+			/usr/local/go/pkg/obj \
+			/usr/local/go/pkg/tool/*/api \
+			/usr/local/go/pkg/tool/*/go_bootstrap \
+			/usr/local/go/src/cmd/dist/dist \
+    go version
 }
 
 clean() {
     rm -rf srcs
 }
-
-show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-b] [-c] {old|new|pull} dst"
-}
-
-main() {
-    local OPTIND=1
-    local INIT=
-    local BUILD=
-    local CLEAN=
-    while getopts "ibch" opt; do
-        case $opt in
-            i) INIT=true;;
-            b) BUILD=true;;
-            c) CLEAN=true;;
-            *) show_usage; return 1;;
-        esac
-    done
-    shift $((OPTIND-1))
-    if [[ -n "$INIT" ]]; then
-        case "$1" in
-            old) init "qold";;
-            new) init "qnew";;
-            pull) init $1;;
-            *) show_usage; exit 1;;
-        esac
-    fi
-    if [[ -n "$BUILD" ]]; then
-        build $2
-    fi
-    if [[ -n "$CLEAN" ]]; then
-        clean
-    fi
-}
-
-main "$@"

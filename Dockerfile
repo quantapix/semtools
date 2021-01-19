@@ -19,8 +19,7 @@ RUN set -eux; \
 FROM $REG/ubu:$TAG AS tmp-pkgs
 WORKDIR /tmp
 COPY pkgs .
-COPY pkgs.sh .
-RUN chmod u+x pkgs.sh; ./pkgs.sh -i
+RUN pkgs/run.sh -i load; rm pkgs/run.sh
 
 FROM scratch as pkgs
 COPY --from=tmp-pkgs /tmp/pkgs /

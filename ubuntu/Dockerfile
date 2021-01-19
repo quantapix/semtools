@@ -8,9 +8,9 @@ FROM scratch as tmp-old
 ENV DEBIAN_FRONTEND=noninteractive
 ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
-COPY pkgs.sh .
+COPY pkgs .
 RUN set -eux; \
-    chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh; \
+    pkgs/run.sh -r; rm pkgs.sh; \
     apt-get update && apt-get dist-upgrade -y --install-recommends; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
@@ -38,9 +38,9 @@ FROM scratch as tmp-new
 ENV DEBIAN_FRONTEND=noninteractive
 ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
-COPY pkgs.sh .
+COPY pkgs .
 RUN set -eux; \
-    chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh; \
+    pkgs/run.sh -r; rm pkgs.sh; \
     apt-get update && apt-get dist-upgrade -y --install-recommends; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 

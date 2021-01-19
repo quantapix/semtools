@@ -1,7 +1,4 @@
-#!/bin/bash
-
 # golang
-set -Eeuxo pipefail
 
 init() {
     export GNUPGHOME="$(mktemp -d)"
@@ -26,7 +23,7 @@ init() {
     rm -rf "$GNUPGHOME"
 }
 
-load() {
+run() {
     cd pkgs || exit
     mkdir -p "$2"
     tar -xzf "go$1.linux-amd64.tar.gz" -C "$2"
@@ -35,34 +32,3 @@ load() {
 clean() {
     rm -rf pkgs
 }
-
-show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-l] [-c] ver dst"
-}
-
-main() {
-    local OPTIND=1
-    local INIT=
-    local LOAD=
-    local CLEAN=
-    while getopts "ilch" opt; do
-        case $opt in
-            i) INIT=true;;
-            l) LOAD=true;;
-            c) CLEAN=true;;
-            *) show_usage; return 1;;
-        esac
-    done
-    shift $((OPTIND-1))
-    if [[ -n "$INIT" ]]; then
-        init
-    fi
-    if [[ -n "$LOAD" ]]; then
-        load $1 $2
-    fi
-    if [[ -n "$CLEAN" ]]; then
-        clean
-    fi
-}
-
-main "$@"

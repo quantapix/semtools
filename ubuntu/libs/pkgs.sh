@@ -1,11 +1,10 @@
-#!/bin/bash
-set -Eeuxo pipefail
+# ubuntu/libs
 
 init() {
     mkdir -p pkgs
 }
 
-load() {
+run() {
 	  apt-get update
     apt-get install -y --no-install-recommends \
         autoconf \
@@ -61,34 +60,3 @@ load() {
 clean() {
     rm -rf pkgs
 }
-
-show_usage() {
-    echo "Usage: $(basename "$0") [-i] [-l] [-c]"
-}
-
-main() {
-    local OPTIND=1
-    local INIT=
-    local LOAD=
-    local CLEAN=
-    while getopts "ilch" opt; do
-              case $opt in
-                  i) INIT=true;;
-                  l) LOAD=true;;
-                  c) CLEAN=true;;
-                  *) show_usage; return 1;;
-              esac
-    done
-    shift $((OPTIND-1))
-    if [[ -n "$INIT" ]]; then
-        init
-    fi
-    if [[ -n "$LOAD" ]]; then
-        load
-    fi
-    if [[ -n "$CLEAN" ]]; then
-        clean
-    fi
-}
-
-main "$@"

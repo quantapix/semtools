@@ -7,6 +7,8 @@ IMGS=$(shell find * -type f -name imgs.sh)
 PKGS=$(shell find * -type f -name pkgs.sh)
 SRCS=$(shell find * -type f -name srcs.sh)
 
+UTIL=$(pwd)/base.sh
+
 MAKEFLAGS += -rR
 
 .PHONY: all clean pkgs
@@ -17,24 +19,30 @@ pkgs:
 	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
 		(cd $$d || exit; \
-			mkdir -p pkgs; \
+			$(UTIL) -s pkgs; \
 			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
 		) \
 	done
 
 clean-pkgs: 
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
-		(cd $$d || exit; ./pkgs.sh -c) \
+		(cd $$d || exit; \
+		$(UTIL) -s pkgs; \
+		pkgs/run.sh -c) \
 	done
 
 srcs: 
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
-		(cd $$d || exit; chmod u+x srcs.sh; ./srcs.sh -i pull) \
+		(cd $$d || exit; \
+		$(UTIL) -s srcs; \
+		srcs/run.sh -i pull) \
 	done
 
 clean-srcs: 
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
-		(cd $$d || exit; ./srcs.sh -c) \
+		(cd $$d || exit; \
+		$(UTIL) -s srcs; \
+		srcs/run.sh -c) \
 	done
 
 imgs: pkgs srcs
@@ -54,7 +62,8 @@ imgs2:
 	(cd ubuntu/libs; \
 		docker build -t $(REG)/pkg-dev:$(TAG) --pull --target=pkg-dev $(ARGS) .; \
 		docker push $(REG)/pkg-dev:$(TAG); \
-		chmod u+x srcs.sh; ./srcs.sh -i srcs; \
+		$(UTIL) -s srcs; \
+		srcs/run.sh -i srcs; \
 		docker build -t $(REG)/src-dev:$(TAG) --pull --target=src-dev $(ARGS) .; \
 		docker push $(REG)/src-dev:$(TAG); \
 	)
