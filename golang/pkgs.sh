@@ -18,6 +18,7 @@ init() {
         wget -qN "$url/$tar.asc"
 	      wget -N --progress=dot:giga "$url/$tar" 
         gpg --batch --verify "$tar.asc" "$tar" || exit
+        rm "$tar.asc"
 	      echo "$sha256 *$tar" | sha256sum -c - || exit
     )
 
