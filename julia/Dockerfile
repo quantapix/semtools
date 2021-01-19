@@ -1,62 +1,62 @@
 ARG REG
 ARG TAG
 
-FROM $REG/ubu-base:$TAG AS tmp_old_pkg
+FROM $REG/pkg-dev:$TAG AS tmp_old_pkg
 ENV VER=1.5.3
-ENV DST=/usr/local/julia/
-WORKDIR /var/lib/julia
+ENV DST=/qpx/pkg/old/julia/
+WORKDIR /tmp
 COPY pkgs pkgs
 COPY pkgs.sh .
 RUN chmod u+x pkgs.sh; ./pkgs.sh -l ${VER} ${DST}
 
-FROM $REG/ubu-base:$TAG AS jl_old_pkg
+FROM $REG/old:$TAG AS jl_old_pkg
 ENV JULIA_VERSION=1.5.3
-ENV JULIA_PATH /usr/local/julia/
+ENV JULIA_PATH /qpx/pkg/old/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_old_pkg ${JULIA_PATH} ${JULIA_PATH}
 
-FROM $REG/ubu-base:$TAG AS tmp_new_pkg
+FROM $REG/pkg-dev:$TAG AS tmp_new_pkg
 ENV VER=1.6.0-beta1
-ENV DST=/usr/local/julia/
-WORKDIR /var/lib/julia
+ENV DST=/qpx/pkg/new/julia/
+WORKDIR /tmp
 COPY pkgs pkgs
 COPY pkgs.sh .
 RUN chmod u+x pkgs.sh; ./pkgs.sh -l ${VER} ${DST}
 
-FROM $REG/ubu-base:$TAG AS jl_new_pkg
+FROM $REG/old:$TAG AS jl_new_pkg
 ENV JULIA_VERSION=1.6.0-beta1
-ENV JULIA_PATH /usr/local/julia/
+ENV JULIA_PATH /qpx/pkg/new/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_new_pkg ${JULIA_PATH} ${JULIA_PATH}
 
-FROM $REG/ubu-dev:$TAG AS tmp_old_src
+FROM $REG/pkg-dev:$TAG AS tmp_old_src
 ENV VER=1.6.0-beta1
-ENV DST /usr/local/julia/
-WORKDIR /var/lib/julia
+ENV DST /qpx/src/old/julia/
+WORKDIR /tmp
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b old ${DST}
 COPY srcs srcs
 COPY srcs.sh .
 RUN chmod u+x srcs.sh; ./srcs.sh -b old ${DST}
 
-FROM $REG/ubu-base:$TAG AS jl_old_src
+FROM $REG/old:$TAG AS jl_old_src
 ENV JULIA_VERSION=1.6.0-beta1
-ENV JULIA_PATH /usr/local/julia/
+ENV JULIA_PATH /qpx/src/old/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_old_src ${JULIA_PATH} ${JULIA_PATH}
 
-FROM $REG/ubu-dev:$TAG AS tmp_new_src
+FROM $REG/src-dev:$TAG AS tmp_new_src
 ENV VER=1.7.0-dev
-ENV DST /usr/local/julia/
-WORKDIR /var/lib/julia
+ENV DST /qpx/src/new/julia/
+WORKDIR /tmp
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b new ${DST}
 COPY srcs srcs
 COPY srcs.sh .
 RUN chmod u+x srcs.sh; ./srcs.sh -b new ${DST}
 
-FROM $REG/ubu-base:$TAG AS jl_new_src
+FROM $REG/new:$TAG AS jl_new_src
 ENV JULIA_VERSION=1.7.0-dev
-ENV JULIA_PATH /usr/local/julia/
+ENV JULIA_PATH /qpx/src/new/julia/
 ENV PATH $JULIA_PATH/bin:$PATH
 COPY --from=tmp_new_src ${JULIA_PATH} ${JULIA_PATH}

@@ -15,13 +15,13 @@ COPY --from=tmp-pkg-dev . .
 FROM $REG/new-dev:$TAG AS tmp-src-dev
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
-COPY srcs srcs
 COPY pkgs.sh .
 RUN chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh
+COPY srcs srcs
 COPY srcs.sh .
 RUN chmod u+x srcs.sh; ./srcs.sh -b; rm srcs.sh
 
-FROM $REG/new:$TAG AS src-dev
+FROM $REG/new-dev:$TAG AS src-dev
 COPY --from=tmp-src-dev /usr/local /usr/local
 
 

@@ -33,14 +33,14 @@ init() {
         rm -rf srcs
         mkdir srcs
         (cd srcs
-            git clone -qb $CMAKE_BRANCH --depth 1 ../upstream/cmake
-            git clone -qb $CURL_BRANCH --depth 1 ../upstream/curl
-            git clone -qb $LIBGIT2_BRANCH --depth 1 ../upstream/libgit2
-            git clone -qb $LIBSSH2_BRANCH --depth 1 ../upstream/libssh2
-            git clone -qb $LIBWHICH_BRANCH --depth 1 ../upstream/libwhich
-            git clone -qb $NGHTTP2_BRANCH --depth 1 ../upstream/nghttp2
-            git clone -qb $NINJA_BRANCH --depth 1 ../upstream/ninja
-            git clone -qb $ZLIB_BRANCH --depth 1 ../upstream/zlib
+            git clone -qb $CMAKE_BRANCH ../upstream/cmake
+            git clone -qb $CURL_BRANCH ../upstream/curl
+            git clone -qb $LIBGIT2_BRANCH ../upstream/libgit2
+            git clone -qb $LIBSSH2_BRANCH ../upstream/libssh2
+            git clone -qb $LIBWHICH_BRANCH ../upstream/libwhich
+            git clone -qb $NGHTTP2_BRANCH ../upstream/nghttp2
+            git clone -qb $NINJA_BRANCH ../upstream/ninja
+            git clone -qb $ZLIB_BRANCH ../upstream/zlib
         )
     fi
 }

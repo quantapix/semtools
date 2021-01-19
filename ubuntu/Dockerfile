@@ -5,7 +5,7 @@ ARG TAG
 FROM scratch as tmp-old
 ENV DEBIAN_FRONTEND=noninteractive
 ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
-WORKDIR /var/lib
+WORKDIR /tmp
 COPY pkgs.sh .
 RUN set -eux; \
     chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh; \
@@ -34,7 +34,7 @@ COPY --from=tmp-old-dev . .
 FROM scratch as tmp-new
 ENV DEBIAN_FRONTEND=noninteractive
 ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
-WORKDIR /var/lib
+WORKDIR /tmp
 COPY pkgs.sh .
 RUN set -eux; \
     chmod u+x pkgs.sh; ./pkgs.sh -l; rm pkgs.sh; \

@@ -49,9 +49,12 @@ imgs: pkgs srcs
 		docker build -t $(REG)/new-dev:$(TAG) --pull --target=new-dev $(ARGS) .; \
 		docker push $(REG)/new-dev:$(TAG); \
 	)
+
+imgs2:
 	(cd ubuntu/libs; \
 		docker build -t $(REG)/pkg-dev:$(TAG) --pull --target=pkg-dev $(ARGS) .; \
 		docker push $(REG)/pkg-dev:$(TAG); \
+		chmod u+x srcs.sh; ./srcs.sh -i srcs; \
 		docker build -t $(REG)/src-dev:$(TAG) --pull --target=src-dev $(ARGS) .; \
 		docker push $(REG)/src-dev:$(TAG); \
 	)

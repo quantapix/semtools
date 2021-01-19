@@ -15,7 +15,7 @@ init() {
         )
     else
         rm -rf srcs
-        git clone -qb $1 --depth 1 ./upstream srcs
+        git clone -qb $1 ./upstream srcs
     fi
 }
 
