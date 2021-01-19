@@ -4,6 +4,7 @@ TAG=0
 ARGS=--build-arg REG=$(REG) --build-arg TAG=$(TAG)
 
 PKGS=$(shell find * -type f -name pkgs.sh)
+SRCS=$(shell find * -type f -name srcs.sh)
 
 MAKEFLAGS += -rR
 
@@ -14,8 +15,7 @@ pkgs:
 	docker build -t $(REG)/ubu:$(TAG) --pull --target=ubu $(ARGS) - < $$DF; \
 	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
-		echo $$d; \
-		(cd $$d; \
+		(cd $$d || exit; \
 			mkdir -p pkgs; \
 			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
 		) \
@@ -23,10 +23,17 @@ pkgs:
 
 clean-pkgs: 
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
-		echo $$d; \
-		(cd $$d; \
-			echo ./pkgs.sh -c; \
-		) \
+		(cd $$d || exit; ./pkgs.sh -c) \
+	done
+
+srcs: 
+	for d in $(subst /srcs.sh,,$(SRCS)); do \
+		(cd $$d || exit; echo $$d; chmod u+x srcs.sh; ./srcs.sh -i pull) \
+	done
+
+clean-srcs: 
+	for d in $(subst /srcs.sh,,$(SRCS)); do \
+		(cd $$d || exit; ./srcs.sh -c) \
 	done
 
 imgs: 

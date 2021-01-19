@@ -1,32 +1,32 @@
 #!/bin/bash
-
-set -eux
+set -Eeuo pipefail
 
 init() {
     if [ ! -e upstream ]; then
-      	git clone https://github.com/JuliaLang/julia.git upstream
-        (cd upstream
-          git branch qold v1.6.0-beta1
-          git checkout --track -B qnew master)
+        git clone -q https://github.com/JuliaLang/julia.git upstream
     fi
     if [ $1 == "pull" ]; then
-        (cd upstream
-          git checkout qnew
-          git pull)
+        (cd upstream || exit
+            git branch -f qold v1.6.0-beta1
+            git checkout -q --track -B qnew master
+            git reset -q --hard
+            git clean -qxfd
+            git pull -q
+        )
     else
         rm -rf srcs
-        git clone -b $1 --depth 1 ./upstream srcs
+        git clone -qb $1 --depth 1 ./upstream srcs
     fi
 }
 
 build() {
-  cd srcs
-  make -j $(nproc)
-  make install prefix=$1
+    cd srcs
+    make -j $(nproc)
+    make install prefix=$1
 }
 
 clean() {
-  rm -rf srcs
+    rm -rf srcs
 }
 
 show_usage() {
@@ -39,12 +39,12 @@ main() {
     local BUILD=
     local CLEAN=
     while getopts "ibch" opt; do
-              case $opt in
-                  i) INIT=true;;
-                  b) BUILD=true;;
-                  c) CLEAN=true;;
-                  *) show_usage; return 1;;
-              esac
+        case $opt in
+            i) INIT=true;;
+            b) BUILD=true;;
+            c) CLEAN=true;;
+            *) show_usage; return 1;;
+        esac
     done
     shift $((OPTIND-1))
     if [[ -n "$INIT" ]]; then

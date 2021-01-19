@@ -1,14 +1,16 @@
 #!/bin/bash
-
-set -eux
+set -Eeuo pipefail
 
 init() {
+	  mkdir -p srcs
 }
 
 build() {
+    echo "build"
 }
 
 clean() {
+    rm -rf srcs
 }
 
 show_usage() {
@@ -21,12 +23,12 @@ main() {
     local BUILD=
     local CLEAN=
     while getopts "ibch" opt; do
-              case $opt in
-                  i) INIT=true;;
-                  b) BUILD=true;;
-                  c) CLEAN=true;;
-                  *) show_usage; return 1;;
-              esac
+        case $opt in
+            i) INIT=true;;
+            b) BUILD=true;;
+            c) CLEAN=true;;
+            *) show_usage; return 1;;
+        esac
     done
     shift $((OPTIND-1))
     if [[ -n "$INIT" ]]; then

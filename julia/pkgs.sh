@@ -47,12 +47,12 @@ main() {
     local LOAD=
     local CLEAN=
     while getopts "ilch" opt; do
-              case $opt in
-                  i) INIT=true;;
-                  l) LOAD=true;;
-                  c) CLEAN=true;;
-                  *) show_usage; return 1;;
-              esac
+        case $opt in
+            i) INIT=true;;
+            l) LOAD=true;;
+            c) CLEAN=true;;
+            *) show_usage; return 1;;
+        esac
     done
     shift $((OPTIND-1))
     if [[ -n "$INIT" ]]; then
