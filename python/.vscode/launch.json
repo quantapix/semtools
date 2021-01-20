@@ -1,18 +1,25 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Python: Flask",
-      "type": "python",
-      "request": "launch",
-      "module": "flask",
-      "env": {
-        "FLASK_APP": "app.py",
-        "FLASK_ENV": "development",
-        "FLASK_DEBUG": "0"
-      },
-      "args": ["run", "--host", "0.0.0.0", "--port", "9000", "--no-debugger", "--no-reload"],
-      "jinja": true
-    }
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python (Integrated Terminal)",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/hello.py",
+            "console": "integratedTerminal"
+        },
+        {
+          "name": "Python: Flask",
+          "type": "python",
+          "request": "launch",
+          "module": "flask",
+          "env": {
+            "FLASK_APP": "app.py",
+            "FLASK_ENV": "development",
+            "FLASK_DEBUG": "0"
+          },
+          "args": ["run", "--host", "0.0.0.0", "--port", "9000", "--no-debugger", "--no-reload"],
+          "jinja": true
+        }    
+    ]
 }
