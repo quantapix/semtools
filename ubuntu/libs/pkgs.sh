@@ -11,33 +11,45 @@ run() {
         automake \
         cmake \
         curl \
+        dpkg-dev \
         file \
         gfortran \
+        libbluetooth-dev \
+        libbz2-dev \
+        libc6-dev \
+        libexpat1-dev \
+        libffi-dev \
+        libgdbm-dev \
         libgit2-28 \
         libgit2-dev \
+        liblzma-dev \
+        libncursesw5-dev \
         libnghttp2-dev \
+        libreadline-dev \
+        libsqlite3-dev \
         libssh2-1 \
         libssh2-1-dev\
+        libssl-dev \
         nghttp2 \
         ninja-build \
         pkg-config \
         python3 \
+        tk-dev \
         unzip \
+        uuid-dev \
         wget \
+        xz-utils \
         zlib1g \
-        zlib1g-dev
+        zlib1g-dev \
+        
         # imagemagick \
-        # libbz2-dev \
         # libcurl4-openssl-dev \
         # libdb-dev \
         # libevent-dev \
-        # libffi-dev \
-        # libgdbm-dev \
         # libglib2.0-dev \
         # libgmp-dev \
         # libjpeg-dev \
         # libkrb5-dev \
-        # liblzma-dev \
         # libmagickcore-dev \
         # libmagickwand-dev \
         # libmaxminddb-dev \
@@ -45,9 +57,6 @@ run() {
         # libncursesw5-dev \
         # libpng-dev \
         # libpq-dev \
-        # libreadline-dev \
-        # libsqlite3-dev \
-        # libssl-dev \
         # libtool \
         # libwebp-dev \
         # libxml2-dev \

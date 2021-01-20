@@ -6,61 +6,79 @@ ARG TAG
 
 FROM scratch as tmp-old
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8
 ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs .
 RUN set -eux; \
     pkgs/run.sh -r; rm pkgs.sh; \
     apt-get update && apt-get dist-upgrade -y --install-recommends; \
+    apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        netbase \
+        tzdata \
+    ; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as old
+ENV LANG C.UTF-8
 COPY --from=tmp-old . .
 
 
 FROM $REG/old:$TAG AS tmp-old-dev
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8
 RUN set -ex; \
-	apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    ca-certificates \
-    devscripts \
-    git \
-    pkg-config \
-	; \
-	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+    apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        devscripts \
+        dirmngr \
+        git \
+        gnupg \
+    ; \
+    rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as old-dev
+ENV LANG C.UTF-8
 COPY --from=tmp-old-dev . .
 
 
 FROM scratch as tmp-new
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8
 ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs .
 RUN set -eux; \
     pkgs/run.sh -r; rm pkgs.sh; \
     apt-get update && apt-get dist-upgrade -y --install-recommends; \
+    apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        netbase \
+        tzdata \
+    ; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as new
+ENV LANG C.UTF-8
 COPY --from=tmp-new . .
 
 
 FROM $REG/new:$TAG AS tmp-new-dev
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8
 RUN set -ex; \
-	apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    ca-certificates \
-    devscripts \
-    git \
-    pkg-config \
-	; \
-	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+    apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        devscripts \
+        dirmngr \
+        git \
+        gnupg \
+    ; \
+  	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as new-dev
+ENV LANG C.UTF-8
 COPY --from=tmp-new-dev . .
 
 

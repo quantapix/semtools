@@ -19,7 +19,7 @@ init() {
 	      echo "$sha256 *$tar" | sha256sum -c - || exit
     )
 
-    command -v gpgconf > /dev/null && gpgconf --kill all
+    command -v gpgconf > /dev/null && gpgconf --kill all || :
     rm -rf "$GNUPGHOME"
 }
 
