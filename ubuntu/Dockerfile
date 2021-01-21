@@ -5,8 +5,8 @@ ARG TAG
 
 
 FROM scratch as tmp-old
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
 ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs .
@@ -26,8 +26,8 @@ COPY --from=tmp-old . .
 
 
 FROM $REG/old:$TAG AS tmp-old-dev
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
 RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -39,13 +39,13 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as old-dev
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 COPY --from=tmp-old-dev . .
 
 
 FROM scratch as tmp-new
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
 ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs .
@@ -60,13 +60,13 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as new
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 COPY --from=tmp-new . .
 
 
 FROM $REG/new:$TAG AS tmp-new-dev
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
 RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -78,22 +78,20 @@ RUN set -ex; \
   	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 
 FROM scratch as new-dev
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 COPY --from=tmp-new-dev . .
 
 
-#   apt-get update && apt-get install -y --no-install-recommends \
-#     openssh-client \
-#     procps \
-#   	; \
+# openssh-client \
+# procps \
 
-#    aptMark="$(apt-mark showmanual)"
-#    if ! command -v gpg > /dev/null; then 
-#        apt-get update
-#        apt-get install -y --no-install-recommends wget gnupg dirmngr
-#        rm -rf /var/lib/apt/lists/*
-#    fi; 
+# aptMark="$(apt-mark showmanual)"
+# if ! command -v gpg > /dev/null; then 
+#    apt-get update
+#    apt-get install -y --no-install-recommends wget gnupg dirmngr
+#    rm -rf /var/lib/apt/lists/*
+# fi
 
-#    apt-mark auto '.*' > /dev/null
-#    [ -z "$aptMark" ] || apt-mark manual $aptMark
-#    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+# apt-mark auto '.*' > /dev/null
+# [ -z "$aptMark" ] || apt-mark manual $aptMark
+# apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
