@@ -6,7 +6,7 @@ ENV VER=1.5.3
 ENV DST=/usr/local/julia/
 WORKDIR /var/lib/julia
 COPY pkgs .
-RUN pkgs/run.sh -r ${VER} ${DST}; rm pkgs/run.sh
+RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
 
 FROM $REG/ubu-base:$TAG AS jl_old_pkg
 ENV JULIA_VERSION=1.5.3
@@ -19,7 +19,7 @@ ENV VER=1.6.0-beta1
 ENV DST=/usr/local/julia/
 WORKDIR /var/lib/julia
 COPY pkgs .
-RUN pkgs/run.sh -r ${VER} ${DST}; rm pkgs/run.sh
+RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
 
 FROM $REG/ubu-base:$TAG AS jl_new_pkg
 ENV JULIA_VERSION=1.6.0-beta1
@@ -34,7 +34,7 @@ WORKDIR /var/lib/julia
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b old ${DST}
 COPY srcs .
-RUN srcs/run.sh -r old ${DST}; rm srcs/run.sh
+RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
 
 FROM $REG/ubu-base:$TAG AS jl_old_src
 ENV JULIA_VERSION=1.6.0-beta1
@@ -49,7 +49,7 @@ WORKDIR /var/lib/julia
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b new ${DST}
 COPY srcs .
-RUN srcs/run.sh -r new ${DST}; rm srcs/run.sh
+RUN srcs/run.sh -r new ${DST} && rm srcs/run.sh
 
 FROM $REG/ubu-base:$TAG AS jl_new_src
 ENV JULIA_VERSION=1.7.0-dev

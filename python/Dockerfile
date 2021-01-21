@@ -9,7 +9,7 @@ ENV VER=3.9.1 \
     DST=/usr/local/python
 WORKDIR /tmp
 COPY pkgs .
-RUN pkgs/run.sh -r ${VER} ${DST}; rm pkgs/run.sh
+RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
 
 FROM $REG/old:$TAG AS py_pkg
 ENV PYTHON_VERSION=3.9.1 \
@@ -23,7 +23,7 @@ ENV VER=3.9.1 \
     DST=/usr/local/python
 WORKDIR /tmp
 COPY srcs .
-RUN srcs/run.sh -r old ${DST}; rm srcs/run.sh
+RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
 
 FROM $REG/old:$TAG AS py_src
 ENV PYTHON_VERSION=3.9.1 \
