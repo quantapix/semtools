@@ -1,12 +1,12 @@
-# golang
+# julia
 
 init() {
     if [ ! -e upstream ]; then
-        git clone -q https://github.com/golang/go.git upstream
+        git clone -q https://github.com/JuliaLang/julia.git upstream
     fi
     if [ $1 == "pull" ]; then
         (cd upstream || exit
-            git branch -f qold go1.15.6
+            git branch -f qold v1.6.0-beta1
             git checkout -q --track -B qnew master
             git reset -q --hard
             git clean -qxfd
