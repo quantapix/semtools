@@ -1,0 +1,5 @@
+.devcontainer
+.dockerignore
+Dockerfile
+test
+srcs/.git
