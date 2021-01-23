@@ -22,32 +22,38 @@ pkgs:
 		(cd $$d || exit; \
 			chmod u+x $(UTIL); $(UTIL) -s pkgs; \
 			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
-		); \
-		exit; \
+			rm pkgs/run.sh; \
+		) \
 	done
 
 clean-pkgs: 
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
 		(cd $$d || exit; \
-		$(UTIL) -s pkgs; \
-		pkgs/run.sh -c) \
+			chmod u+x $(UTIL); $(UTIL) -s pkgs; \
+			pkgs/run.sh -c; \
+			rm pkgs/run.sh; \
+		) \
 	done
 
 srcs: 
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
 		(cd $$d || exit; \
-		$(UTIL) -s srcs; \
-		srcs/run.sh -i pull) \
+			chmod u+x $(UTIL); $(UTIL) -s srcs; \
+			srcs/run.sh -i pull; \
+			rm srcs/run.sh; \
+		) \
 	done
 
 clean-srcs: 
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
 		(cd $$d || exit; \
-		$(UTIL) -s srcs; \
-		srcs/run.sh -c) \
+			chmod u+x $(UTIL); $(UTIL) -s srcs; \
+			srcs/run.sh -c; \
+			rm srcs/run.sh; \
+		) \
 	done
 
-imgs: pkgs srcs
+ubu: pkgs srcs
 	(cd ubuntu; \
 		docker build -t $(REG)/old:$(TAG) --pull --target=old $(ARGS) .; \
 		docker push $(REG)/old:$(TAG); \
@@ -60,14 +66,26 @@ imgs: pkgs srcs
 		docker push $(REG)/new-dev:$(TAG); \
 	)
 
+bzl: ubu
+	(cd bazel; \
+		chmod u+x $(UTIL); $(UTIL) -s srcs; \
+		srcs/run.sh -i old; \
+		docker build -t $(REG)/bzl_old:$(TAG) --pull --target=bzl_old $(ARGS) .; \
+		docker push $(REG)/bzl_old:$(TAG); \
+		docker build -t $(REG)/bzl_new:$(TAG) --pull --target=bzl_new $(ARGS) .; \
+		docker push $(REG)/bzl_new:$(TAG); \
+		rm srcs/run.sh; \
+	)
+
 imgs2:
 	(cd ubuntu/libs; \
 		docker build -t $(REG)/pkg-dev:$(TAG) --pull --target=pkg-dev $(ARGS) .; \
 		docker push $(REG)/pkg-dev:$(TAG); \
-		$(UTIL) -s srcs; \
+		chmod u+x $(UTIL); $(UTIL) -s srcs; \
 		srcs/run.sh -i srcs; \
 		docker build -t $(REG)/src-dev:$(TAG) --pull --target=src-dev $(ARGS) .; \
 		docker push $(REG)/src-dev:$(TAG); \
+		rm srcs/run.sh; \
 	)
 	(cd julia; \
 		docker build -t $(REG)/jl_old_pkg:$(TAG) --pull --target=jl_old_pkg $(ARGS) .; \

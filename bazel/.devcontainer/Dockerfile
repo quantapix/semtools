@@ -1,5 +1,21 @@
-FROM mcr.microsoft.com/vscode/devcontainers/rust:1
+ARG REG
+ARG IMG
+ARG TAG
 
-# [Optional] Uncomment this section to install additional packages.
+FROM $REG/$IMG:$TAG
+
+# ARG INSTALL_ZSH="true"
+# ARG UPGRADE_PACKAGES="true"
+
+# ARG USERNAME=vscode
+# ARG USER_UID=1000
+# ARG USER_GID=$USER_UID
+
+# COPY scripts/*.sh /tmp/scripts/
+# RUN bash /tmp/scripts/config.sh "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" \
+#    && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/scripts
+
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
+
+CMD [ "bash" ]

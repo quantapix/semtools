@@ -12,16 +12,23 @@ WORKDIR /tmp
 COPY pkgs pkgs
 RUN set -eux; \
     pkgs/run.sh -r; rm pkgs.sh; \
-    apt-get update && apt-get dist-upgrade -y --install-recommends; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \
         tzdata \
     ; \
-    rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+    rm -rf /var/lib/apt/lists/*
+RUN set -ex; \
+    if ! command -v gpg > /dev/null; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            dirmngr \
+            gnupg \
+        ; \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
 
 FROM scratch as old
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 COPY --from=tmp-old . .
 
 
@@ -32,11 +39,9 @@ RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         devscripts \
-        dirmngr \
         git \
-        gnupg \
     ; \
-    rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+    rm -rf /var/lib/apt/lists/*
 
 FROM scratch as old-dev
 ENV LANG=C.UTF-8
@@ -51,13 +56,20 @@ WORKDIR /tmp
 COPY pkgs pkgs
 RUN set -eux; \
     pkgs/run.sh -r; rm pkgs.sh; \
-    apt-get update && apt-get dist-upgrade -y --install-recommends; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \
         tzdata \
     ; \
-    rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+    rm -rf /var/lib/apt/lists/*
+RUN set -ex; \
+    if ! command -v gpg > /dev/null; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            dirmngr \
+            gnupg \
+        ; \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
 
 FROM scratch as new
 ENV LANG=C.UTF-8
@@ -71,11 +83,9 @@ RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         devscripts \
-        dirmngr \
         git \
-        gnupg \
     ; \
-  	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+  	rm -rf /var/lib/apt/lists/*
 
 FROM scratch as new-dev
 ENV LANG=C.UTF-8

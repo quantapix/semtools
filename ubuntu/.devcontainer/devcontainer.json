@@ -1,5 +1,5 @@
 {
-  "name": "Ubuntu",
+  "name": "ubuntu",
   "build": {
     "dockerfile": "Dockerfile",
     "args": { "REG": "qbrn.reg", "IMG": "new", "TAG": "std" }

@@ -15,12 +15,12 @@ RUN set -ex; \
         unzip \
         zip \
     ; \
-    rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+    rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp
 COPY pkgs pkgs
-RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
+RUN pkgs/run.sh -r ${VER} ${DST}
 COPY srcs srcs
-RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
+RUN srcs/run.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS bzl_old
 COPY --from=tmp_old /usr/local /usr/local
@@ -37,12 +37,12 @@ RUN set -ex; \
         unzip \
         zip \
     ; \
-    rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+    rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp
 COPY pkgs pkgs
-RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
+RUN pkgs/run.sh -r ${VER} ${DST}
 COPY srcs srcs
-RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
+RUN srcs/run.sh -r old ${DST}
 
 FROM $REG/new:$TAG AS bzl_new
 COPY --from=tmp_new /usr/local /usr/local

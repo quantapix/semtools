@@ -7,7 +7,8 @@ init() {
         "" \
         "https://github.com/bazelbuild/bazel/releases/tag/4.0.0" \
         "bazel-4.0.0-dist.zip" \
-        "d350f80e70654932db252db380d2ec0144a00e86f8d9f2b4c799ffdb48e9cdd1"
+        ""
+        # d350f80e70654932db252db380d2ec0144a00e86f8d9f2b4c799ffdb48e9cdd1"
 }
 
 run() {

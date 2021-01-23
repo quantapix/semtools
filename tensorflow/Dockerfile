@@ -9,7 +9,7 @@ ENV VER=1.49.0 \
     DST=/usr/local/python
 WORKDIR /tmp
 COPY pkgs pkgs
-RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
+RUN pkgs/run.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS py_pkg
 ENV RUST_VERSION=1.49.0 \
@@ -24,7 +24,7 @@ ENV VER=1.49.0 \
     DST=/usr/local/python
 WORKDIR /tmp
 COPY srcs srcs
-RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
+RUN srcs/run.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS py_src
 ENV RUST_VERSION=1.49.0 \
@@ -37,7 +37,7 @@ COPY --from=tmp_src /usr/local /usr/local
 ARG UBUNTU_VERSION=18.04
 FROM ubuntu:${UBUNTU_VERSION} as base
 RUN apt-get update && apt-get install -y curl
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip
@@ -92,7 +92,7 @@ RUN chmod a+w /etc/passwd /etc/group
 RUN test "${CHECKOUT_TF_SRC}" -eq 1 && git clone https://github.com/tensorflow/tensorflow.git /tensorflow_src || true
 
 # See http://bugs.python.org/issue19846
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 RUN apt-get update && apt-get install -y \
     python3 \
@@ -195,7 +195,7 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
     && ldconfig
 
 # See http://bugs.python.org/issue19846
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 RUN apt-get update && apt-get install -y \
     python3 \
@@ -298,7 +298,7 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
     && ldconfig
 
 # See http://bugs.python.org/issue19846
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 RUN apt-get update && apt-get install -y \
     python3 \

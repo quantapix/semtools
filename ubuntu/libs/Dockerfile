@@ -8,7 +8,7 @@ FROM $REG/old-dev:$TAG AS tmp-pkg-dev
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
 COPY pkgs pkgs
-RUN pkgs/run.sh -r && rm pkgs/run.sh
+RUN pkgs/run.sh -r
 
 FROM scratch as pkg-dev
 COPY --from=tmp-pkg-dev . .
@@ -18,9 +18,9 @@ FROM $REG/new-dev:$TAG AS tmp-src-dev
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
 COPY pkgs pkgs
-RUN pkgs/run.sh -r && rm pkgs/run.sh
+RUN pkgs/run.sh -r
 COPY srcs srcs
-RUN srcs/run.sh -r && rm srcs/run.sh
+RUN srcs/run.sh -r
 
 FROM $REG/new-dev:$TAG AS src-dev
 COPY --from=tmp-src-dev /usr/local /usr/local
@@ -31,7 +31,7 @@ RUN set -ex; \
 	apt-get update && apt-get install -y --no-install-recommends \
     intel-mkl \
 	; \
-	rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
+	rm -rf /var/lib/apt/lists/*
 
 FROM scratch as mkl
 COPY --from=tmp-mkl . .

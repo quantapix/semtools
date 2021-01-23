@@ -26,6 +26,9 @@ sudo usermod -aG docker <your-user>
 - /etc/docker/daemon.json: { "features": { "buildkit": true } }
 sudo systemctl enable docker
 
+docker system df
+docker builder prune
+
 # registry
 
 docker run -d -p 5000:5000 --restart=always --name registry registry:2

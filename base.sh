@@ -9,11 +9,11 @@ setup() {
 }
 
 fetch() {
-    gpg=$1
-    url=$2
-    tar=$3
+    gpg="$1"
+    url="$2"
+    tar="$3"
     asc="$tar.asc"
-    sha=$4
+    sha="$4"
     if [ -z $sha && -e $tar ] || echo "$sha *$tar" | sha256sum -c -; then
         rm $tar
     else
