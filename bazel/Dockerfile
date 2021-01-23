@@ -17,9 +17,9 @@ RUN set -ex; \
     ; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 WORKDIR /tmp
-COPY pkgs .
+COPY pkgs pkgs
 RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
-COPY srcs .
+COPY srcs srcs
 RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
 
 FROM $REG/old:$TAG AS bzl_old
@@ -39,9 +39,9 @@ RUN set -ex; \
     ; \
     rm -rf /var/lib/apt/lists/* && mkdir /var/lib/apt/lists/partial
 WORKDIR /tmp
-COPY pkgs .
+COPY pkgs pkgs
 RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
-COPY srcs .
+COPY srcs srcs
 RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
 
 FROM $REG/new:$TAG AS bzl_new

@@ -8,7 +8,7 @@ FROM $REG/pkg-dev:$TAG AS tmp_pkg
 ENV VER=3.9.1 \
     DST=/usr/local/python
 WORKDIR /tmp
-COPY pkgs .
+COPY pkgs pkgs
 RUN pkgs/run.sh -r ${VER} ${DST} && rm pkgs/run.sh
 
 FROM $REG/old:$TAG AS py_pkg
@@ -22,7 +22,7 @@ FROM $REG/pkg-dev:$TAG AS tmp_src
 ENV VER=3.9.1 \
     DST=/usr/local/python
 WORKDIR /tmp
-COPY srcs .
+COPY srcs srcs
 RUN srcs/run.sh -r old ${DST} && rm srcs/run.sh
 
 FROM $REG/old:$TAG AS py_src

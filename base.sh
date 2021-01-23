@@ -4,7 +4,7 @@ set -Eeuxo pipefail
 
 setup() {
 		mkdir -p $1
-		cat $2 $1.sh > $1/run.sh
+    cat $(dirname $2)/conf.sh $1.sh $2 > $1/run.sh
 		chmod u+x $1/run.sh
 }
 
@@ -40,7 +40,7 @@ main() {
     local RUN=
     local CLEAN=
     local SETUP=
-    while getopts "i:rcsh" opt; do
+    while getopts "i:rcs:h" opt; do
         case $opt in
             i) INIT=$OPTARG;;
             r) RUN=true;;
@@ -77,3 +77,4 @@ main() {
 }
 
 main "$@"
+

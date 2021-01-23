@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
 ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
-COPY pkgs .
+COPY pkgs pkgs
 RUN set -eux; \
     pkgs/run.sh -r; rm pkgs.sh; \
     apt-get update && apt-get dist-upgrade -y --install-recommends; \
@@ -48,7 +48,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
 ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
-COPY pkgs .
+COPY pkgs pkgs
 RUN set -eux; \
     pkgs/run.sh -r; rm pkgs.sh; \
     apt-get update && apt-get dist-upgrade -y --install-recommends; \

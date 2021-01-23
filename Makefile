@@ -7,7 +7,7 @@ IMGS=$(shell find * -type f -name imgs.sh)
 PKGS=$(shell find * -type f -name pkgs.sh)
 SRCS=$(shell find * -type f -name srcs.sh)
 
-UTIL=$(pwd)/base.sh
+UTIL=$(shell pwd)/base.sh
 
 MAKEFLAGS += -rR
 
@@ -18,10 +18,12 @@ pkgs:
 	docker build -t $(REG)/ubu:$(TAG) --pull --target=ubu $(ARGS) - < $$DF; \
 	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
+		echo $$d; \
 		(cd $$d || exit; \
-			$(UTIL) -s pkgs; \
+			chmod u+x $(UTIL); $(UTIL) -s pkgs; \
 			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
-		) \
+		); \
+		exit; \
 	done
 
 clean-pkgs: 
