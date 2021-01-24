@@ -14,7 +14,7 @@ fetch() {
     tar="$3"
     asc="$tar.asc"
     sha="$4"
-    if [ -z $sha && -e $tar ] || echo "$sha *$tar" | sha256sum -c -; then
+    if [ -z $sha ] && [ -e $tar ] || echo "$sha *$tar" | sha256sum -c -; then
         rm $tar
     else
 	      wget --progress=dot:giga "$url/$tar" 

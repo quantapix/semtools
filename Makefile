@@ -7,49 +7,49 @@ IMGS=$(shell find * -type f -name imgs.sh)
 PKGS=$(shell find * -type f -name pkgs.sh)
 SRCS=$(shell find * -type f -name srcs.sh)
 
-UTIL=$(shell pwd)/base.sh
+UTIL=$(shell pwd)/util.sh
 
 MAKEFLAGS += -rR
 
 .PHONY: all clean pkgs
 
-pkgs: 
+util.sh: base.sh
+	chmod u+x $<
+	ln -s base.sh $@
+
+pkgs: util.sh
 	DF=$(shell pwd)/Dockerfile; \
 	docker build -t $(REG)/ubu:$(TAG) --pull --target=ubu $(ARGS) - < $$DF; \
 	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
 		echo $$d; \
 		(cd $$d || exit; \
-			chmod u+x $(UTIL); $(UTIL) -s pkgs; \
+			$(UTIL) -s pkgs; \
 			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
-			rm pkgs/run.sh; \
 		) \
 	done
 
-clean-pkgs: 
+clean-pkgs: util.sh
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
 		(cd $$d || exit; \
-			chmod u+x $(UTIL); $(UTIL) -s pkgs; \
+			$(UTIL) -s pkgs; \
 			pkgs/run.sh -c; \
-			rm pkgs/run.sh; \
 		) \
 	done
 
-srcs: 
+srcs: util.sh
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
 		(cd $$d || exit; \
-			chmod u+x $(UTIL); $(UTIL) -s srcs; \
+			$(UTIL) -s srcs; \
 			srcs/run.sh -i pull; \
-			rm srcs/run.sh; \
 		) \
 	done
 
-clean-srcs: 
+clean-srcs: util.sh
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
 		(cd $$d || exit; \
-			chmod u+x $(UTIL); $(UTIL) -s srcs; \
+			$(UTIL) -s srcs; \
 			srcs/run.sh -c; \
-			rm srcs/run.sh; \
 		) \
 	done
 
