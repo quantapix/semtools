@@ -5,25 +5,21 @@ ARG TAG
 
 
 FROM $REG/old-dev:$TAG AS tmp-pkg-dev
-ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/qpx.sh -r
+COPY pkgs .
+RUN ./qpx.sh -r
 
 FROM scratch as pkg-dev
 COPY --from=tmp-pkg-dev . .
 
 
 FROM $REG/new-dev:$TAG AS tmp-src-dev
-ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/qpx.sh -r
-COPY srcs srcs
-RUN srcs/qpx.sh -r
+COPY srcs .
+RUN ./qpx.sh -r
 
 FROM $REG/new-dev:$TAG AS src-dev
-COPY --from=tmp-src-dev /usr/local /usr/local
+COPY --from=tmp-src-dev . .
 
 
 FROM $REG/old:$TAG AS tmp-mkl

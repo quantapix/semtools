@@ -5,11 +5,11 @@ ARG TAG
 
 
 FROM scratch as tmp-old
+ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
-ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
-COPY pkgs pkgs
+COPY pkgs .
 RUN set -eux; \
     pkgs/qpx.sh -r; rm pkgs/qpx.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
@@ -20,13 +20,10 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*
 
 FROM scratch as old
-ENV LANG=C.UTF-8
 COPY --from=tmp-old . .
 
 
 FROM $REG/old:$TAG AS tmp-old-dev
-ENV DEBIAN_FRONTEND=noninteractive \
-    LANG=C.UTF-8
 RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -44,16 +41,15 @@ RUN set -ex; \
     fi
 
 FROM scratch as old-dev
-ENV LANG=C.UTF-8
 COPY --from=tmp-old-dev . .
 
 
 FROM scratch as tmp-new
+ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
-ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
-COPY pkgs pkgs
+COPY pkgs .
 RUN set -eux; \
     pkgs/qpx.sh -r; rm pkgs/qpx.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
@@ -64,13 +60,10 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*
 
 FROM scratch as new
-ENV LANG=C.UTF-8
 COPY --from=tmp-new . .
 
 
 FROM $REG/new:$TAG AS tmp-new-dev
-ENV DEBIAN_FRONTEND=noninteractive \
-    LANG=C.UTF-8
 RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -88,7 +81,6 @@ RUN set -ex; \
     fi
 
 FROM scratch as new-dev
-ENV LANG=C.UTF-8
 COPY --from=tmp-new-dev . .
 
 

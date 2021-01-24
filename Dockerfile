@@ -24,11 +24,9 @@ RUN set -ex; \
 
 
 FROM $REG/ubu:$TAG AS tmp-pkgs
-ENV LANG=C.UTF-8
 WORKDIR /tmp
 COPY pkgs .
 RUN ./qpx.sh -i pkgs
 
 FROM scratch as pkgs
-ENV LANG=C.UTF-8
 COPY --from=tmp-pkgs /tmp /

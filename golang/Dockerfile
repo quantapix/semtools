@@ -8,8 +8,8 @@ FROM $REG/pkg-dev:$TAG AS tmp_pkg
 ENV VER=1.15.6 \
     DST=/usr/local/go
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/qpx.sh -r ${VER} ${DST}
+COPY pkgs .
+RUN ./qpx.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS go_pkg
 ENV GOLANG_VERSION=1.15.6 \
@@ -29,8 +29,8 @@ RUN set -eux; \
 ENV VER=1.15.6 \
     DST=/usr/local/go
 WORKDIR /tmp
-COPY srcs srcs
-RUN srcs/qpx.sh -r old ${DST}
+COPY srcs .
+RUN ./qpx.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS go_src
 ENV GOLANG_VERSION=1.15.6 \

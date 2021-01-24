@@ -3,7 +3,6 @@
 ARG REG
 ARG TAG
 
-
 FROM $REG/old-dev:$TAG AS tmp_old
 ENV DEBIAN_FRONTEND=noninteractive \
     VER=4.0.0 \

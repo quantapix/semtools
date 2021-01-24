@@ -1,7 +1,7 @@
 # ubuntu/libs
 
 init() {
-    mkdir -p pkgs
+    echo "init"
 }
 
 run() {
@@ -41,27 +41,6 @@ run() {
         xz-utils \
         zlib1g \
         zlib1g-dev \
-        
-        # imagemagick \
-        # libcurl4-openssl-dev \
-        # libdb-dev \
-        # libevent-dev \
-        # libglib2.0-dev \
-        # libgmp-dev \
-        # libjpeg-dev \
-        # libkrb5-dev \
-        # libmagickcore-dev \
-        # libmagickwand-dev \
-        # libmaxminddb-dev \
-        # libncurses5-dev \
-        # libncursesw5-dev \
-        # libpng-dev \
-        # libpq-dev \
-        # libtool \
-        # libwebp-dev \
-        # libxml2-dev \
-        # libxslt-dev \
-        # libyaml-dev \
 	  rm -rf /var/lib/apt/lists/*
     mkdir /var/lib/apt/lists/partial
 }
@@ -69,3 +48,25 @@ run() {
 clean() {
     rm -rf pkgs
 }
+
+        
+# imagemagick \
+# libcurl4-openssl-dev \
+# libdb-dev \
+# libevent-dev \
+# libglib2.0-dev \
+# libgmp-dev \
+# libjpeg-dev \
+# libkrb5-dev \
+# libmagickcore-dev \
+# libmagickwand-dev \
+# libmaxminddb-dev \
+# libncurses5-dev \
+# libncursesw5-dev \
+# libpng-dev \
+# libpq-dev \
+# libtool \
+# libwebp-dev \
+# libxml2-dev \
+# libxslt-dev \
+# libyaml-dev \

@@ -7,8 +7,8 @@ FROM $REG/pkg-dev:$TAG AS tmp_old_pkg
 ENV VER=1.5.3 \
     DST=/usr/local/julia
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/qpx.sh -r ${VER} ${DST}
+COPY pkgs .
+RUN ./qpx.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS jl_old_pkg
 ENV JULIA_VERSION=1.5.3 \
@@ -21,8 +21,8 @@ FROM $REG/pkg-dev:$TAG AS tmp_new_pkg
 ENV VER=1.6.0-beta1 \
     DST=/usr/local/julia
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/qpx.sh -r ${VER} ${DST}
+COPY pkgs .
+RUN ./qpx.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS jl_new_pkg
 ENV JULIA_VERSION=1.6.0-beta1 \
@@ -37,8 +37,8 @@ ENV VER=1.6.0-beta1 \
 WORKDIR /tmp
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b old ${DST}
-COPY srcs srcs
-RUN srcs/qpx.sh -r old ${DST}
+COPY srcs .
+RUN ./qpx.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS jl_old_src
 ENV JULIA_VERSION=1.6.0-beta1 \
@@ -53,8 +53,8 @@ ENV VER=1.7.0-dev \
 WORKDIR /tmp
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b new ${DST}
-COPY srcs srcs
-RUN srcs/qpx.sh -r new ${DST}
+COPY srcs .
+RUN ./qpx.sh -r new ${DST}
 
 FROM $REG/new:$TAG AS jl_new_src
 ENV JULIA_VERSION=1.7.0-dev \

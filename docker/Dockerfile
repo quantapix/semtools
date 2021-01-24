@@ -14,7 +14,7 @@ ENV DOCKER_VERSION=20.10.2 \
 COPY modprobe.sh /usr/local/bin/modprobe
 COPY docker-entrypoint.sh /usr/local/bin/
 WORKDIR /tmp
-COPY pkgs pkgs
+COPY pkgs .
 RUN mkdir /certs /certs/client && chmod 1777 /certs /certs/client \
     pkgs/qpx.sh -r ${DOCKER_VERSION} ${DST}
 ENTRYPOINT ["docker-entrypoint.sh"]

@@ -8,8 +8,8 @@ FROM $REG/pkg-dev:$TAG AS tmp_pkg
 ENV VER=3.9.1 \
     DST=/usr/local/python
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/qpx.sh -r ${VER} ${DST}
+COPY pkgs .
+RUN ./qpx.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS py_pkg
 ENV PYTHON_VERSION=3.9.1 \
@@ -22,8 +22,8 @@ FROM $REG/pkg-dev:$TAG AS tmp_src
 ENV VER=3.9.1 \
     DST=/usr/local/python
 WORKDIR /tmp
-COPY srcs srcs
-RUN srcs/qpx.sh -r old ${DST}
+COPY srcs .
+RUN ./qpx.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS py_src
 ENV PYTHON_VERSION=3.9.1 \
