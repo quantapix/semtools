@@ -1,25 +1,28 @@
 # typescript
 
 init() {
-    if [ ! -e upstream ]; then
-        git clone -q https://github.com/microsoft/TypeScript.git upstream
-    fi
     if [ $1 == "pull" ]; then
+        if [ ! -e upstream ]; then
+            git clone -q https://github.com/microsoft/TypeScript.git upstream
+        fi
         (cd upstream || exit
-            git branch -f qold v4.1.3
+            git branch -f qold $TS_VER
             git checkout -q --track -B qnew master
             git reset -q --hard
             git clean -qxfd
             git pull -q
         )
     else
+        mv srcs/qpx.sh .
         rm -rf srcs
         git clone -qb $1 ./upstream srcs
+        mv qpx.sh srcs/
     fi
 }
 
 run() {
-    cd srcs
+    v=$TS_VER
+    d=$2
     yarn install -g gulp
     yarn ci
     gulp local

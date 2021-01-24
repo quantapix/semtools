@@ -22,9 +22,9 @@ TEAM=~staticfloat
 PROJECT=julianightlies
 JULIA_GIT_URL="https://github.com/JuliaLang/julia.git"
 DEBIAN_GIT_URL="https://github.com/staticfloat/julia-debian.git"
-JULIA_GIT_BRANCH=master
-DEBIAN_GIT_BRANCH=master
-BZR_BRANCH=trunk
+JULIA_GIT_TAG=master
+DEBIAN_GIT_TAG=master
+BZR_TAG=trunk
 BUILD_DIR=$(echo ~)/tmp/julia-packaging/ubuntu
 
 cd $(dirname $0)
@@ -40,29 +40,29 @@ mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 
 # Get the git branch
-if test ! -d julia-${JULIA_GIT_BRANCH}; then
-	git clone ${JULIA_GIT_URL} julia-${JULIA_GIT_BRANCH}
+if test ! -d julia-${JULIA_GIT_TAG}; then
+	git clone ${JULIA_GIT_URL} julia-${JULIA_GIT_TAG}
 fi
 
 # Get the bzr branch
-if test ! -d ${BZR_BRANCH}; then
-	bzr branch http://bazaar.launchpad.net/${TEAM}/${PROJECT}/${BZR_BRANCH}/
+if test ! -d ${BZR_TAG}; then
+	bzr branch http://bazaar.launchpad.net/${TEAM}/${PROJECT}/${BZR_TAG}/
 fi
 
 # Get the debian directory
-if test ! -d debian-${DEBIAN_GIT_BRANCH}; then
-	git clone ${DEBIAN_GIT_URL} debian-${DEBIAN_GIT_BRANCH}
+if test ! -d debian-${DEBIAN_GIT_TAG}; then
+	git clone ${DEBIAN_GIT_URL} debian-${DEBIAN_GIT_TAG}
 else
-	cd debian-${DEBIAN_GIT_BRANCH}
+	cd debian-${DEBIAN_GIT_TAG}
 	git pull
 	cd ..
 fi
 
 # Go into our checkout of JULIA_GIT_URL
-cd julia-${JULIA_GIT_BRANCH}
-git checkout ${JULIA_GIT_BRANCH}
+cd julia-${JULIA_GIT_TAG}
+git checkout ${JULIA_GIT_TAG}
 git fetch
-git reset --hard origin/${JULIA_GIT_BRANCH}
+git reset --hard origin/${JULIA_GIT_TAG}
 
 # Find the last commit that passed a Travis build
 if [[ -z "$GIVEN_COMMIT" ]]; then
@@ -75,7 +75,7 @@ else
     LAST_GOOD_COMMIT="$GIVEN_COMMIT"
 fi
 
-git checkout -B ${JULIA_GIT_BRANCH} ${LAST_GOOD_COMMIT}
+git checkout -B ${JULIA_GIT_TAG} ${LAST_GOOD_COMMIT}
 if [[ "$?" != "0" ]]; then
 	echo "Couldn't detect best last commit, going with HEAD!"
 	git checkout HEAD
@@ -103,20 +103,20 @@ echo "Syncing commit ${JULIA_VERSION}+$DATECOMMIT."
 cd ..
 
 # Now go into the bzr branch and copy everything over
-cd ${BZR_BRANCH}
-bzr pull http://bazaar.launchpad.net/${TEAM}/${PROJECT}/${BZR_BRANCH}/
+cd ${BZR_TAG}
+bzr pull http://bazaar.launchpad.net/${TEAM}/${PROJECT}/${BZR_TAG}/
 rm -rf *
-cp -r ../julia-${JULIA_GIT_BRANCH}/* .
+cp -r ../julia-${JULIA_GIT_TAG}/* .
 
 # Throw the debian directory into here as well, instead of relying on launchpad
-cp -r ../debian-${DEBIAN_GIT_BRANCH}/debian .
+cp -r ../debian-${DEBIAN_GIT_TAG}/debian .
 
 # Also, increment the current debian changelog, so we get git version tagged binaries
 dch -v "${JULIA_VERSION}+$DATECOMMIT" "nightly git build"
 
 bzr add
-bzr ci -m "Manual import commit ${DATECOMMIT} from ${JULIA_GIT_URL}/${JULIA_GIT_BRANCH}" || true
-bzr push lp:${TEAM}/${PROJECT}/${BZR_BRANCH}
+bzr ci -m "Manual import commit ${DATECOMMIT} from ${JULIA_GIT_URL}/${JULIA_GIT_TAG}" || true
+bzr push lp:${TEAM}/${PROJECT}/${BZR_TAG}
 cd ..
 
 # Report to status.julialang.org

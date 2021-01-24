@@ -1,27 +1,24 @@
-# julia
+# docker
 
 init() {
-    if [ ! -e upstream ]; then
-        git clone -q https://github.com/JuliaLang/julia.git upstream
-    fi
     if [ $1 == "pull" ]; then
+        if [ ! -e upstream ]; then
+            mkdir upstream
+        fi
         (cd upstream || exit
-            git branch -f qold v1.6.0-beta1
-            git checkout -q --track -B qnew master
-            git reset -q --hard
-            git clean -qxfd
-            git pull -q
         )
     else
+        mv srcs/qpx.sh .
         rm -rf srcs
-        git clone -qb $1 ./upstream srcs
+        mkdir srcs
+        mv qpx.sh srcs/
     fi
 }
 
 run() {
-    cd srcs
-    make -j $(nproc)
-    make install prefix=$2
+    v=$1
+    d=$2
+    mkdir -p $d
 }
 
 clean() {

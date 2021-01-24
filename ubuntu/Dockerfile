@@ -2,7 +2,7 @@
 
 ARG REG
 ARG TAG
-
+ARG DST
 
 FROM scratch as tmp-old
 ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 WORKDIR /tmp
 COPY pkgs .
 RUN set -eux; \
-    pkgs/qpx.sh -r; rm pkgs/qpx.sh; \
+    ./qpx.sh -r; rm qpx.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \
@@ -51,7 +51,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 WORKDIR /tmp
 COPY pkgs .
 RUN set -eux; \
-    pkgs/qpx.sh -r; rm pkgs/qpx.sh; \
+    ./qpx.sh -r; rm qpx.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \

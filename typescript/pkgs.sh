@@ -1,9 +1,7 @@
 # typescript
 
 init() {
-    mkdir -p pkgs
-    cd pkgs
-    v=v4.1.3
+    v=$TS_VER
     fetch \
         "" \
         "https://github.com/microsoft/TypeScript/releases/download/$v" \
@@ -12,9 +10,10 @@ init() {
 }
 
 run() {
-    cd pkgs || exit
-    mkdir -p "$2"
-    tar -xzf "typescript-$v.tgz" -C "$2"
+    v=$1
+    d=$2
+    mkdir -p $d
+    tar -xzf "typescript-$v.tgz" -C $d
 }
 
 clean() {

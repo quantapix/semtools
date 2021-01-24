@@ -1,9 +1,7 @@
 # golang
 
 init() {
-    mkdir -p pkgs
-    cd pkgs
-    v=1.15.6
+    v=$GOLANG_VER
     fetch \
         "EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796" \
         "https://storage.googleapis.com/golang" \
@@ -12,9 +10,10 @@ init() {
 }
 
 run() {
-    cd pkgs || exit
-    mkdir -p "$2"
-    tar -xzf "go$1.linux-amd64.tar.gz" -C "$2"
+    v=$GOLANG_VER
+    d=$2
+    mkdir -p $d
+    tar -xzf "go$v.linux-amd64.tar.gz" -C $d
 }
 
 clean() {

@@ -2,7 +2,7 @@
 
 ARG REG
 ARG TAG
-
+ARG DST
 
 FROM $REG/pkg-dev:$TAG AS tmp_pkg
 ENV VER=1.49.0 \

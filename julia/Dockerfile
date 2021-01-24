@@ -2,38 +2,31 @@
 
 ARG REG
 ARG TAG
+ARG DST
 
 FROM $REG/pkg-dev:$TAG AS tmp_old_pkg
-ENV VER=1.5.3 \
-    DST=/usr/local/julia
 WORKDIR /tmp
 COPY pkgs .
-RUN ./qpx.sh -r ${VER} ${DST}
+RUN ./qpx.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS jl_old_pkg
-ENV JULIA_VERSION=1.5.3 \
-    JULIA_PATH=/usr/local/julia \
+ENV JULIA_PATH=${DST}/julia \
     PATH=$JULIA_PATH/bin:$PATH
-COPY --from=tmp_old_pkg /usr/local /usr/local
+COPY --from=tmp_old_pkg ${DST} ${DST}
 
 
 FROM $REG/pkg-dev:$TAG AS tmp_new_pkg
-ENV VER=1.6.0-beta1 \
-    DST=/usr/local/julia
 WORKDIR /tmp
 COPY pkgs .
-RUN ./qpx.sh -r ${VER} ${DST}
+RUN ./qpx.sh -r new ${DST}
 
 FROM $REG/old:$TAG AS jl_new_pkg
-ENV JULIA_VERSION=1.6.0-beta1 \
-    JULIA_PATH=/usr/local/julia \
+ENV JULIA_PATH=${DST}/julia \
     PATH=$JULIA_PATH/bin:$PATH
-COPY --from=tmp_new_pkg /usr/local /usr/local
+COPY --from=tmp_new_pkg ${DST} ${DST}
 
 
 FROM $REG/pkg-dev:$TAG AS tmp_old_src
-ENV VER=1.6.0-beta1 \
-    DST=/usr/local/julia
 WORKDIR /tmp
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b old ${DST}
@@ -41,15 +34,12 @@ COPY srcs .
 RUN ./qpx.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS jl_old_src
-ENV JULIA_VERSION=1.6.0-beta1 \
-    JULIA_PATH=/usr/local/julia \
+ENV JULIA_PATH=${DST}/julia \
     PATH=$JULIA_PATH/bin:$PATH
-COPY --from=tmp_old_src /usr/local /usr/local
+COPY --from=tmp_old_src ${DST} ${DST}
 
 
 FROM $REG/src-dev:$TAG AS tmp_new_src
-ENV VER=1.7.0-dev \
-    DST=/usr/local/julia
 WORKDIR /tmp
 # COPY deps* .
 # RUN chmod u+x deps.sh; ./deps.sh -b new ${DST}
@@ -57,7 +47,6 @@ COPY srcs .
 RUN ./qpx.sh -r new ${DST}
 
 FROM $REG/new:$TAG AS jl_new_src
-ENV JULIA_VERSION=1.7.0-dev \
-    JULIA_PATH=/usr/local/julia \
+ENV JULIA_PATH=${DST}/julia \
     PATH=$JULIA_PATH/bin:$PATH
-COPY --from=tmp_new_src /usr/local /usr/local
+COPY --from=tmp_new_src ${DST} ${DST}

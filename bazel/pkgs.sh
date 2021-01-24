@@ -1,7 +1,7 @@
 # bazel
 
 init() {
-    v=4.0.0
+    v=$BAZEL_VER
     url="https://github.com/bazelbuild/bazel/releases/download/$v"
     fetch \
         "" \
@@ -18,8 +18,11 @@ init() {
 }
 
 run() {
-    chmod u+x bazel-$1-installer-linux-x86_64.sh
-    ./bazel-$1-installer-linux-x86_64.sh --prefix=$2
+    v=$BAZEL_VER
+    d=$2
+    mkdir -p $d
+    chmod u+x bazel-$v-installer-linux-x86_64.sh
+    ./bazel-$v-installer-linux-x86_64.sh --prefix=$d
 }
 
 clean() {

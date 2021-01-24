@@ -1,5 +1,6 @@
 ARG REG
 ARG TAG
+ARG DST
 
 FROM ubuntu:focal AS ubu
 ENV DEBIAN_FRONTEND=noninteractive \

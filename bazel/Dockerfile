@@ -2,11 +2,10 @@
 
 ARG REG
 ARG TAG
+ARG DST
 
 FROM $REG/old-dev:$TAG AS tmp_old
-ENV DEBIAN_FRONTEND=noninteractive \
-    VER=4.0.0 \
-    DST=/usr/local
+ENV DEBIAN_FRONTEND=noninteractive
 RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         openjdk-11-jdk \
@@ -17,7 +16,7 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp
 COPY pkgs .
-RUN ./qpx.sh -r ${VER} ${DST}
+RUN ./qpx.sh -r "" ${DST}
 
 FROM $REG/old:$TAG AS bzl_old
 RUN set -ex; \
@@ -27,13 +26,11 @@ RUN set -ex; \
         zip \
     ; \
     rm -rf /var/lib/apt/lists/*
-COPY --from=tmp_old /usr/local /usr/local
+COPY --from=tmp_old ${DST} ${DST}
 
 
 FROM $REG/new-dev:$TAG AS tmp_new
-ENV DEBIAN_FRONTEND=noninteractive \
-    VER=4.0.0 \
-    DST=/usr/local
+ENV DEBIAN_FRONTEND=noninteractive
 RUN set -ex; \
     apt-get update && apt-get install -y --no-install-recommends \
         openjdk-11-jdk \
@@ -54,4 +51,4 @@ RUN set -ex; \
         zip \
     ; \
     rm -rf /var/lib/apt/lists/*
-COPY --from=tmp_new /usr/local /usr/local
+COPY --from=tmp_new ${DST} ${DST}

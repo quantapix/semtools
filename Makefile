@@ -1,7 +1,9 @@
 REG?=localhost\:5000
 # REG?=qbrn.reg
 TAG=0
-ARGS=--build-arg REG=$(REG) --build-arg TAG=$(TAG)
+DST=/usr/local
+
+ARGS=--build-arg REG=$(REG) --build-arg TAG=$(TAG) --build-arg DST=$(DST)
 
 IMGS=$(shell find * -type f -name imgs.sh)
 PKGS=$(shell find * -type f -name pkgs.sh)

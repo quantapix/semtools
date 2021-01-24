@@ -3,17 +3,17 @@
 set -eux
 
 init() {
-    DSFMT_BRANCH=v2.2.4
-    LAPACK_BRANCH=v3.9.0
-    LIBUV_BRANCH=julia-uv2-1.39.0
-    LLVM_BRANCH=llvmorg-11.0.1
-    MBEDTLS_BRANCH=v2.24.0
-    OPENBLAS_BRANCH=v0.3.10 
-    OPENLIBM_BRANCH=v0.7.3
-    PATCHELF_BRANCH=0.9
-    SUITESPARSE_BRANCH=v5.4.0
-    UNWIND_BRANCH=v1.3.2
-    UTF8PROC_BRANCH=v2.6.1
+    DSFMT_TAG=v2.2.4
+    LAPACK_TAG=v3.9.0
+    LIBUV_TAG=julia-uv2-1.39.0
+    LLVM_TAG=llvmorg-11.0.1
+    MBEDTLS_TAG=v2.24.0
+    OPENBLAS_TAG=v0.3.10 
+    OPENLIBM_TAG=v0.7.3
+    PATCHELF_TAG=0.9
+    SUITESPARSE_TAG=v5.4.0
+    UNWIND_TAG=v1.3.2
+    UTF8PROC_TAG=v2.6.1
     LLVM_RV_GIT_VER=release_90
 
     CLANG_VER=11.0.1
@@ -71,17 +71,17 @@ init() {
     else
         mkdir srcs
         cd srcs
-        git clone -b $DSFMT_BRANCH --depth 1 ../upstream/dSFMT
-        git clone -b $LAPACK_BRANCH --depth 1 ../upstream/lapack
-        git clone -b $LIBUV_BRANCH --depth 1 ../upstream/libuv
-        git clone -b $LLVM_BRANCH --depth 1 ../upstream/llvm-project
-        git clone -b $MBEDTLS_BRANCH --depth 1 ../upstream/mbedtls
-        git clone -b $OPENBLAS_BRANCH --depth 1 ../upstream/OpenBLAS
-        git clone -b $OPENLIBM_BRANCH --depth 1 ../upstream/openlibm
-        git clone -b $PATCHELF_BRANCH --depth 1 ../upstream/patchelf
-        git clone -b $SUITESPARSE_BRANCH --depth 1 ../upstream/SuiteSparse
-        git clone -b $UNWIND_BRANCH --depth 1 ../upstream/libunwind
-        git clone -b $UTF8PROC_BRANCH --depth 1 ../upstream/utf8proc
+        git clone -b $DSFMT_TAG --depth 1 ../upstream/dSFMT
+        git clone -b $LAPACK_TAG --depth 1 ../upstream/lapack
+        git clone -b $LIBUV_TAG --depth 1 ../upstream/libuv
+        git clone -b $LLVM_TAG --depth 1 ../upstream/llvm-project
+        git clone -b $MBEDTLS_TAG --depth 1 ../upstream/mbedtls
+        git clone -b $OPENBLAS_TAG --depth 1 ../upstream/OpenBLAS
+        git clone -b $OPENLIBM_TAG --depth 1 ../upstream/openlibm
+        git clone -b $PATCHELF_TAG --depth 1 ../upstream/patchelf
+        git clone -b $SUITESPARSE_TAG --depth 1 ../upstream/SuiteSparse
+        git clone -b $UNWIND_TAG --depth 1 ../upstream/libunwind
+        git clone -b $UTF8PROC_TAG --depth 1 ../upstream/utf8proc
         git clone -b $LLVM_RV_GIT_VER --depth 1 ../upstream/rv
     fi
 }

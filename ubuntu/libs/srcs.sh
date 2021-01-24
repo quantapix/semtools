@@ -26,14 +26,14 @@ init() {
         mkdir srcs
         mv qpx.sh srcs/
         (cd srcs
-            git clone -qb $CMAKE_BRANCH ../upstream/cmake
-            git clone -qb $CURL_BRANCH ../upstream/curl
-            git clone -qb $LIBGIT2_BRANCH ../upstream/libgit2
-            git clone -qb $LIBSSH2_BRANCH ../upstream/libssh2
-            git clone -qb $LIBWHICH_BRANCH ../upstream/libwhich
-            git clone -qb $NGHTTP2_BRANCH ../upstream/nghttp2
-            git clone -qb $NINJA_BRANCH ../upstream/ninja
-            git clone -qb $ZLIB_BRANCH ../upstream/zlib
+            git clone -qb $CMAKE_TAG ../upstream/cmake
+            git clone -qb $CURL_TAG ../upstream/curl
+            git clone -qb $LIBGIT2_TAG ../upstream/libgit2
+            git clone -qb $LIBSSH2_TAG ../upstream/libssh2
+            git clone -qb $LIBWHICH_TAG ../upstream/libwhich
+            git clone -qb $NGHTTP2_TAG ../upstream/nghttp2
+            git clone -qb $NINJA_TAG ../upstream/ninja
+            git clone -qb $ZLIB_TAG ../upstream/zlib
         )
     fi
 }

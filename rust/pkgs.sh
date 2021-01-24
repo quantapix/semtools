@@ -3,8 +3,6 @@
 arch="x86_64-unknown-linux-gnu"
 
 init() {
-    mkdir -p pkgs
-    cd pkgs
     fetch \
         "" \
         "https://static.rust-lang.org/rustup/archive/1.23.1/$arch" \
@@ -13,13 +11,14 @@ init() {
 }
 
 run() {
-    cd pkgs || exit
-    export RUST_VERSION=$1 \
-        RUSTUP_HOME=$2/rustup \
-        CARGO_HOME=$2/cargo \
-        PATH=$2/cargo/bin:$PATH
+    v=$RUST_VER
+    d=$2
+    export RUST_VERSION=$v \
+        RUSTUP_HOME=$d/rustup \
+        CARGO_HOME=$d/cargo \
+        PATH=$d/cargo/bin:$PATH
     chmod +x rustup-init
-    ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $RUST_VERSION --default-host $arch
+    ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $v --default-host $arch
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME
     rustup --version
     cargo --version

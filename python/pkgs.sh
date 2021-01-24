@@ -1,9 +1,7 @@
 # python
 
 init() {
-    mkdir -p pkgs
-    cd pkgs
-    v=3.9.1
+    v=$PYTHON_VER
     fetch \
         "E3FF2839C048B25C084DEBE9B26995E310250568" \
         "https://www.python.org/ftp/python/$v" \
@@ -17,8 +15,9 @@ init() {
 }
 
 run() {
-    cd pkgs || exit
-    mkdir -p "tmp/src"
+    v=$PYTHON_VER
+    d=$2/python
+    mkdir -p $d "tmp/src"
     tar -xJf "Python-$1.tar.xz" -C "/tmp/src" --strip-components=1
     cd /tmp/src
 	  ./configure \
@@ -38,14 +37,14 @@ run() {
         --no-cache-dir \
         "pip==$PYTHON_PIP_VERSION"
   	pip --version
-  	find /usr/local -depth \
+  	find $2 -depth \
 		    \( \
 			      \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
 			      -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
 		    \) -exec rm -rf '{}' +
 	  ldconfig
     python3 --version
-    (cd /usr/local/bin
+    (cd $2/bin
 	      ln -s idle3 idle
 	      ln -s pydoc3 pydoc
 	      ln -s python3 python

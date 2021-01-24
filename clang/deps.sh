@@ -3,9 +3,9 @@
 set -eux
 
 init() {
-    NINJA_BRANCH=v1.10.2
-    CMAKE_BRANCH=v3.19.3
-    ZLIB_BRANCH=v1.2.11
+    NINJA_TAG=v1.10.2
+    CMAKE_TAG=v3.19.3
+    ZLIB_TAG=v1.2.11
 
     cd deps
     if [ ! -e upstream ]; then
@@ -26,9 +26,9 @@ init() {
     else
         mkdir srcs
         cd srcs
-        git clone -b $NINJA_BRANCH --depth 1 ../upstream/ninja
-        git clone -b $CMAKE_BRANCH --depth 1 ../upstream/ninja
-        git clone -b $ZLIB_BRANCH --depth 1 ../upstream/zlib
+        git clone -b $NINJA_TAG --depth 1 ../upstream/ninja
+        git clone -b $CMAKE_TAG --depth 1 ../upstream/ninja
+        git clone -b $ZLIB_TAG --depth 1 ../upstream/zlib
 
     fi
 }
