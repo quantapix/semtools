@@ -14,22 +14,19 @@ init() {
             git pull -q
         )
     else
+        mv srcs/qpx.sh .
         rm -rf srcs
         git clone -qb $1 ./upstream srcs
+        mv qpx.sh srcs/
         mkdir -p srcs/qpx
-        cd srcs/qpx
-        fetch \
-            "" \
-            "https://github.com/bazelbuild/bazel/releases/download/$v" \
-            "bazel-$v-dist.zip" \
-            ""
-            # d350f80e70654932db252db380d2ec0144a00e86f8d9f2b4c799ffdb48e9cdd1"
+        cp pkgs/bazel-$v-dist.zip srcs/qpx/
     fi
 }
 
 run() {
     (cd qpx
-        unzip bazel-$1-dist.zip
+        v=4.0.0
+        unzip bazel-$v-dist.zip
         env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
         cp output/bazel $2/bin/
     )

@@ -35,7 +35,7 @@ clean-pkgs: util.sh
 		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s pkgs; \
-			pkgs/run.sh -c; \
+			pkgs/qpx.sh -c; \
 		) \
 	done
 
@@ -44,7 +44,7 @@ srcs: util.sh
 		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s srcs; \
-			srcs/run.sh -i pull; \
+			srcs/qpx.sh -i pull; \
 		) \
 	done
 
@@ -53,7 +53,7 @@ clean-srcs: util.sh
 		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s srcs; \
-			srcs/run.sh -c; \
+			srcs/qpx.sh -c; \
 		) \
 	done
 
@@ -74,8 +74,7 @@ bzl: util.sh
 	(cd bazel; \
 		docker build -t $(REG)/bzl_old:$(TAG) --pull --target=bzl_old $(ARGS) .; \
 		docker push $(REG)/bzl_old:$(TAG); \
-		$(UTIL) -s srcs; \
-		srcs/run.sh -i old; \
+		srcs/qpx.sh -i old; \
 		docker build -t $(REG)/bzl_new:$(TAG) --pull --target=bzl_new $(ARGS) .; \
 		docker push $(REG)/bzl_new:$(TAG); \
 	)
@@ -85,10 +84,10 @@ imgs2:
 		docker build -t $(REG)/pkg-dev:$(TAG) --pull --target=pkg-dev $(ARGS) .; \
 		docker push $(REG)/pkg-dev:$(TAG); \
 		chmod u+x $(UTIL); $(UTIL) -s srcs; \
-		srcs/run.sh -i srcs; \
+		srcs/qpx.sh -i srcs; \
 		docker build -t $(REG)/src-dev:$(TAG) --pull --target=src-dev $(ARGS) .; \
 		docker push $(REG)/src-dev:$(TAG); \
-		rm srcs/run.sh; \
+		rm srcs/qpx.sh; \
 	)
 	(cd julia; \
 		docker build -t $(REG)/jl_old_pkg:$(TAG) --pull --target=jl_old_pkg $(ARGS) .; \

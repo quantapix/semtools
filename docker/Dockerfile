@@ -16,6 +16,6 @@ COPY docker-entrypoint.sh /usr/local/bin/
 WORKDIR /tmp
 COPY pkgs pkgs
 RUN mkdir /certs /certs/client && chmod 1777 /certs /certs/client \
-    pkgs/run.sh -r ${DOCKER_VERSION} ${DST}
+    pkgs/qpx.sh -r ${DOCKER_VERSION} ${DST}
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["sh"]

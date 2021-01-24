@@ -9,7 +9,7 @@ ENV VER=1.15.6 \
     DST=/usr/local/go
 WORKDIR /tmp
 COPY pkgs pkgs
-RUN pkgs/run.sh -r ${VER} ${DST}
+RUN pkgs/qpx.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS go_pkg
 ENV GOLANG_VERSION=1.15.6 \
@@ -30,7 +30,7 @@ ENV VER=1.15.6 \
     DST=/usr/local/go
 WORKDIR /tmp
 COPY srcs srcs
-RUN srcs/run.sh -r old ${DST}
+RUN srcs/qpx.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS go_src
 ENV GOLANG_VERSION=1.15.6 \

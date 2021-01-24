@@ -18,7 +18,7 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp
 COPY pkgs .
-RUN ./run.sh -r ${VER} ${DST}
+RUN ./qpx.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS bzl_old
 RUN set -ex; \
@@ -45,7 +45,7 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp
 COPY srcs .
-RUN ./run.sh -r old ${DST}
+RUN ./qpx.sh -r old ${DST}
 
 FROM $REG/new:$TAG AS bzl_new
 RUN set -ex; \

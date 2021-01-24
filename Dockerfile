@@ -27,7 +27,7 @@ FROM $REG/ubu:$TAG AS tmp-pkgs
 ENV LANG=C.UTF-8
 WORKDIR /tmp
 COPY pkgs .
-RUN ./run.sh -i pkgs
+RUN ./qpx.sh -i pkgs
 
 FROM scratch as pkgs
 ENV LANG=C.UTF-8

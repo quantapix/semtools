@@ -4,8 +4,8 @@ set -Eeuxo pipefail
 
 setup() {
 		mkdir -p $1
-    cat $(dirname $2)/conf.sh $1.sh $2 > $1/run.sh
-		chmod u+x $1/run.sh
+    cat $(dirname $2)/conf.sh $1.sh $2 > $1/qpx.sh
+		chmod u+x $1/qpx.sh
 }
 
 fetch() {

@@ -9,7 +9,7 @@ ENV VER=1.49.0 \
     DST=/usr/local/python
 WORKDIR /tmp
 COPY pkgs pkgs
-RUN pkgs/run.sh -r ${VER} ${DST}
+RUN pkgs/qpx.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS py_pkg
 ENV RUST_VERSION=1.49.0 \
@@ -24,7 +24,7 @@ ENV VER=1.49.0 \
     DST=/usr/local/python
 WORKDIR /tmp
 COPY srcs srcs
-RUN srcs/run.sh -r old ${DST}
+RUN srcs/qpx.sh -r old ${DST}
 
 FROM $REG/old:$TAG AS py_src
 ENV RUST_VERSION=1.49.0 \

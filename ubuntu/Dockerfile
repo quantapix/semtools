@@ -11,7 +11,7 @@ ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs pkgs
 RUN set -eux; \
-    pkgs/run.sh -r; rm pkgs/run.sh; \
+    pkgs/qpx.sh -r; rm pkgs/qpx.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \
@@ -55,7 +55,7 @@ ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs pkgs
 RUN set -eux; \
-    pkgs/run.sh -r; rm pkgs/run.sh; \
+    pkgs/qpx.sh -r; rm pkgs/qpx.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \
