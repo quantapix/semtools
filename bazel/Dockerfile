@@ -17,12 +17,17 @@ RUN set -ex; \
     ; \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/run.sh -r ${VER} ${DST}
-COPY srcs srcs
-RUN srcs/run.sh -r old ${DST}
+COPY pkgs .
+RUN ./run.sh -r ${VER} ${DST}
 
 FROM $REG/old:$TAG AS bzl_old
+RUN set -ex; \
+    apt-get update && apt-get install -y --no-install-recommends \
+        g++ \
+        unzip \
+        zip \
+    ; \
+    rm -rf /var/lib/apt/lists/*
 COPY --from=tmp_old /usr/local /usr/local
 
 
@@ -39,10 +44,15 @@ RUN set -ex; \
     ; \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/run.sh -r ${VER} ${DST}
-COPY srcs srcs
-RUN srcs/run.sh -r old ${DST}
+COPY srcs .
+RUN ./run.sh -r old ${DST}
 
 FROM $REG/new:$TAG AS bzl_new
+RUN set -ex; \
+    apt-get update && apt-get install -y --no-install-recommends \
+        g++ \
+        unzip \
+        zip \
+    ; \
+    rm -rf /var/lib/apt/lists/*
 COPY --from=tmp_new /usr/local /usr/local

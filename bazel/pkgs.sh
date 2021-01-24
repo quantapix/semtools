@@ -1,20 +1,18 @@
 # bazel
 
 init() {
-    mkdir -p pkgs
-    cd pkgs
+    v=4.0.0
     fetch \
         "" \
-        "https://github.com/bazelbuild/bazel/releases/tag/4.0.0" \
-        "bazel-4.0.0-dist.zip" \
+        "https://github.com/bazelbuild/bazel/releases/download/$v" \
+        "bazel-$v-installer-linux-x86_64.sh" \
         ""
-        # d350f80e70654932db252db380d2ec0144a00e86f8d9f2b4c799ffdb48e9cdd1"
+        # "bd7a3a583a18640f58308c26e654239d412adaa833b6b6a7b57a216ab62fabc2"
 }
 
 run() {
-    cd pkgs || exit
-    env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
-    cp output/bazel $2/bin/
+    chmod u+x bazel-$1-installer-linux-x86_64.sh
+    ./bazel-$1-installer-linux-x86_64.sh --prefix=$2
 }
 
 clean() {

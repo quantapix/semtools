@@ -11,21 +11,13 @@ ADD pkgs/focal/ubuntu-focal-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs pkgs
 RUN set -eux; \
-    pkgs/run.sh -r; rm pkgs.sh; \
+    pkgs/run.sh -r; rm pkgs/run.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \
         tzdata \
     ; \
     rm -rf /var/lib/apt/lists/*
-RUN set -ex; \
-    if ! command -v gpg > /dev/null; then \
-        apt-get update && apt-get install -y --no-install-recommends \
-            dirmngr \
-            gnupg \
-        ; \
-        rm -rf /var/lib/apt/lists/*; \
-    fi
 
 FROM scratch as old
 ENV LANG=C.UTF-8
@@ -42,6 +34,14 @@ RUN set -ex; \
         git \
     ; \
     rm -rf /var/lib/apt/lists/*
+RUN set -ex; \
+    if ! command -v gpg > /dev/null; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            dirmngr \
+            gnupg \
+        ; \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
 
 FROM scratch as old-dev
 ENV LANG=C.UTF-8
@@ -55,21 +55,13 @@ ADD pkgs/hirsute/ubuntu-hirsute-core-cloudimg-amd64-root.tar.gz /
 WORKDIR /tmp
 COPY pkgs pkgs
 RUN set -eux; \
-    pkgs/run.sh -r; rm pkgs.sh; \
+    pkgs/run.sh -r; rm pkgs/run.sh; \
     apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         netbase \
         tzdata \
     ; \
     rm -rf /var/lib/apt/lists/*
-RUN set -ex; \
-    if ! command -v gpg > /dev/null; then \
-        apt-get update && apt-get install -y --no-install-recommends \
-            dirmngr \
-            gnupg \
-        ; \
-        rm -rf /var/lib/apt/lists/*; \
-    fi
 
 FROM scratch as new
 ENV LANG=C.UTF-8
@@ -86,6 +78,14 @@ RUN set -ex; \
         git \
     ; \
   	rm -rf /var/lib/apt/lists/*
+RUN set -ex; \
+    if ! command -v gpg > /dev/null; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            dirmngr \
+            gnupg \
+        ; \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
 
 FROM scratch as new-dev
 ENV LANG=C.UTF-8

@@ -26,9 +26,9 @@ RUN set -ex; \
 FROM $REG/ubu:$TAG AS tmp-pkgs
 ENV LANG=C.UTF-8
 WORKDIR /tmp
-COPY pkgs pkgs
-RUN pkgs/run.sh -i pkgs
+COPY pkgs .
+RUN ./run.sh -i pkgs
 
 FROM scratch as pkgs
 ENV LANG=C.UTF-8
-COPY --from=tmp-pkgs /tmp/pkgs /
+COPY --from=tmp-pkgs /tmp /

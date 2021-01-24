@@ -23,6 +23,7 @@ pkgs: util.sh
 	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
 		echo $$d; \
+		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s pkgs; \
 			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
@@ -31,6 +32,7 @@ pkgs: util.sh
 
 clean-pkgs: util.sh
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
+		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s pkgs; \
 			pkgs/run.sh -c; \
@@ -39,6 +41,7 @@ clean-pkgs: util.sh
 
 srcs: util.sh
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
+		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s srcs; \
 			srcs/run.sh -i pull; \
@@ -47,6 +50,7 @@ srcs: util.sh
 
 clean-srcs: util.sh
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
+		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s srcs; \
 			srcs/run.sh -c; \
@@ -66,15 +70,14 @@ ubu: pkgs srcs
 		docker push $(REG)/new-dev:$(TAG); \
 	)
 
-bzl: ubu
+bzl: util.sh
 	(cd bazel; \
-		chmod u+x $(UTIL); $(UTIL) -s srcs; \
-		srcs/run.sh -i old; \
 		docker build -t $(REG)/bzl_old:$(TAG) --pull --target=bzl_old $(ARGS) .; \
 		docker push $(REG)/bzl_old:$(TAG); \
+		$(UTIL) -s srcs; \
+		srcs/run.sh -i old; \
 		docker build -t $(REG)/bzl_new:$(TAG) --pull --target=bzl_new $(ARGS) .; \
 		docker push $(REG)/bzl_new:$(TAG); \
-		rm srcs/run.sh; \
 	)
 
 imgs2:
