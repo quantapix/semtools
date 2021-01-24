@@ -64,10 +64,8 @@ run() {
         unzip \
         uuid-dev \
         wget \
-        xz-utils \
+        xz-utils
 	  rm -rf /var/lib/apt/lists/*
-    mkdir /var/lib/apt/lists/partial
-
 }
 
 clean() {

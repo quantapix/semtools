@@ -1,24 +1,23 @@
 # ubuntu
 
 init() {
+    key="D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81"
     export GNUPGHOME="$(mktemp -d)"
-    GPG=D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81
-	  gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG"
-
+	  gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"
+    
     for v in focal hirsute; do
-        b="ubuntu-$v-core-cloudimg-amd64"
-        tar="$b-root.tar.gz"
-        url="https://partner-images.canonical.com/core/$v/current"
-        
-        mkdir -p pkgs/$v
-        (cd pkgs/$v
-            wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$b.manifest",'unpacked/build-info.txt'}
+        mkdir -p $v
+        (cd $v
+            url="https://partner-images.canonical.com/core/$v/current"
+            base="ubuntu-$v-core-cloudimg-amd64"
+            wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
+            tar="$base-root.tar.gz"
             wget -N --progress=dot:giga "$url/$tar"
             for s in sha256 sha1 md5; do
-                f="${s^^}SUMS"
-                gpg --batch --verify "$f.gpg" "$f" || exit
-                c="${s}sum"
-                grep " *$tar\$" "$f" | "$c" -c - || exit
+                file="${s^^}SUMS"
+                gpg --batch --verify "$file.gpg" "$file" || exit
+                cmd="${s}sum"
+                grep " *$tar\$" "$file" | "$cmd" -c - || exit
             done
         )
     done

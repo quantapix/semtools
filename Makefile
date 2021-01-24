@@ -9,13 +9,15 @@ IMGS=$(shell find * -type f -name imgs.sh)
 PKGS=$(shell find * -type f -name pkgs.sh)
 SRCS=$(shell find * -type f -name srcs.sh)
 
+UPSS=$(shell find * -type d -name upstream)
+
 UTIL=$(shell pwd)/util.sh
 
 MAKEFLAGS += -rR
 
-.PHONY: all clean clean-pkgs clean-srcs reset
+.PHONY: all clean clean-pkgs clean-srcs upstreams reset
 
-all: $(NAMES)
+all: tgt.bzl
 
 util.sh: base.sh
 	chmod u+x $<
@@ -26,23 +28,21 @@ tgt.pkgs: util.sh
 	docker build -t $(REG)/ubu:$(TAG) --pull --target=ubu $(ARGS) - < $$DF; \
 	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
-		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s pkgs; \
-			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs .; \
+			docker build --pull --target=pkgs $(ARGS) -f $$DF -o pkgs . \
 		) \
-	done \
+	done
 	touch tgt.pkgs
 
 tgt.srcs: util.sh
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
-		if [ ! $$d = "bazel" ]; then continue; fi; \
 		(cd $$d || exit; \
 			$(UTIL) -s srcs; \
 			srcs/qpx.sh -i pull; \
 		) \
-	done \
-	touch tgt.pkgs
+	done
+	touch tgt.srcs
 
 tgt.ubu: tgt.pkgs tgt.srcs
 	(cd ubuntu; \
@@ -55,7 +55,7 @@ tgt.ubu: tgt.pkgs tgt.srcs
 		docker push $(REG)/new:$(TAG); \
 		docker build -t $(REG)/new-dev:$(TAG) --pull --target=new-dev $(ARGS) .; \
 		docker push $(REG)/new-dev:$(TAG); \
-	) \
+	)
 	touch tgt.ubu
 
 tgt.dev: tgt.ubu
@@ -65,7 +65,7 @@ tgt.dev: tgt.ubu
 		srcs/qpx.sh -i srcs; \
 		docker build -t $(REG)/src-dev:$(TAG) --pull --target=src-dev $(ARGS) .; \
 		docker push $(REG)/src-dev:$(TAG); \
-	) \
+	)
 	touch tgt.dev
 
 tgt.bzl: tgt.ubu
@@ -75,7 +75,7 @@ tgt.bzl: tgt.ubu
 		srcs/qpx.sh -i old; \
 		docker build -t $(REG)/bzl_new:$(TAG) --pull --target=bzl_new $(ARGS) .; \
 		docker push $(REG)/bzl_new:$(TAG); \
-	) \
+	)
 	touch tgt.bzl
 
 tgt.jl: tgt.dev
@@ -88,15 +88,16 @@ tgt.jl: tgt.dev
 		docker push $(REG)/jl_old_src:$(TAG); \
 		docker build -t $(REG)/jl_new_src:$(TAG) --pull --target=jl_new_src $(ARGS) .; \
 		docker push $(REG)/jl_new_src:$(TAG); \
-	) \
-	touch tgt.bzl
+	)
+	touch tgt.jl
 
 clean: clean-pkgs clean-srcs
+	rm -f tgt.*
 
 clean-pkgs: 
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
 		(cd $$d || exit; \
-			if [ -e pkgs/qpx.sh ]; then pkgs/qpx.sh -c; fi; \
+			if [ -e pkgs/qpx.sh ]; then pkgs/qpx.sh -c; fi \
 	  ) \
 	done
 	rm -f tgt.pkgs
@@ -104,10 +105,15 @@ clean-pkgs:
 clean-srcs:
 	for d in $(subst /srcs.sh,,$(SRCS)); do \
 		(cd $$d || exit; \
-			if [ -e srcs/qpx.sh ]; then srcs/qpx.sh -c; fi; \
+			if [ -e srcs/qpx.sh ]; then srcs/qpx.sh -c; fi \
 		) \
 	done
 	rm -f tgt.srcs
+
+clean-upstreams:
+	for d in $(UPSS); do \
+		rm -rf $$d; \
+	done
 
 reset: 
 	docker container stop registry && docker container rm -v registry

@@ -9,7 +9,7 @@ setup() {
 }
 
 fetch() {
-    gpg="$1"
+    key="$1"
     url="$2"
     tar="$3"
     asc="$tar.asc"
@@ -18,10 +18,10 @@ fetch() {
         rm $tar
     else
 	      wget --progress=dot:giga "$url/$tar" 
-        if [ ! -z $gpg ]; then
-            wget -q "$url/$asc"
+        if [ ! -z $key ]; then
             export GNUPGHOME="$(mktemp -d)"
-            gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$gpg"
+            gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"
+            wget -q "$url/$asc"
             gpg --batch --verify $asc $tar || exit
             command -v gpgconf > /dev/null && gpgconf --kill all || :
             rm -rf "$GNUPGHOME" $asc
