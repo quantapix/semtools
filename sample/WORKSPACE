@@ -1,36 +1,18 @@
 workspace(name = "sample")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file",)
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "bazel_skylib",
     remote = "https://github.com/bazelbuild/bazel-skylib.git",
-    tag = "0.6.0",
+    tag = "1.0.3",
 )
 
-# Docker rules.
-http_archive(
+git_repository(
     name = "io_bazel_rules_docker",
-    sha256 = "9ff889216e28c918811b77999257d4ac001c26c1f7c7fb17a79bc28abf74182e",
-    strip_prefix = "rules_docker-0.10.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.10.1/rules_docker-v0.10.1.tar.gz"],
-)
-
-load(
-    "@io_bazel_rules_docker//repositories:repositories.bzl",
-    container_repositories = "repositories",
-)
-
-container_repositories()
-
-load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
-
-container_deps()
-
-load(
-    "@io_bazel_rules_docker//container:container.bzl",
-    "container_pull",
+    remote = "https://github.com/bazelbuild/rules_docker.git",
+    tag = "v0.15.0",
 )
 
 git_repository(
@@ -44,6 +26,53 @@ git_repository(
     commit = "9828ee5659320cebbfd8d34707c36648ca087888",
     remote = "https://github.com/GoogleCloudPlatform/runtimes-common.git",
 )
+
+load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories",)
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+container_deps()
+
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
+pip_deps()
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull",)
+
+container_pull(
+    name = "centos_base",
+    registry = "l.gcr.io",
+    repository = "google/centos7",
+    tag = "latest",
+)
+
+load(":centos_rpm.bzl", "centos_rpm")
+centos_rpm(
+    name = "centos7_latest",
+    version = 7,
+)
+
+#container_pull(
+#    name = "debian_base",
+#    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
+#    registry = "gcr.io",
+#    repository = "google-appengine/debian10",
+#)
+container_pull(
+    name = "debian_base",
+    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
+    registry = "gcr.io",
+    repository = "google-appengine/debian9",
+)
+container_pull(
+    name = "debian_base",
+    registry = "index.docker.io",
+    repository = "library/debian",
+    tag = "10",
+)
+
+load(":deps.bzl", "deps")
+deps()
+
 
 http_archive(
     name = "docker_credential_gcr",
@@ -60,32 +89,17 @@ git_repository(
     remote = "https://github.com/google/subpar",
 )
 
-container_pull(
-    name = "debian_base",
-    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
-    registry = "gcr.io",
-    repository = "google-appengine/debian9",
-)
-
 git_repository(
     name = "distroless",
     commit = "a4fd5de337e31911aeee2ad5248284cebeb6a6f4",
     remote = "https://github.com/GoogleContainerTools/distroless.git",
 )
 
-load(
-    "@distroless//package_manager:package_manager.bzl",
-    "package_manager_repositories",
-)
-load(
-    "@distroless//package_manager:dpkg.bzl",
-    "dpkg_list",
-    "dpkg_src",
-)
+load("@distroless//package_manager:package_manager.bzl", "package_manager_repositories",)
+load("@distroless//package_manager:dpkg.bzl", "dpkg_list", "dpkg_src",)
 
 package_manager_repositories()
 
-# The Debian snapshot datetime to use. See http://snapshot.debian.org/ for more information.
 DEB_SNAPSHOT = "20190708T153325Z"
 
 dpkg_src(
@@ -97,7 +111,6 @@ dpkg_src(
     url = "http://snapshot.debian.org/archive",
 )
 
-# These are needed to install debootstrap.
 dpkg_list(
     name = "package_bundle",
     packages = [
@@ -187,4 +200,18 @@ http_file(
     name = "launchpad_openjdk_gpg",
     sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
     urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
+)
+
+
+
+http_file(
+    name = "ubuntu1604_tar_latest",
+    downloaded_file_path = "ubuntu1604.tar.gz",
+    urls = ["https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-amd64-root.tar.gz"],
+)
+
+http_file(
+    name = "ubuntu1804_tar_latest",
+    downloaded_file_path = "ubuntu1804.tar.gz",
+    urls = ["https://partner-images.canonical.com/core/bionic/current/ubuntu-bionic-core-cloudimg-amd64-root.tar.gz"],
 )
