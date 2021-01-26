@@ -42,7 +42,9 @@ run() {
     echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes
     
     echo 'Apt::AutoRemove::SuggestsImportant "false";' > /etc/apt/apt.conf.d/docker-autoremove-suggests
+    
     [ -z "$(apt-get indextargets)" ]
+    
     mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 }
 

@@ -97,3 +97,8 @@ COPY --from=tmp-new-dev . .
 # apt-mark auto '.*' > /dev/null
 # [ -z "$aptMark" ] || apt-mark manual $aptMark
 # apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+
+#   RUN apt-get update \
+#       && apt-get install -y <packages> \
+#       && <do some compilation work> \
+#       && apt-get purge -y --auto-remove <packages>
