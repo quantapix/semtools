@@ -1,9 +1,9 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//dockerfile_build:dockerfile_build.bzl", "dockerfile_build")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
 load("//package_managers:bootstrap_image.bzl", "bootstrap_image_macro")
+
+package(default_visibility = ["//visibility:public"])
 
 UBUNTU_VERSIONS = [
     "16_0_4",
