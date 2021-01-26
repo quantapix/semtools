@@ -1,15 +1,176 @@
-workspace(name = "ubuntu")
+workspace(name = "semtools")
 
-load(
-    "@bazel_tools//tools/build_defs/repo:http.bzl",
-    "http_archive",
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "bazel_skylib",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
+    tag = "0.6.0",
+)
+
+local_repository(
+    name = "bazel_rules_docker",
+    path = "./bazel/libs/srcs/rules_docker",
+)
+
+load("@bazel_rules_docker//repositories:repositories.bzl", cont_repos = "repositories",)
+
+cont_repos()
+
+load("@bazel_rules_docker//repositories:deps.bzl", cont_deps = "deps")
+
+cont_deps()
+
+load("@bazel_rules_docker//container:container.bzl", "container_pull",)
+
+git_repository(
+    name = "structure_test",
+    commit = "61f1d2f394e1fa1cd62f703cd51a8300e225da5a",
+    remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
+)
+
+git_repository(
+    name = "runtimes_common",
+    commit = "9828ee5659320cebbfd8d34707c36648ca087888",
+    remote = "https://github.com/GoogleCloudPlatform/runtimes-common.git",
 )
 
 http_archive(
-    name = "io_bazel_rules_docker",
-    sha256 = "feb53c560be2f97b7d02b23a1738a3154ba89fe630f09a7a838dcad38731b0b8",
-    strip_prefix = "rules_docker-faaa10a72fa9abde070e2a20d6046e9f9b849e9a",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/faaa10a72fa9abde070e2a20d6046e9f9b849e9a.tar.gz"],
+    name = "docker_credential_gcr",
+    build_file_content = """package(default_visibility = ["//visibility:public"])
+exports_files(["docker-credential-gcr"])""",
+    sha256 = "3f02de988d69dc9c8d242b02cc10d4beb6bab151e31d63cb6af09dd604f75fce",
+    type = "tar.gz",
+    url = "https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v1.4.3/docker-credential-gcr_linux_amd64-1.4.3.tar.gz",
+)
+
+git_repository(
+    name = "subpar",
+    commit = "07ff5feb7c7b113eea593eb6ec50b51099cf0261",
+    remote = "https://github.com/google/subpar",
+)
+
+container_pull(
+    name = "debian_base",
+    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
+    registry = "gcr.io",
+    repository = "google-appengine/debian9",
+)
+
+git_repository(
+    name = "distroless",
+    commit = "a4fd5de337e31911aeee2ad5248284cebeb6a6f4",
+    remote = "https://github.com/GoogleContainerTools/distroless.git",
+)
+
+load("@distroless//package_manager:package_manager.bzl", "package_manager_repositories",)
+load("@distroless//package_manager:dpkg.bzl", "dpkg_list", "dpkg_src",)
+
+package_manager_repositories()
+
+# The Debian snapshot datetime to use. See http://snapshot.debian.org/ for more information.
+DEB_SNAPSHOT = "20190708T153325Z"
+
+dpkg_src(
+    name = "debian_stretch",
+    arch = "amd64",
+    distro = "jessie",
+    sha256 = "7240a1c6ce11c3658d001261e77797818e610f7da6c2fb1f98a24fdbf4e8d84c",
+    snapshot = DEB_SNAPSHOT,
+    url = "http://snapshot.debian.org/archive",
+)
+
+# These are needed to install debootstrap.
+dpkg_list(
+    name = "package_bundle",
+    packages = [
+        "ca-certificates",
+        "debootstrap",
+        "libffi6",
+        "libgmp10",
+        "libgnutls-deb0-28",
+        "libhogweed2",
+        "libicu52",
+        "libidn11",
+        "libnettle4",
+        "libp11-kit0",
+        "libpsl0",
+        "libtasn1-6",
+        "wget",
+    ],
+    sources = [
+        "@debian_stretch//file:Packages.json",
+    ],
+)
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "86ae934bd4c43b99893fc64be9d9fc684b81461581df7ea8fc291c816f5ee8c5",
+    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.18.3/rules_go-0.18.3.tar.gz"],
+)
+
+http_archive(
+    name = "bazel_gazelle",
+    sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
+    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+go_register_toolchains()
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+gazelle_dependencies()
+
+go_download_sdk(
+    name = "go_sdk",
+    sdks = {
+        "linux_amd64": (
+            "go1.11.4.linux-amd64.tar.gz",
+            "fb26c30e6a04ad937bbc657a1b5bba92f80096af1e8ee6da6430c045a8db3a5b",
+        ),
+        "darwin_amd64": (
+            "go1.11.4.darwin-amd64.tar.gz",
+            "48ea987fb610894b3108ecf42e7a4fd1c1e3eabcaeb570e388c75af1f1375f80",
+        ),
+    },
+)
+
+go_rules_dependencies()
+
+go_register_toolchains()
+
+UBUNTU_MAP = {
+    "16_0_4": {
+        "sha256": "20c151c26c5a057a85d43bcc3dbee1d1fc536f76b84c550a1c2faa88af7727b6",
+        "url": "https://storage.googleapis.com/ubuntu_tar/20190708/ubuntu-xenial-core-cloudimg-amd64-root.tar.gz",
+    },
+    "18_0_4": {
+        "sha256": "600f663706aa8e7cb30d114daee117536545b5a580bca6a97b3cb73d72acdcee",
+        "url": "https://storage.googleapis.com/ubuntu_tar/20190704/ubuntu-bionic-core-cloudimg-amd64-root.tar.gz",
+    },
+}
+
+[http_file(
+    name = "ubuntu_%s_tar_download" % version,
+    sha256 = map["sha256"],
+    urls = [map["url"]],
+) for version, map in UBUNTU_MAP.items()]
+
+http_file(
+    name = "bazel_gpg",
+    sha256 = "30af2ca7abfb65987cd61802ca6e352aadc6129dfb5bfc9c81f16617bc3a4416",
+    urls = ["https://bazel.build/bazel-release.pub.gpg"],
+)
+
+http_file(
+    name = "launchpad_openjdk_gpg",
+    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
+    urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
 )
 
 load(":revisions.bzl", "LAYER_DEFINITIONS")
@@ -21,18 +182,17 @@ http_archive(
     urls = ["https://github.com/GoogleCloudPlatform/layer-definitions/archive/" + LAYER_DEFINITIONS.commit + ".tar.gz"],
 )
 
-load(
-    "@io_bazel_rules_docker//repositories:repositories.bzl",
-    container_repositories = "repositories",
+load("@bazel_rules_docker//repositories:repositories.bzl",
+    cont_repos = "repositories",
 )
 
-container_repositories()
+cont_repos()
 
-load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+load("@bazel_rules_docker//repositories:deps.bzl", cont_deps = "deps")
 
-container_deps()
+cont_deps()
 
-load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
+load("@bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
 
 pip_deps()
 

@@ -1,40 +1,35 @@
-# bazel
+# bazel/libs
 
 init() {
-    v=$BAZEL_VER
     if [ $1 == "pull" ]; then
         if [ ! -e upstream ]; then
-            git clone -q https://github.com/bazelbuild/bazel.git upstream
+            mkdir upstream
+            (cd upstream || exit
+                git clone -q https://github.com/bazelbuild/rules_docker.git
+                git clone -q https://github.com/bazelbuild/rules_k8s.git
+                git clone -q https://github.com/bazelbuild/rules_rust.git
+            )
         fi
         (cd upstream || exit
-            git branch -f qold $v
-            git checkout -q --track -B qnew master
-            git reset -q --hard
-            git clean -qxfd
-            git pull -q
+            for r in *; do
+                (cd $r || exit; git pull -q)
+            done
         )
     else
         mv srcs/qpx.sh .
         rm -rf srcs
-        git clone -qb $1 ./upstream srcs
+        mkdir srcs
         mv qpx.sh srcs/
-        mkdir -p srcs/qpx
-        cp pkgs/bazel-$v-dist.zip srcs/qpx/
+        (cd srcs
+            git clone -qb $BZL_RULES_DOCKER_TAG ../upstream/cmake
+            git clone -qb $BZL_RULES_K8S_TAG ../upstream/cmake
+            git clone -qb $BZL_RULES_RUST_TAG ../upstream/cmake
+        )
     fi
 }
 
 run() {
-    v=$BAZEL_VER
-    d=$2/bin
-    mkdir -p $d
-    (cd qpx
-        unzip bazel-$v-dist.zip
-        env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
-        cp output/bazel $d/
-    )
-    export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
-    bazel build //src:bazel --compilation_mode=opt
-    cp bazel-bin/src/bazel $d/
+    echo "run"
 }
 
 clean() {

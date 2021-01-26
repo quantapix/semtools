@@ -1,0 +1,15 @@
+schemaVersion: '2.0.0'
+fileExistenceTests:
+- name: 'Bat'
+  path: '/bat'
+  shouldExist: true
+- name: 'Baz'
+  path: '/baz'
+  shouldExist: true
+- name: 'Baz'
+  path: '/foo/bar/baz'
+  shouldExist: true
+fileContentTests:
+- name: 'Curl'
+  path: '/var/lib/dpkg/status'
+  expectedContents: ['.*curl.*']
