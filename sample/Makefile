@@ -1,3 +1,22 @@
+bazel version
+docker pull gcr.io/asci-toolchain/container_release_tools/dependency_update/validators/semantics:latest
+cp -a ubuntu1804 /repro_test/ubuntu1804
+bazel --output_base=/workspace/output_base run //:image dir: "ubuntu1804"
+bazel --output_base=/workspace/output_base --test_output=errors test //:image-test //:configs_test dir: "ubuntu1804"
+bazel --output_base=/repro_test/output_base test //:img_repro_test --test_output=errors dir: "/repro_test/ubuntu1804"
+
+docker -t bazel:image gcr.io/${_IMG_BACKUP_DEST}
+docker push 
+
+tests:
+	path: '/' shouldExist: true
+	more /etc/os-release = '.*ubuntu.*'
+	dpkg -l curl != '.*no packages found matching.*'
+	dpkg -l ca-certificates != '.*no packages found matching.*'
+	dpkg -l netbase != '.*no packages found matching.*'
+	echo $DEBIAN_FRONTEND = 'noninteractive' 
+	echo $PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
 PWD := $(shell pwd)
 
 CONTAINER_TEST_TARGETS = :image-test :configs_test
