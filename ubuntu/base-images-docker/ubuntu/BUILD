@@ -1,9 +1,9 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//dockerfile_build:dockerfile_build.bzl", "dockerfile_build")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build")
 load("//package_managers:bootstrap_image.bzl", "bootstrap_image_macro")
+
+package(default_visibility = ["//visibility:public"])
 
 UBUNTU_VERSIONS = [
     "16_0_4",
@@ -15,21 +15,18 @@ UBUNTU_ENV = {
     "DEBIAN_FRONTEND": "noninteractive",
 }
 
-# 'ubuntu_16_0_4' is a ubuntu_16_0_4 rootfs w/ ca-certificates, curl, and netbase
 dockerfile_build(
     name = "ubuntu_16_0_4",
     base = ":ubuntu_16_0_4_vanilla",
     dockerfile = ":Dockerfile.ubuntu",
 )
 
-# 'ubuntu_18_0_4' is a ubuntu_18_0_4 rootfs w/ ca-certificates, curl, and netbase
 dockerfile_build(
     name = "ubuntu_18_0_4",
     base = ":ubuntu_18_0_4_vanilla",
     dockerfile = ":Dockerfile.ubuntu",
 )
 
-# The overlay directory contains files that should be overlaid into the rootfs at /.
 pkg_tar(
     name = "overlay",
     srcs = glob(["overlay/**/*"]),
@@ -37,11 +34,6 @@ pkg_tar(
     strip_prefix = "overlay/",
 )
 
-# A handful of files need to be deleted from the base ubuntu image so that when our
-# config stripper deletes those files from our reproducible images there won't be
-# whiteout files.
-# tar --delete deletes files in place so we need to uncompress to a temp tar
-# then delete then output.
 genrule(
     name = "ubuntu_16_0_4_vanilla_reproducible",
     srcs = ["@ubuntu_16_0_4_tar_download//file"],
@@ -49,7 +41,6 @@ genrule(
     cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
 )
 
-# There's a slightly different list of files to clean in 18_0_4.
 genrule(
     name = "ubuntu_18_0_4_vanilla_reproducible",
     srcs = ["@ubuntu_18_0_4_tar_download//file"],

@@ -1,5 +1,3 @@
-"""Rule for building debootstrap rootfs tarballs."""
-
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
 def _impl(ctx):
