@@ -12,28 +12,24 @@ filegroup(
 def _centos_rpm_impl(repository_ctx):
     """Implementation of the centos_rpm rule."""
     download_path = repository_ctx.path("file/" + _DOWNLOADED_FILE_NAME)
-
     download_command = [
         "wget",
         "-q",
         _BASE_URL.format(repository_ctx.attr.version),
-        "-np",  # Do not ascend to the parent directory when retrieving recursively.
-        "-nd",  # Do not create a hierarchy of directories when retrieving recursively.
-        "-r",  # Recursive
-        "-R",  # Avoid downloading auto-generated index.html files.
+        "-np",
+        "-nd",
+        "-r",
+        "-R",
         "*index.html*",
         "--accept-regex",  # Passing the file regex.
         _BASE_URL.format(repository_ctx.attr.version) + _REGEX,
     ]
-
     download_result = repository_ctx.execute(download_command, working_directory = "file")
     if download_result.return_code:
         fail("Download command failed: {} ({})".format(
             download_result.stderr,
             " ".join(download_command),
         ))
-
-    # Make sure we only downloaded 1 file.
     count_command = ["sh", "-c", "ls -1 | wc -l"]
     count_result = repository_ctx.execute(count_command, working_directory = "file")
     if count_result.return_code:
@@ -46,8 +42,6 @@ def _centos_rpm_impl(repository_ctx):
             "{} files downloaded. Make sure the regex only matches to exactly 1 file."
                 .format(count_result.stdout.strip("\n")),
         )
-
-    # Rename the downloaded file.
     rename_command = ["sh", "-c", "mv $(ls) {}".format(download_path)]
     rename_result = repository_ctx.execute(rename_command, working_directory = "file")
     if rename_result.return_code:
@@ -55,8 +49,6 @@ def _centos_rpm_impl(repository_ctx):
             rename_result.stderr,
             " ".join(rename_command),
         ))
-
-    # Add a top-level BUILD file to export all the downloaded files.
     repository_ctx.file("file/BUILD", _BUILD.format(_DOWNLOADED_FILE_NAME))
 
 centos_rpm = repository_rule(
