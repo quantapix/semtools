@@ -1,0 +1,53 @@
+workspace(name = "centos7")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
+    strip_prefix = "rules_docker-0.14.4",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz"],
+)
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
+
+pip_deps()
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
+# Pull existing Centos base, only used by File Update Service to create a new
+# Centos base tarball.
+container_pull(
+    name = "centos_base",
+    registry = "l.gcr.io",
+    repository = "google/centos7",
+    tag = "latest",
+)
+
+load(":centos_rpm.bzl", "centos_rpm")
+
+# Non-deterministic latest version of Centos 7 release rpm. This is used by
+# File Update Service to archive each version in our managed GCS bucket, and
+# should NOT be used by container release directly.
+centos_rpm(
+    name = "centos7_latest",
+    version = 7,
+)
+
+load(":deps.bzl", "deps")
+
+deps()

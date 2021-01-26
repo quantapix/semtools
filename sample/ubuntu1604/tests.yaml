@@ -1,0 +1,34 @@
+schemaVersion: "2.0.0"
+
+fileExistenceTests:
+- name: 'Root'
+  path: '/'
+  shouldExist: true
+  permissions: 'drwxr-xr-x'
+
+fileContentTests:
+- name: 'Ubuntu Distro Check'
+  expectedContents: ['.*ubuntu.*']
+  path: '/etc/os-release'
+
+commandTests:
+- name: 'curl installed'
+  command: 'dpkg'
+  args: ['-l', 'curl']
+  excludedOutput: ['.*no packages found matching.*']
+- name: 'ca-certificates installed'
+  command: 'dpkg'
+  args: ['-l', 'ca-certificates']
+  excludedOutput: ['.*no packages found matching.*']
+- name: 'netbase installed'
+  command: 'dpkg'
+  args: ['-l', 'netbase']
+  excludedOutput: ['.*no packages found matching.*']
+
+metadataTest:
+  cmd: ['/bin/sh', '-c']
+  env:
+    - key: 'DEBIAN_FRONTEND'
+      value: 'noninteractive'
+    - key: 'PATH'
+      value: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'

@@ -1,0 +1,9 @@
+DEBIAN10_TAR = struct(
+    revision = "1611257700",
+    sha256 = "882bc04fccb4888f0e0d10e37f4420b9375961f4981b1701a401936887625408",
+)
+
+RULES_DOCKER = struct(
+    commit = "a8b3c6c528271c406ab353de49c45e54a299e023",
+    sha256 = "7e054932f044a2e1a3d1df9b4cdd457e18f3619bd72b03d0b3693d18ab3ea997",
+)

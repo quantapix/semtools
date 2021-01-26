@@ -1,0 +1,14 @@
+schemaVersion: '2.0.0'
+
+# TODO: add more
+
+fileExistenceTests:
+- name: 'Root'
+  path: '/'
+  shouldExist: true
+
+metadataTest:
+  cmd: ['/bin/bash']
+  env:
+    - key: 'PATH'
+      value: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
