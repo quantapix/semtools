@@ -5,23 +5,6 @@ RULES_DOCKER = struct(
     sha256 = "7e054932f044a2e1a3d1df9b4cdd457e18f3619bd72b03d0b3693d18ab3ea997",
 )
 
-CENTOS7_TAR = struct(
-    revision = "1611257615",
-    sha256 = "1295e147d86845530de9e97288d0e27264c09a55cf8b40564e9f838feb15ebba",
-)
-
-def deps():
-    excludes = native.existing_rules().keys()
-    if "centos7_tar" not in excludes:
-        http_file(
-            name = "centos7_tar",
-            downloaded_file_path = CENTOS7_TAR.revision + "_layer.tar",
-            sha256 = CENTOS7_TAR.sha256,
-            urls = [
-                "https://storage.googleapis.com/container-deps/centos7/tar/" + CENTOS7_TAR.revision + "_layer.tar",
-            ],
-        )
-
 DEBIAN9_TAR = struct(
     revision = "1611257499",
     sha256 = "064a0a75d44fc7608b73847fca8eeba33a578719fe59ad387f4206bcb869271b",

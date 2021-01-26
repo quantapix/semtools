@@ -9,16 +9,12 @@ init() {
         mkdir -p $v
         (cd $v
             url="https://partner-images.canonical.com/core/$v/current"
-            base="ubuntu-$v-core-cloudimg-amd64"
-            wget -qN "$url/"{{MD5,SHA{1,256}}SUMS{,.gpg},"$base.manifest",'unpacked/build-info.txt'}
-            tar="$base-root.tar.gz"
+            ubu="ubuntu-$v-core-cloudimg-amd64"
+            wget -qN "$url/"SHA256SUMS{,.gpg},"$ubu.manifest",'unpacked/build-info.txt'}
+            gpg --batch --verify SHA256SUMS.gpg SHA256SUMS || exit
+            tar="$ubu-root.tar.gz"
             wget -N --progress=dot:giga "$url/$tar"
-            for s in sha256 sha1 md5; do
-                file="${s^^}SUMS"
-                gpg --batch --verify "$file.gpg" "$file" || exit
-                cmd="${s}sum"
-                grep " *$tar\$" "$file" | "$cmd" -c - || exit
-            done
+            sha256sum --ignore-missing -c SHA256SUMS || exit
         )
     done
 
