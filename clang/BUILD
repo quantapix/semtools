@@ -1,0 +1,74 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@io_bazel_rules_docker//contrib/automatic_container_release:packages_metadata.bzl", "packages_metadata")
+load("@io_bazel_rules_docker//contrib:test.bzl", "container_test")
+load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs")
+load(
+    "@io_bazel_rules_docker//docker/toolchain_container:toolchain_container.bzl",
+    "language_tool_layer",
+)
+load(":clang.bzl", "clang_env")
+
+licenses(["notice"])  # Apache 2.0
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["*.yaml"]))
+
+bzl_library(
+    name = "lib",
+    srcs = glob(["*.bzl"]),
+)
+
+download_pkgs(
+    name = "clang_debs",
+    image_tar = "@ubuntu1604//image",
+    packages = [
+        "libstdc++-5-dev",
+    ],
+)
+
+packages_metadata(
+    name = "metadata",
+    metadata_csv = ":clang_debs_metadata.csv",
+)
+
+pkg_tar(
+    name = "clang_tar",
+    package_dir = "/usr/local/",
+    strip_prefix = ".",
+    tags = ["manual"],
+    deps = [
+        "@ubuntu1604_clang_release//file",
+    ],
+)
+
+pkg_tar(
+    name = "libcxx_tar",
+    package_dir = "/usr/local/",
+    strip_prefix = ".",
+    tags = ["manual"],
+    deps = [
+        "@ubuntu1604_libcxx_release//file",
+    ],
+)
+
+language_tool_layer(
+    name = "clang-ltl",
+    base = "@ubuntu1604//image",
+    env = clang_env,
+    installables_tar = "@ubuntu1604_clang_debs//file",
+    tars = [
+        ":clang_tar",
+        ":libcxx_tar",
+    ],
+)
+
+container_test(
+    name = "test",
+    configs = [
+        ":tests.yaml",
+    ],
+    image = ":clang-ltl",
+    verbose = True,
+)

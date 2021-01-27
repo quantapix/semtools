@@ -7,6 +7,7 @@ init() {
             (cd upstream || exit
                 git clone -q https://github.com/bazelbuild/bazel-gazelle.git gazelle
                 git clone -q https://github.com/bazelbuild/bazel-skylib.git skylib
+                git clone -q https://github.com/bazelbuild/bazel-toolchains.git toolchains
                 git clone -q https://github.com/bazelbuild/buildtools.git
                 git clone -q https://github.com/bazelbuild/rules_docker.git
                 git clone -q https://github.com/bazelbuild/rules_go.git
@@ -32,6 +33,7 @@ init() {
             git clone -qb $BZL_RULES_K8S_TAG ../upstream/rules_k8s
             git clone -qb $BZL_RULES_RUST_TAG ../upstream/rules_rust
             git clone -qb $BZL_SKYLIB ../upstream/skylib
+            git clone -qb $BZL_TOOLCHAINS ../upstream/toolchains
         )
     fi
 }

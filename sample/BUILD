@@ -1,4 +1,5 @@
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_image",)
 load("@io_bazel_rules_docker//contrib:repro_test.bzl", "container_repro_test",)
@@ -17,6 +18,11 @@ load("//bzls:bootstrap_image.bzl", "bootstrap_image_macro",)
 licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
+
+bzl_library(
+    name = "lib",
+    srcs = glob(["*.bzl"]),
+)
 
 UBUNTU_ENV = {
     "DEBIAN_FRONTEND": "noninteractive",

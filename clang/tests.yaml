@@ -1,0 +1,28 @@
+schemaVersion: "2.0.0"
+
+commandTests:
+- name: 'clang-version'
+  command: 'clang'
+  args: ['--version']
+  expectedOutput: ['clang version [0-9]*\.[0-9]*\.[0-9]*']
+
+fileExistenceTests:
+- name: 'Clang'
+  path: '/usr/local/bin/clang'
+  shouldExist: true
+- name: 'libcxx-header'
+  path: '/usr/local/include/c++/v1'
+  shouldExist: true
+- name: 'libcxx-lib'
+  path: '/usr/local/lib/libc++.a'
+  shouldExist: true
+- name: 'llvm-symbolizer'
+  path: '/usr/local/bin/llvm-symbolizer'
+  shouldExist: true
+
+metadataTest:
+  env:
+    - key: 'CC'
+      value: '/usr/local/bin/clang'
+    - key: 'GCOV'
+      value: '/dev/null'

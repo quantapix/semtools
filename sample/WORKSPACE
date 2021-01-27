@@ -5,7 +5,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 local_repository(name = "bazel_gazelle", path = "./bazel/libs/srcs/gazelle",)
 local_repository(name = "bazel_skylib", path = "./bazel/libs/srcs/skylib",)
-local_repository(name = "distroless", path = "./bazel/libs/srcs/distroless",)
+local_repository(name = "bazel_toolchains", path = "./bazel/libs/srcs/toolchains",)
 local_repository(name = "io_bazel_rules_docker", path = "./bazel/libs/srcs/rules_docker",)
 local_repository(name = "io_bazel_rules_go", path = "./bazel/libs/srcs/rules_go",)
 
@@ -34,6 +34,19 @@ gazelle_dependencies()
 
 load(":deps.bzl", "deps")
 deps()
+
+http_file(
+    name = "gcloud_gpg",
+    downloaded_file_path = "gcloud_gpg",
+    urls = ["https://packages.cloud.google.com/apt/doc/apt-key.gpg"],
+)
+
+http_file(
+    name = "docker_gpg",
+    downloaded_file_path = "docker_gpg",
+    sha256 = "1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570",
+    urls = ["https://download.docker.com/linux/ubuntu/gpg"],
+)
 
 
 #container_pull(
@@ -165,33 +178,23 @@ centos_rpm(
 )
 
 
-http_archive(
-    name = "layer_definitions",
-    sha256 = LAYER_DEFINITIONS.sha256,
-    strip_prefix = "layer-definitions-" + LAYER_DEFINITIONS.commit,
-    urls = ["https://github.com/GoogleCloudPlatform/layer-definitions/archive/" + LAYER_DEFINITIONS.commit + ".tar.gz"],
-)
+load("//ubuntu/layers/base:deps.bzl", base_deps = "deps")
+base_deps()
 
-load("@layer_definitions//layers/ubuntu1604/base:deps.bzl", ubuntu1604_base_deps = "deps")
-
-ubuntu1604_base_deps()
-
-load("@layer_definitions//layers/ubuntu1604/bazel:deps.bzl", bazel_deps = "deps")
-
+load("//ubuntu/layers/bazel:deps.bzl", bazel_deps = "deps")
 bazel_deps()
 
-load("@layer_definitions//layers/ubuntu1604/clang:deps.bzl", clang_deps = "deps")
-
+load("//ubuntu/layers/clang:deps.bzl", clang_deps = "deps")
 clang_deps()
 
-load("@layer_definitions//layers/ubuntu1604/docker:deps.bzl", docker_deps = "deps")
-
+load("//ubuntu/layers/docker:deps.bzl", docker_deps = "deps")
 docker_deps()
 
-load("@layer_definitions//layers/ubuntu1604/java:deps.bzl", java8_deps = "deps")
+load("//ubuntu/layers/java:deps.bzl", java_deps = "deps")
+java_deps()
 
-java8_deps()
-
-load("@layer_definitions//layers/ubuntu1604/python:deps.bzl", python_deps = "deps")
-
+load("//ubuntu/layers/python:deps.bzl", python_deps = "deps")
 python_deps()
+
+load("//ubuntu/layers/go:deps.bzl", go_deps = "deps")
+go_deps()
