@@ -4,3 +4,6 @@ pkgs
 srcs
 upstream
 bazel-*
+/output/
+*.bzlc
+*.pyc
