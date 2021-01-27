@@ -1,39 +1,60 @@
 workspace(name = "semtools")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file",)
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-git_repository(
-    name = "bazel_skylib",
-    remote = "https://github.com/bazelbuild/bazel-skylib.git",
-    tag = "0.6.0",
+local_repository(name = "bazel_gazelle", path = "./bazel/libs/srcs/gazelle",)
+local_repository(name = "bazel_skylib", path = "./bazel/libs/srcs/skylib",)
+local_repository(name = "bazel_toolchains", path = "./bazel/libs/srcs/toolchains",)
+local_repository(name = "io_bazel_rules_docker", path = "./bazel/libs/srcs/rules_docker",)
+local_repository(name = "io_bazel_rules_go", path = "./bazel/libs/srcs/rules_go",)
+local_repository(name = "io_bazel_rules_k8s", path = "./bazel/libs/srcs/rules_k8s",)
+local_repository(name = "io_bazel_rules_rust", path = "./bazel/libs/srcs/rules_rust",)
+
+load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories",)
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+container_deps()
+
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
+pip_deps()
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull",)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
+go_rules_dependencies()
+go_register_toolchains()
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+gazelle_dependencies()
+
+load(":deps.bzl", "deps")
+deps()
+
+http_file(
+    name = "gcloud_gpg",
+    downloaded_file_path = "gcloud_gpg",
+    urls = ["https://packages.cloud.google.com/apt/doc/apt-key.gpg"],
 )
 
-local_repository(
-    name = "bazel_rules_docker",
-    path = "./bazel/libs/srcs/rules_docker",
+http_file(
+    name = "docker_gpg",
+    downloaded_file_path = "docker_gpg",
+    sha256 = "1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570",
+    urls = ["https://download.docker.com/linux/ubuntu/gpg"],
 )
 
-load("@bazel_rules_docker//repositories:repositories.bzl", cont_repos = "repositories",)
-
-cont_repos()
-
-load("@bazel_rules_docker//repositories:deps.bzl", cont_deps = "deps")
-
-cont_deps()
-
-load("@bazel_rules_docker//container:container.bzl", "container_pull",)
-
-git_repository(
-    name = "structure_test",
-    commit = "61f1d2f394e1fa1cd62f703cd51a8300e225da5a",
-    remote = "https://github.com/GoogleCloudPlatform/container-structure-test.git",
+http_file(
+    name = "bazel_gpg",
+    sha256 = "30af2ca7abfb65987cd61802ca6e352aadc6129dfb5bfc9c81f16617bc3a4416",
+    urls = ["https://bazel.build/bazel-release.pub.gpg"],
 )
 
-git_repository(
-    name = "runtimes_common",
-    commit = "9828ee5659320cebbfd8d34707c36648ca087888",
-    remote = "https://github.com/GoogleCloudPlatform/runtimes-common.git",
+http_file(
+    name = "launchpad_openjdk_gpg",
+    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
+    urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
 )
 
 http_archive(
@@ -51,25 +72,31 @@ git_repository(
     remote = "https://github.com/google/subpar",
 )
 
+load("@distroless//package_manager:package_manager.bzl", "package_manager_repositories",)
+package_manager_repositories()
+
+load("@distroless//package_manager:dpkg.bzl", "dpkg_list", "dpkg_src",)
+
+
+#container_pull(
+#    name = "debian_base",
+#    digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
+#    registry = "gcr.io",
+#    repository = "google-appengine/debian10",
+#)
 container_pull(
     name = "debian_base",
     digest = "sha256:00109fa40230a081f5ecffe0e814725042ff62a03e2d1eae0563f1f82eaeae9b",
     registry = "gcr.io",
     repository = "google-appengine/debian9",
 )
-
-git_repository(
-    name = "distroless",
-    commit = "a4fd5de337e31911aeee2ad5248284cebeb6a6f4",
-    remote = "https://github.com/GoogleContainerTools/distroless.git",
+container_pull(
+    name = "debian_base",
+    registry = "index.docker.io",
+    repository = "library/debian",
+    tag = "10",
 )
 
-load("@distroless//package_manager:package_manager.bzl", "package_manager_repositories",)
-load("@distroless//package_manager:dpkg.bzl", "dpkg_list", "dpkg_src",)
-
-package_manager_repositories()
-
-# The Debian snapshot datetime to use. See http://snapshot.debian.org/ for more information.
 DEB_SNAPSHOT = "20190708T153325Z"
 
 dpkg_src(
@@ -80,7 +107,6 @@ dpkg_src(
     snapshot = DEB_SNAPSHOT,
     url = "http://snapshot.debian.org/archive",
 )
-
 # These are needed to install debootstrap.
 dpkg_list(
     name = "package_bundle",
@@ -104,28 +130,6 @@ dpkg_list(
     ],
 )
 
-http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "86ae934bd4c43b99893fc64be9d9fc684b81461581df7ea8fc291c816f5ee8c5",
-    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.18.3/rules_go-0.18.3.tar.gz"],
-)
-
-http_archive(
-    name = "bazel_gazelle",
-    sha256 = "3c681998538231a2d24d0c07ed5a7658cb72bfb5fd4bf9911157c0e9ac6a2687",
-    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
-)
-
-load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
-
-go_rules_dependencies()
-
-go_register_toolchains()
-
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
-
-gazelle_dependencies()
-
 go_download_sdk(
     name = "go_sdk",
     sdks = {
@@ -133,16 +137,8 @@ go_download_sdk(
             "go1.11.4.linux-amd64.tar.gz",
             "fb26c30e6a04ad937bbc657a1b5bba92f80096af1e8ee6da6430c045a8db3a5b",
         ),
-        "darwin_amd64": (
-            "go1.11.4.darwin-amd64.tar.gz",
-            "48ea987fb610894b3108ecf42e7a4fd1c1e3eabcaeb570e388c75af1f1375f80",
-        ),
     },
 )
-
-go_rules_dependencies()
-
-go_register_toolchains()
 
 UBUNTU_MAP = {
     "16_0_4": {
@@ -161,61 +157,43 @@ UBUNTU_MAP = {
     urls = [map["url"]],
 ) for version, map in UBUNTU_MAP.items()]
 
-http_file(
-    name = "bazel_gpg",
-    sha256 = "30af2ca7abfb65987cd61802ca6e352aadc6129dfb5bfc9c81f16617bc3a4416",
-    urls = ["https://bazel.build/bazel-release.pub.gpg"],
-)
 
 http_file(
-    name = "launchpad_openjdk_gpg",
-    sha256 = "54b6274820df34a936ccc6f5cb725a9b7bb46075db7faf0ef7e2d86452fa09fd",
-    urls = ["http://keyserver.ubuntu.com/pks/lookup?op=get&fingerprint=on&search=0xEB9B1D8886F44E2A"],
+    name = "ubuntu1604_tar_latest",
+    downloaded_file_path = "ubuntu1604.tar.gz",
+    urls = ["https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-amd64-root.tar.gz"],
 )
 
-load(":revisions.bzl", "LAYER_DEFINITIONS")
-
-http_archive(
-    name = "layer_definitions",
-    sha256 = LAYER_DEFINITIONS.sha256,
-    strip_prefix = "layer-definitions-" + LAYER_DEFINITIONS.commit,
-    urls = ["https://github.com/GoogleCloudPlatform/layer-definitions/archive/" + LAYER_DEFINITIONS.commit + ".tar.gz"],
+http_file(
+    name = "ubuntu1804_tar_latest",
+    downloaded_file_path = "ubuntu1804.tar.gz",
+    urls = ["https://partner-images.canonical.com/core/bionic/current/ubuntu-bionic-core-cloudimg-amd64-root.tar.gz"],
 )
 
-load("@bazel_rules_docker//repositories:repositories.bzl",
-    cont_repos = "repositories",
+load(":centos_rpm.bzl", "centos_rpm")
+centos_rpm(
+    name = "centos7_latest",
+    version = 7,
 )
 
-cont_repos()
 
-load("@bazel_rules_docker//repositories:deps.bzl", cont_deps = "deps")
+load("//ubuntu/layers/base:deps.bzl", base_deps = "deps")
+base_deps()
 
-cont_deps()
-
-load("@bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
-
-pip_deps()
-
-load("@layer_definitions//layers/ubuntu1604/base:deps.bzl", ubuntu1604_base_deps = "deps")
-
-ubuntu1604_base_deps()
-
-load("@layer_definitions//layers/ubuntu1604/bazel:deps.bzl", bazel_deps = "deps")
-
+load("//ubuntu/layers/bazel:deps.bzl", bazel_deps = "deps")
 bazel_deps()
 
-load("@layer_definitions//layers/ubuntu1604/clang:deps.bzl", clang_deps = "deps")
-
+load("//ubuntu/layers/clang:deps.bzl", clang_deps = "deps")
 clang_deps()
 
-load("@layer_definitions//layers/ubuntu1604/docker:deps.bzl", docker_deps = "deps")
-
+load("//ubuntu/layers/docker:deps.bzl", docker_deps = "deps")
 docker_deps()
 
-load("@layer_definitions//layers/ubuntu1604/java:deps.bzl", java8_deps = "deps")
+load("//ubuntu/layers/java:deps.bzl", java_deps = "deps")
+java_deps()
 
-java8_deps()
-
-load("@layer_definitions//layers/ubuntu1604/python:deps.bzl", python_deps = "deps")
-
+load("//ubuntu/layers/python:deps.bzl", python_deps = "deps")
 python_deps()
+
+load("//ubuntu/layers/go:deps.bzl", go_deps = "deps")
+go_deps()
