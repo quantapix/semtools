@@ -3,7 +3,6 @@ load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image",)
 load("@io_bazel_rules_docker//contrib:repro_test.bzl", "container_repro_test",)
 load("@io_bazel_rules_docker//contrib:test.bzl", "container_test",)
-load("@io_bazel_rules_docker//contrib/automatic_container_release:configs_test.bzl", "configs_test",)
 load("@io_bazel_rules_docker//contrib/automatic_container_release:metadata_merge.bzl", "metadata_merge",)
 load("@io_bazel_rules_docker//contrib/automatic_container_release:packages_metadata.bzl", "packages_metadata",)
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build",)
@@ -82,12 +81,6 @@ container_repro_test(
     name = "img_repro_test",
     image = ":image",
     workspace_file = "//:WORKSPACE",
-)
-
-configs_test(
-    name = "configs_test",
-    dependency_update_specs = ["deps_spec.yaml"],
-    file_update_specs = ["file_updates.yaml"],
 )
 
 
@@ -202,3 +195,74 @@ bootstrap_image_macro(
     store_location = "ubuntu/18_0_4/builds",
 )
 
+
+toolchain_container(
+    name = "image_intermediate",
+    base = "@ubuntu1604//image",
+    # Remove non-deterministic files.
+    installation_cleanup_commands = "rm -f /etc/init.d/.depend.boot /etc/init.d/.depend.start /etc/init.d/.depend.stop",
+    language_layers = [
+        "@layer_definitions//layers/ubuntu1604/clang:clang-ltl",
+        "@layer_definitions//layers/ubuntu1604/java:java-ltl",
+        "@layer_definitions//layers/ubuntu1604/java:java11-ltl",
+        "@layer_definitions//layers/ubuntu1604/python:python-ltl",
+        "@layer_definitions//layers/ubuntu1604/bazel:bazel-ltl",
+        "@layer_definitions//layers/ubuntu1604/docker:docker-ltl",
+    ],
+)
+
+# Set up `entrypoint` and cmd in the container. These cannot be set in the
+# `toolchain_container` rule as they would be consumed by intermediate
+# `container_image` rule in its implementation.
+# TODO(xingao): enable setting things like `entrypoint` and `cmd` in
+# `toolchain_container`.
+container_image(
+    name = "image",
+    base = ":image_intermediate",
+    cmd = None,
+    entrypoint = ["/usr/local/bin/bazel"],
+)
+
+container_test(
+    name = "image-test",
+    configs = [
+        ":tests.yaml",
+        "@layer_definitions//layers/ubuntu1604/base:tests.yaml",
+        "@layer_definitions//layers/ubuntu1604/bazel:tests.yaml",
+        "@layer_definitions//layers/ubuntu1604/clang:tests.yaml",
+        "@layer_definitions//layers/ubuntu1604/docker:tests.yaml",
+        "@layer_definitions//layers/ubuntu1604/java:tests.yaml",
+        "@layer_definitions//layers/ubuntu1604/python:tests.yaml",
+    ],
+    image = ":image",
+    verbose = True,
+)
+
+
+toolchain_container(
+    name = "image",
+    base = "@ubuntu1604//image",
+    cmd = [
+        "/bin/sh",
+        "-c",
+        "/bin/bash",
+    ],
+    env = {
+        "LANG": "C.UTF-8",
+        "LANGUAGE": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        # PATH envvar is a special case, and currently only the one in the
+        # topmost layer is set. So that we override it here to include all.
+        "PATH": "$$PATH:/opt/python3.6/bin:/usr/local/go/bin",
+    },
+    installation_cleanup_commands = "rm -f /etc/init.d/.depend.boot /etc/init.d/.depend.start /etc/init.d/.depend.stop",
+    language_layers = [
+        "@layer_definitions//layers/ubuntu1604/clang:clang-ltl",
+        "@layer_definitions//layers/ubuntu1604/java:java-ltl",
+        "@layer_definitions//layers/ubuntu1604/java:java11-ltl",
+        "@layer_definitions//layers/ubuntu1604/python:python-ltl",
+        "@layer_definitions//layers/ubuntu1604/bazel:bazel-ltl",
+        "@layer_definitions//layers/ubuntu1604/docker:docker-ltl",
+        "@layer_definitions//layers/ubuntu1604/gcloud:gcloud-ltl",
+    ],
+)

@@ -163,3 +163,35 @@ centos_rpm(
     name = "centos7_latest",
     version = 7,
 )
+
+
+http_archive(
+    name = "layer_definitions",
+    sha256 = LAYER_DEFINITIONS.sha256,
+    strip_prefix = "layer-definitions-" + LAYER_DEFINITIONS.commit,
+    urls = ["https://github.com/GoogleCloudPlatform/layer-definitions/archive/" + LAYER_DEFINITIONS.commit + ".tar.gz"],
+)
+
+load("@layer_definitions//layers/ubuntu1604/base:deps.bzl", ubuntu1604_base_deps = "deps")
+
+ubuntu1604_base_deps()
+
+load("@layer_definitions//layers/ubuntu1604/bazel:deps.bzl", bazel_deps = "deps")
+
+bazel_deps()
+
+load("@layer_definitions//layers/ubuntu1604/clang:deps.bzl", clang_deps = "deps")
+
+clang_deps()
+
+load("@layer_definitions//layers/ubuntu1604/docker:deps.bzl", docker_deps = "deps")
+
+docker_deps()
+
+load("@layer_definitions//layers/ubuntu1604/java:deps.bzl", java8_deps = "deps")
+
+java8_deps()
+
+load("@layer_definitions//layers/ubuntu1604/python:deps.bzl", python_deps = "deps")
+
+python_deps()

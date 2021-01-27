@@ -58,3 +58,13 @@ steps:
     args: ['tag', 'bazel/ubuntu:bootstrap_${_IMAGE}',
            'gcr.io/gcp-runtimes/${_IMAGE}:${COMMIT_SHA}']
 images: ['gcr.io/gcp-runtimes/${_IMAGE}']
+
+steps:
+  # It's unclear why we need this, but bazel appears to need it sometimes.
+  - name: 'l.gcr.io/google/debian9:latest'
+    args: ['chmod', 'a+rx', '-R', '/workspace']
+
+  # We have to build and load the builder image first, so it can be used in the next step.
+  # Using "run" instead of "build" loads the built image into the daemon.
+  - name: gcr.io/cloud-builders/bazel
+    args: ['run', '--incompatible_disable_deprecated_attr_params=false', '--incompatible_string_join_requires_strings=false', '--incompatible_new_actions_api=false', '--incompatible_no_support_tools_in_action_inputs=false', '//debian/reproducible:debian${_VERSION_NUMBER}']
