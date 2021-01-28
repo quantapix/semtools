@@ -12,6 +12,8 @@ init() {
                 git clone -q https://github.com/bazelbuild/rules_docker.git
                 git clone -q https://github.com/bazelbuild/rules_go.git
                 git clone -q https://github.com/bazelbuild/rules_k8s.git
+                git clone -q https://github.com/bazelbuild/rules_pkg.git
+                git clone -q https://github.com/bazelbuild/rules_python.git
                 git clone -q https://github.com/bazelbuild/rules_rust.git
             )
         fi
@@ -31,6 +33,8 @@ init() {
             git clone -qb $BZL_RULES_DOCKER_TAG ../upstream/rules_docker
             git clone -qb $BZL_RULES_GO_TAG ../upstream/rules_go
             git clone -qb $BZL_RULES_K8S_TAG ../upstream/rules_k8s
+            git clone -qb $BZL_RULES_PKG_TAG ../upstream/rules_pkg
+            git clone -qb $BZL_RULES_PY_TAG ../upstream/rules_python
             git clone -qb $BZL_RULES_RUST_TAG ../upstream/rules_rust
             git clone -qb $BZL_SKYLIB ../upstream/skylib
             git clone -qb $BZL_TOOLCHAINS ../upstream/toolchains

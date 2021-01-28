@@ -12,6 +12,8 @@ load("@io_bazel_rules_docker//docker/security:security_check.bzl", "security_che
 load("@io_bazel_rules_docker//docker/toolchain_container:toolchain_container.bzl", "toolchain_container",)
 load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_extract")
 
+# load("@rules_python//python:defs.bzl", xxx)
+
 load("//bzls:dockerfile_build.bzl", "dockerfile_build",)
 load("//bzls:bootstrap_image.bzl", "bootstrap_image_macro",)
 
@@ -24,6 +26,19 @@ bzl_library(
     srcs = glob(["*.bzl"]),
 )
 
+genrule(
+    name = "ubuntu_16_0_4_vanilla_reproducible",
+    srcs = ["@ubuntu_16_0_4_tar_download//file"],
+    outs = ["ubuntu_16_0_4_vanilla_reproducible.tar"],
+    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
+)
+
+genrule(
+    name = "ubuntu_18_0_4_vanilla_reproducible",
+    srcs = ["@ubuntu_18_0_4_tar_download//file"],
+    outs = ["ubuntu_18_0_4_vanilla_reproducible.tar"],
+    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
+)
 
 UBUNTU_ENV = {
     "DEBIAN_FRONTEND": "noninteractive",
@@ -154,19 +169,6 @@ dockerfile_build(
     dockerfile = ":Dockerfile.ubuntu",
 )
 
-genrule(
-    name = "ubuntu_16_0_4_vanilla_reproducible",
-    srcs = ["@ubuntu_16_0_4_tar_download//file"],
-    outs = ["ubuntu_16_0_4_vanilla_reproducible.tar"],
-    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
-)
-
-genrule(
-    name = "ubuntu_18_0_4_vanilla_reproducible",
-    srcs = ["@ubuntu_18_0_4_tar_download//file"],
-    outs = ["ubuntu_18_0_4_vanilla_reproducible.tar"],
-    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
-)
 
 [docker_build(
     name = "ubuntu_%s_vanilla" % version,
