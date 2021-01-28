@@ -26,8 +26,23 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchai
 go_rules_dependencies()
 go_register_toolchains()
 
+load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
+rust_repositories()
+
+load("@io_bazel_rules_rust//:workspace.bzl", "bazel_version")
+bazel_version(name = "bazel_version")
+
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 gazelle_dependencies()
+
+load("@io_bazel_rules_docker//python:image.bzl", _py_image_repos = "repositories",)
+_py_image_repos()
+
+load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories",)
+_java_image_repos()
+
+load("@io_bazel_rules_docker//go:image.bzl", _go_image_repos = "repositories",)
+_go_image_repos()
 
 load(":deps.bzl", "deps")
 deps()
@@ -197,3 +212,309 @@ python_deps()
 
 load("//ubuntu/layers/go:deps.bzl", go_deps = "deps")
 go_deps()
+
+
+http_archive(
+    name = "jetty",
+    build_file = "//java:BUILD.jetty",
+    sha256 = "1b9ec532cd9b94550fad655e066a1f9cc2d350a1c79daea85d5c56fdbcd9aaa8",
+    strip_prefix = "jetty-distribution-9.4.22.v20191022/",
+    type = "tar.gz",
+    urls = ["https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.4.22.v20191022/jetty-distribution-9.4.22.v20191022.tar.gz"],
+)
+
+http_archive(
+    name = "nodejs",
+    build_file = "//nodejs:BUILD.nodejs",
+    sha256 = "b51c033d40246cd26e52978125a3687df5cd02ee532e8614feff0ba6c13a774f",
+    strip_prefix = "node-v14.15.4-linux-x64/",
+    type = "tar.gz",
+    urls = ["https://nodejs.org/dist/v14.15.4/node-v14.15.4-linux-x64.tar.gz"],
+)
+
+http_file(
+    name = "busybox_amd64",
+    executable = True,
+    sha256 = "51fcb60efbdf3e579550e9ab893730df56b33d0cc928a2a6467bd846cdfef7d8",
+    urls = ["https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64"],
+)
+
+
+load("//package_manager:dpkg.bzl", "dpkg_list", "dpkg_src")
+load(
+    "//:checksums.bzl",
+    "ARCHITECTURES",
+    "BASE_ARCHITECTURES",
+    "DEBIAN_SECURITY_SNAPSHOT",
+    "DEBIAN_SNAPSHOT",
+    "SHA256s",
+    "VERSIONS",
+)
+
+[
+    dpkg_src(
+        name = arch + "_" + name,
+        arch = arch,
+        distro = distro,
+        sha256 = SHA256s[arch][name]["main"],
+        snapshot = DEBIAN_SNAPSHOT,
+        url = "https://snapshot.debian.org/archive",
+    )
+    for arch in ARCHITECTURES
+    for (name, distro) in VERSIONS
+]
+
+[
+    dpkg_src(
+        name = arch + "_" + name + "_updates",
+        arch = arch,
+        distro = distro + "-updates",
+        sha256 = SHA256s[arch][name]["updates"],
+        snapshot = DEBIAN_SNAPSHOT,
+        url = "https://snapshot.debian.org/archive",
+    )
+    for arch in ARCHITECTURES
+    for (name, distro) in VERSIONS
+]
+
+[
+    dpkg_src(
+        name = arch + "_" + name + "_security",
+        package_prefix = "https://snapshot.debian.org/archive/debian-security/{}/".format(DEBIAN_SECURITY_SNAPSHOT),
+        packages_gz_url = "https://snapshot.debian.org/archive/debian-security/{}/dists/{}/updates/main/binary-{}/Packages.gz".format(DEBIAN_SECURITY_SNAPSHOT, distro, arch),
+        sha256 = SHA256s[arch][name]["security"],
+    )
+    for arch in ARCHITECTURES
+    for (name, distro) in VERSIONS
+    if "security" in SHA256s[arch][name]
+]
+
+[
+    dpkg_src(
+        name = arch + "_" + name + "_backports",
+        arch = arch,
+        distro = distro + "-backports",
+        sha256 = SHA256s[arch][name]["backports"],
+        snapshot = DEBIAN_SNAPSHOT,
+        url = "https://snapshot.debian.org/archive",
+    )
+    for arch in ARCHITECTURES
+    for (name, distro) in VERSIONS
+    if "backports" in SHA256s[arch][name]
+]
+
+[
+    dpkg_list(
+        name = "package_bundle_" + arch + "_debian9",
+        packages = [
+            "libc6",
+            "base-files",
+            "ca-certificates",
+            "openssl",
+            "libssl1.0.2",
+            "libssl1.1",
+            "libbz2-1.0",
+            "libdb5.3",
+            "libffi6",
+            "libncursesw5",
+            "liblzma5",
+            "libexpat1",
+            "libreadline7",
+            "libtinfo5",
+            "libsqlite3-0",
+            "mime-support",
+            "netbase",
+            "readline-common",
+            "tzdata",
+
+            #c++
+            "libgcc1",
+            "libgomp1",
+            "libstdc++6",
+
+            #java
+            "zlib1g",
+            "libjpeg62-turbo",
+            "libpng16-16",
+            "liblcms2-2",
+            "libfreetype6",
+            "fonts-dejavu-core",
+            "fontconfig-config",
+            "libfontconfig1",
+            "libuuid1",
+            "openjdk-8-jre-headless",
+            "openjdk-8-jdk-headless",
+            "openjdk-11-jre-headless",
+            "openjdk-11-jdk-headless",
+            "libc-bin",
+
+            #python
+            "libpython2.7-minimal",
+            "python2.7-minimal",
+            "libpython2.7-stdlib",
+            "dash",
+            "libc-bin",
+
+            #python3
+            "libmpdec2",
+            "libpython3.5-minimal",
+            "libpython3.5-stdlib",
+            "python3.5-minimal",
+
+            #dotnet
+            "libcurl3",
+            "libgssapi-krb5-2",
+            "libicu57",
+            "liblttng-ust0",
+            "libssl1.0.2",
+            "libuuid1",
+            "zlib1g",
+            "curl",
+            "libcomerr2",
+            "libidn2-0",
+            "libk5crypto3",
+            "libkrb5-3",
+            "libldap-2.4-2",
+            "libldap-common",
+            "libsasl2-2",
+            "libnghttp2-14",
+            "libpsl5",
+            "librtmp1",
+            "libssh2-1",
+            "libkeyutils1",
+            "libkrb5support0",
+            "libunistring0",
+            "libgnutls30",
+            "libgmp10",
+            "libhogweed4",
+            "libidn11",
+            "libnettle6",
+            "libp11-kit0",
+            "libffi6",
+            "libtasn1-6",
+            "libsasl2-modules-db",
+            "libgcrypt20",
+            "libgpg-error0",
+            "libacl1",
+            "libattr1",
+            "libselinux1",
+            "libpcre3",
+            "libbz2-1.0",
+            "liblzma5",
+        ] + (["libunwind8"] if arch in BASE_ARCHITECTURES else []),
+        sources = [
+            "@" + arch + "_debian9_updates//file:Packages.json",
+            "@" + arch + "_debian9_backports//file:Packages.json",
+            "@" + arch + "_debian9//file:Packages.json",
+        ] + (["@" + arch + "_debian9_security//file:Packages.json"] if arch in BASE_ARCHITECTURES else []),
+    )
+    for arch in ARCHITECTURES
+]
+
+[
+    dpkg_list(
+        name = "package_bundle_" + arch + "_debian10",
+        packages = [
+            "libc6",
+            "base-files",
+            "ca-certificates",
+            "openssl",
+            "libssl1.1",
+            "libbz2-1.0",
+            "libdb5.3",
+            "libffi6",
+            "liblzma5",
+            "libexpat1",
+            "libreadline7",
+            "libsqlite3-0",
+            "mime-support",
+            "netbase",
+            "readline-common",
+            "tzdata",
+
+            #c++
+            "libgcc1",
+            "libgomp1",
+            "libstdc++6",
+
+            #java
+            "zlib1g",
+            "libjpeg62-turbo",
+            "libpng16-16",
+            "liblcms2-2",
+            "libfreetype6",
+            "fonts-dejavu-core",
+            "fontconfig-config",
+            "libfontconfig1",
+            "libuuid1",
+            "openjdk-11-jre-headless",
+            "openjdk-11-jdk-headless",
+            "libc-bin",
+
+            #python
+            "dash",
+            "libc-bin",
+            "libpython2.7-minimal",
+            "libpython2.7-stdlib",
+            "python2.7-minimal",
+
+            #python3
+            "libmpdec2",
+            "libpython3.7-minimal",
+            "libpython3.7-stdlib",
+            "libtinfo6",
+            "libuuid1",
+            "libncursesw6",
+            "python3-distutils",
+            "python3.7-minimal",
+
+            #dotnet
+            "libcurl4",
+            "libgssapi-krb5-2",
+            "libicu63",
+            "liblttng-ust0",
+            "libssl1.1",
+            "libuuid1",
+            "zlib1g",
+            "curl",
+            "libcomerr2",
+            "libidn2-0",
+            "libk5crypto3",
+            "libkrb5-3",
+            "libldap-2.4-2",
+            "libldap-common",
+            "libsasl2-2",
+            "libnghttp2-14",
+            "libpsl5",
+            "librtmp1",
+            "libssh2-1",
+            "libkeyutils1",
+            "libkrb5support0",
+            "libunistring2",
+            "libgnutls30",
+            "libgmp10",
+            "libhogweed4",
+            "libidn11",
+            "libnettle6",
+            "libp11-kit0",
+            "libffi6",
+            "libtasn1-6",
+            "libsasl2-modules-db",
+            "libgcrypt20",
+            "libgpg-error0",
+            "libacl1",
+            "libattr1",
+            "libselinux1",
+            "libpcre3",
+            "libbz2-1.0",
+            "liblzma5",
+        ] + (["libunwind8"] if arch in BASE_ARCHITECTURES else []),
+        sources = [
+            "@" + arch + "_debian10_security//file:Packages.json",
+            "@" + arch + "_debian10_updates//file:Packages.json",
+            "@" + arch + "_debian10//file:Packages.json",
+        ],
+    )
+    for arch in ARCHITECTURES
+]
+

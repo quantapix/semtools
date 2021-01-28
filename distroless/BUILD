@@ -1,7 +1,7 @@
-package(default_visibility = ["//visibility:public"])
-
 load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
 load("//:checksums.bzl", "ARCHITECTURES", "BASE_ARCHITECTURES")
+
+package(default_visibility = ["//visibility:public"])
 
 LABEL_USERS = [
     ("latest", "root"),
