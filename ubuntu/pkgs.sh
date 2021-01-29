@@ -10,7 +10,7 @@ init() {
         (cd $v
             url="https://partner-images.canonical.com/core/$v/current"
             ubu="ubuntu-$v-core-cloudimg-amd64"
-            wget -qN "$url/"SHA256SUMS{,.gpg},"$ubu.manifest",'unpacked/build-info.txt'}
+            wget -qN "$url/"{SHA256SUMS{,.gpg},"$ubu.manifest",'unpacked/build-info.txt'}
             gpg --batch --verify SHA256SUMS.gpg SHA256SUMS || exit
             tar="$ubu-root.tar.gz"
             wget -N --progress=dot:giga "$url/$tar"

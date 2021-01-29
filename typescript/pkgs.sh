@@ -5,7 +5,7 @@ init() {
     fetch \
         "" \
         "https://github.com/microsoft/TypeScript/releases/download/$v" \
-        "typescript-$v.tgz" \
+        "typescript-$(echo $v | cut -c2-).tgz" \
         ""
 }
 

@@ -2,9 +2,7 @@
 
 init() {
     if [ $1 == "pull" ]; then
-        if [ ! -e upstream ]; then
-            git clone -q https://github.com/JuliaLang/julia.git upstream
-        fi
+        [ -e upstream ] || git clone -q https://github.com/JuliaLang/julia.git upstream
         (cd upstream || exit
             git branch -f qold $JL_NEW_VER
             git checkout -q --track -B qnew master

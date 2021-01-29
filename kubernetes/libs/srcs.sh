@@ -2,13 +2,9 @@
 
 init() {
     if [ $1 == "pull" ]; then
-        if [ ! -e upstream ]; then
-            mkdir upstream
-            (cd upstream || exit
-                git clone -q https://github.com/kubernetes/minikube.git
-            )
-        fi
+        mkdir -p upstream
         (cd upstream || exit
+            [ -e minikube ] || git clone -q https://github.com/kubernetes/minikube.git
             for r in *; do
                 (cd $r || exit; git pull -q)
             done

@@ -2,20 +2,16 @@
 
 init() {
     if [ $1 == "pull" ]; then
-        if [ ! -e upstream ]; then
-            mkdir upstream
-            (cd upstream || exit
-                git clone -q https://github.com/curl/curl.git
-                git clone -q https://github.com/Kitware/CMake.git cmake
-                git clone -q https://github.com/libgit2/libgit2.git
-                git clone -q https://github.com/libssh2/libssh2.git
-                git clone -q https://github.com/madler/zlib.git
-                git clone -q https://github.com/nghttp2/nghttp2.git
-                git clone -q https://github.com/ninja-build/ninja.git
-                git clone -q https://github.com/vtjnash/libwhich.git
-            )
-        fi
+        mkdir -p upstream
         (cd upstream || exit
+            [ -e cmake ] || git clone -q https://github.com/Kitware/CMake.git cmake
+            [ -e curl ] || git clone -q https://github.com/curl/curl.git
+            [ -e libgit2 ] || git clone -q https://github.com/libgit2/libgit2.git
+            [ -e libssh2 ] || git clone -q https://github.com/libssh2/libssh2.git
+            [ -e libwhich ] || git clone -q https://github.com/vtjnash/libwhich.git
+            [ -e nghttp2 ] || git clone -q https://github.com/nghttp2/nghttp2.git
+            [ -e ninja ] || git clone -q https://github.com/ninja-build/ninja.git
+            [ -e zlib ] || git clone -q https://github.com/madler/zlib.git
             for r in *; do
                 (cd $r || exit; git pull -q)
             done

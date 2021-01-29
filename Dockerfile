@@ -2,7 +2,7 @@ ARG REG
 ARG TAG
 ARG DST
 
-FROM ubuntu:focal AS ubu
+FROM ubuntu:focal AS boot
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
 RUN set -eux; \
@@ -24,7 +24,7 @@ RUN set -ex; \
     fi
 
 
-FROM $REG/ubu:$TAG AS tmp-pkgs
+FROM $REG/boot:$TAG AS tmp-pkgs
 WORKDIR /tmp
 COPY pkgs .
 RUN ./qpx.sh -i pkgs

@@ -3,9 +3,7 @@
 init() {
     v=$K8S_VER
     if [ $1 == "pull" ]; then
-        if [ ! -e upstream ]; then
-            git clone -q https://github.com/kubernetes/kubernetes.git upstream
-        fi
+        [ -e upstream ] || git clone -q https://github.com/kubernetes/kubernetes.git upstream
         (cd upstream || exit
             git branch -f qold $v
             git checkout -q --track -B qnew master

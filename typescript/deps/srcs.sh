@@ -1,10 +1,8 @@
 # rust
 
 init() {
-    if [ ! -e upstream ]; then
-        git clone -q https://github.com/rust-lang/rust.git upstream
-    fi
     if [ $1 == "pull" ]; then
+        [ -e upstream ] || git clone -q https://github.com/rust-lang/rust.git upstream
         (cd upstream || exit
             git branch -f qold 1.49.0
             git checkout -q --track -B qnew master

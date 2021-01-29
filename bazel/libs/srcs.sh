@@ -2,22 +2,18 @@
 
 init() {
     if [ $1 == "pull" ]; then
-        if [ ! -e upstream ]; then
-            mkdir upstream
-            (cd upstream || exit
-                git clone -q https://github.com/bazelbuild/bazel-gazelle.git gazelle
-                git clone -q https://github.com/bazelbuild/bazel-skylib.git skylib
-                git clone -q https://github.com/bazelbuild/bazel-toolchains.git toolchains
-                git clone -q https://github.com/bazelbuild/buildtools.git
-                git clone -q https://github.com/bazelbuild/rules_docker.git
-                git clone -q https://github.com/bazelbuild/rules_go.git
-                git clone -q https://github.com/bazelbuild/rules_k8s.git
-                git clone -q https://github.com/bazelbuild/rules_pkg.git
-                git clone -q https://github.com/bazelbuild/rules_python.git
-                git clone -q https://github.com/bazelbuild/rules_rust.git
-            )
-        fi
+        mkdir -p upstream
         (cd upstream || exit
+            [ -e buildtools ] || git clone -q https://github.com/bazelbuild/buildtools.git
+            [ -e gazelle ] || git clone -q https://github.com/bazelbuild/bazel-gazelle.git gazelle
+            [ -e rules_docker ] || git clone -q https://github.com/bazelbuild/rules_docker.git
+            [ -e rules_go ] || git clone -q https://github.com/bazelbuild/rules_go.git
+            [ -e rules_k8s ] || git clone -q https://github.com/bazelbuild/rules_k8s.git
+            [ -e rules_pkg ] || git clone -q https://github.com/bazelbuild/rules_pkg.git
+            [ -e rules_python ] || git clone -q https://github.com/bazelbuild/rules_python.git
+            [ -e rules_rust ] || git clone -q https://github.com/bazelbuild/rules_rust.git
+            [ -e skylib ] || git clone -q https://github.com/bazelbuild/bazel-skylib.git skylib
+            [ -e toolchains ] || git clone -q https://github.com/bazelbuild/bazel-toolchains.git toolchains
             for r in *; do
                 (cd $r || exit; git pull -q)
             done

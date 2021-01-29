@@ -2,9 +2,7 @@
 
 init() {
     if [ $1 == "pull" ]; then
-        if [ ! -e upstream ]; then
-            git clone -q https://github.com/pytorch/pytorch.git upstream
-        fi
+        [ -e upstream ] || git clone -q https://github.com/pytorch/pytorch.git upstream
         (cd upstream || exit
             git branch -f qold $PYTORCH_VER
             git checkout -q --track -B qnew master

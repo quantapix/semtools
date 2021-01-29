@@ -2,9 +2,7 @@
 
 init() {
     if [ $1 == "pull" ]; then
-        if [ ! -e upstream ]; then
-            git clone -q https://github.com/microsoft/TypeScript.git upstream
-        fi
+        [ -e upstream ] || git clone -q https://github.com/microsoft/TypeScript.git upstream
         (cd upstream || exit
             git branch -f qold $TS_VER
             git checkout -q --track -B qnew master

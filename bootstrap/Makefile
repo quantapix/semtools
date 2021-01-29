@@ -5,8 +5,10 @@ DST=/usr/local
 
 ARGS=--build-arg REG=$(REG) --build-arg TAG=$(TAG) --build-arg DST=$(DST)
 
+IMGS=$(shell find * -type f -name imgs.sh)
 PKGS=$(shell find * -type f -name pkgs.sh)
 SRCS=$(shell find * -type f -name srcs.sh)
+
 UPSS=$(shell find * -type d -name upstream)
 
 UTIL=$(shell pwd)/util.sh
@@ -23,8 +25,8 @@ util.sh: base.sh
 
 tgt.pkgs: util.sh
 	DF=$(shell pwd)/Dockerfile; \
-	docker build -t $(REG)/boot:$(TAG) --pull --target=boot $(ARGS) - < $$DF; \
-	docker push $(REG)/boot:$(TAG); \
+	docker build -t $(REG)/ubu:$(TAG) --pull --target=ubu $(ARGS) - < $$DF; \
+	docker push $(REG)/ubu:$(TAG); \
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \
 		(cd $$d || exit; \
 			$(UTIL) -s pkgs; \
@@ -91,7 +93,6 @@ tgt.jl: tgt.dev
 
 clean: clean-pkgs clean-srcs
 	rm -f tgt.*
-	rm util.sh
 
 clean-pkgs: 
 	for d in $(subst /pkgs.sh,,$(PKGS)); do \

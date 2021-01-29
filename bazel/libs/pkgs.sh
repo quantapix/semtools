@@ -1,4 +1,4 @@
-# bazel
+# bazel/libs
 
 init() {
     echo "init"
