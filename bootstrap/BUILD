@@ -1,7 +1,8 @@
+load("@io_bazel_rules_docker//container:container.bzl", "container_image", "container_push")
+
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-load("@io_bazel_rules_docker//container:container.bzl", "container_image",)
 load("@io_bazel_rules_docker//contrib:repro_test.bzl", "container_repro_test",)
 load("@io_bazel_rules_docker//contrib:test.bzl", "container_test",)
 load("@io_bazel_rules_docker//contrib/automatic_container_release:metadata_merge.bzl", "metadata_merge",)
@@ -19,31 +20,18 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
-bzl_library(
-    name = "lib",
-    srcs = glob(["*.bzl"]),
+
+download_pkgs(
+    name = "debs",
+    image_tar = "@focal//image",
+    packages = [
+        "ca-certificates",
+        "curl",
+        "netbase",
+        "tzdata",
+        "wget",
+    ],
 )
-
-pkg_tar(
-    name = "overlay",
-    srcs = glob(["overlay/**/*"]),
-    package_dir = "/",
-    strip_prefix = "overlay/",
-)
-
-UBUS = [
-  ("old", "focal"), 
-  ("new", "hirsute"),
-]
-
-[
-  genrule(
-    name = "%s_tar" % n,
-    srcs = ["@%s_tar//:ubuntu-%s-core-cloudimg-amd64-root.tar.gz"] % (u, u),
-    outs = ["%s.tar" % n],
-    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
-  ) for n, u in UBUS
-]
 
 UBU_ENV = {
     "LANG": "C.UTF-8",
@@ -53,30 +41,26 @@ UBU_ENV = {
     "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 }
 
-[
-  container_image(
-    name = "%s" % n,
+container_image(
+    name = "image",
     env = UBU_ENV,
     tars = [
-      ":overlay.tar",
-      ":%s_tar" % n,
+        ":overlay.tar",
+        ":debs.tar",
     ],
     # cmd = "/bin/bash",
-  ) for n, _ in UBUS
-]
+)
 
-[
-  download_pkgs(
-      name = "%s_debs" % n,
-      image_tar = ":%s_tar" % n,
-      packages = [
-          "ca-certificates",
-          "curl",
-          "libc-bin",
-          "netbase",
-      ],
-  ) for n, _ in UBUS
-]
+container_push(
+    name = "boot",
+    image = ":image",
+    format = "Docker",
+    registry = "gcr.io",
+    repository = "boot",
+    tag = "dev",
+)
+
+
 
 [
   toolchain_container(
@@ -118,38 +102,6 @@ UBU_ENV = {
   ) for n, _ in UBUS
 ]
 
-security_check(
-    name = "security_metadata",
-    image = "gcr.io/gcp-runtimes/ubuntu_18_0_4:latest",
-)
-
-packages_metadata(
-    name = "debs_metadata",
-    metadata_csv = ":debs_metadata.csv",
-)
-
-metadata_merge(
-    name = "metadata",
-    srcs = [
-        ":debs_metadata.yaml",
-        ":security_metadata.yaml",
-    ],
-)
-
-container_test(
-    name = "image-test",
-    configs = [":tests.yaml"],
-    image = ":image",
-    verbose = True,
-)
-
-container_repro_test(
-    name = "img_repro_test",
-    image = ":image",
-    workspace_file = "//:WORKSPACE",
-)
-
-
 
 toolchain_container(
     name = "builder",
@@ -170,21 +122,6 @@ container_run_and_extract(
     docker_run_flags = ["--privileged"],
     extract_file = "/workspace/rootfs.tar.gz",
     image = ":builder.tar",
-)
-
-container_test(
-    name = "image-test",
-    configs = [
-        ":tests.yaml",
-        "@layer_definitions//layers/ubuntu1604/base:tests.yaml",
-        "@layer_definitions//layers/ubuntu1604/bazel:tests.yaml",
-        "@layer_definitions//layers/ubuntu1604/clang:tests.yaml",
-        "@layer_definitions//layers/ubuntu1604/docker:tests.yaml",
-        "@layer_definitions//layers/ubuntu1604/java:tests.yaml",
-        "@layer_definitions//layers/ubuntu1604/python:tests.yaml",
-    ],
-    image = ":image",
-    verbose = True,
 )
 
 

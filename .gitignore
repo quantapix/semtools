@@ -1,9 +1,10 @@
-util.sh
-tgt.*
-pkgs
-srcs
-upstream
-bazel-*
-/output/
 *.bzlc
 *.pyc
+/output/
+bazel-*
+other
+pkgs
+srcs
+tgt.*
+upstream
+util.sh
