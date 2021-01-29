@@ -10,6 +10,17 @@ local_repository(name = "io_bazel_rules_rust", path = "./bazel/libs/srcs/rules_r
 local_repository(name = "rules_pkg", path = "./bazel/libs/srcs/rules_pkg",)
 local_repository(name = "rules_python", path = "./bazel/libs/srcs/rules_python",)
 
+[
+  new_local_repository(
+    name = "%s_tar" % u,
+    path = "./ubuntu/pkgs/%s" % u,
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+exports_files(glob(["*.tar.gz"]))
+""",
+  ) for u in ["focal", "hirsute"]
+]
+
 load("@io_bazel_rules_docker//repositories:repositories.bzl", dkr_repos = "repositories",)
 dkr_repos()
 load("@io_bazel_rules_docker//repositories:deps.bzl", dkr_deps = "deps")
@@ -40,36 +51,6 @@ go_download_sdk(
             "fb26c30e6a04ad937bbc657a1b5bba92f80096af1e8ee6da6430c045a8db3a5b",
         ),
     },
-)
-
-UBUNTU_MAP = {
-    "16_0_4": {
-        "sha256": "20c151c26c5a057a85d43bcc3dbee1d1fc536f76b84c550a1c2faa88af7727b6",
-        "url": "https://storage.googleapis.com/ubuntu_tar/20190708/ubuntu-xenial-core-cloudimg-amd64-root.tar.gz",
-    },
-    "18_0_4": {
-        "sha256": "600f663706aa8e7cb30d114daee117536545b5a580bca6a97b3cb73d72acdcee",
-        "url": "https://storage.googleapis.com/ubuntu_tar/20190704/ubuntu-bionic-core-cloudimg-amd64-root.tar.gz",
-    },
-}
-
-[http_file(
-    name = "ubuntu_%s_tar_download" % version,
-    sha256 = map["sha256"],
-    urls = [map["url"]],
-) for version, map in UBUNTU_MAP.items()]
-
-
-http_file(
-    name = "ubuntu1604_tar_latest",
-    downloaded_file_path = "ubuntu1604.tar.gz",
-    urls = ["https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-amd64-root.tar.gz"],
-)
-
-http_file(
-    name = "ubuntu1804_tar_latest",
-    downloaded_file_path = "ubuntu1804.tar.gz",
-    urls = ["https://partner-images.canonical.com/core/bionic/current/ubuntu-bionic-core-cloudimg-amd64-root.tar.gz"],
 )
 
 load(":centos_rpm.bzl", "centos_rpm")

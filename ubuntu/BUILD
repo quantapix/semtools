@@ -6,7 +6,6 @@ load("@io_bazel_rules_docker//contrib:repro_test.bzl", "container_repro_test",)
 load("@io_bazel_rules_docker//contrib:test.bzl", "container_test",)
 load("@io_bazel_rules_docker//contrib/automatic_container_release:metadata_merge.bzl", "metadata_merge",)
 load("@io_bazel_rules_docker//contrib/automatic_container_release:packages_metadata.bzl", "packages_metadata",)
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build",)
 load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs",)
 load("@io_bazel_rules_docker//docker/security:security_check.bzl", "security_check",)
 load("@io_bazel_rules_docker//docker/toolchain_container:toolchain_container.bzl", "toolchain_container",)
@@ -26,41 +25,109 @@ bzl_library(
     srcs = glob(["*.bzl"]),
 )
 
-genrule(
-    name = "ubuntu_16_0_4_vanilla_reproducible",
-    srcs = ["@ubuntu_16_0_4_tar_download//file"],
-    outs = ["ubuntu_16_0_4_vanilla_reproducible.tar"],
-    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
+pkg_tar(
+    name = "overlay",
+    srcs = glob(["overlay/**/*"]),
+    package_dir = "/",
+    strip_prefix = "overlay/",
 )
 
-genrule(
-    name = "ubuntu_18_0_4_vanilla_reproducible",
-    srcs = ["@ubuntu_18_0_4_tar_download//file"],
-    outs = ["ubuntu_18_0_4_vanilla_reproducible.tar"],
-    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
-)
+UBUS = [
+  ("old", "focal"), 
+  ("new", "hirsute"),
+]
 
-UBUNTU_ENV = {
+[
+  genrule(
+    name = "%s_tar" % n,
+    srcs = ["@%s_tar//:ubuntu-%s-core-cloudimg-amd64-root.tar.gz"] % (u, u),
+    outs = ["%s.tar" % n],
+    cmd = "cp $< temp.tar.gz && gunzip temp.tar.gz && tar --delete var/log/dpkg.log var/cache/ldconfig/aux-cache -f temp.tar && mv temp.tar $@",
+  ) for n, u in UBUS
+]
+
+UBU_ENV = {
+    "LANG": "C.UTF-8",
     "DEBIAN_FRONTEND": "noninteractive",
     "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 }
 
-container_image(
-    name = "ubuntu1804_vanilla",
-    env = UBUNTU_ENV,
-    tars = ["@ubuntu1804_tar//file"],
+[
+  container_image(
+    name = "%s" % n,
+    env = UBU_ENV,
+    tars = [":%s_tar" % n],
+  ) for n, _ in UBUS
+]
+
+[
+  download_pkgs(
+      name = "%s_debs" % n,
+      image_tar = ":%s_tar" % n,
+      packages = [
+          "ca-certificates",
+          "curl",
+          "libc-bin",
+          "netbase",
+      ],
+  ) for n, _ in UBUS
+]
+
+[
+  toolchain_container(
+      name = "%s_tlc" % n,
+      base = ":%s" % n,
+      cmd = [
+          "/bin/sh",
+          "-c",
+      ],
+      env = UBU_ENV,
+      installables_tar = ":%s_debs",
+      installation_cleanup_commands = "apt-get clean",
+  ) for n, _ in UBUS
+]
+
+dockerfile_build(
+    name = "old_dkr",
+    base = ":old",
+    dockerfile = ":Dockerfile.ubuntu",
 )
 
-download_pkgs(
-    name = "debs",
-    image_tar = ":ubuntu1804_vanilla.tar",
+dockerfile_build(
+    name = "new_dkr",
+    base = ":ubuntu_18_0_4_vanilla",
+    dockerfile = ":Dockerfile.ubuntu",
+)
+
+
+bootstrap_image_macro(
+    name = "bootstrap_ubuntu_16_0_4",
+    date = "20190409",
+    image_tar = ":ubuntu_16_0_4_vanilla.tar",
+    output_image_name = "ubuntu_16_0_4",
     packages = [
         "ca-certificates",
         "curl",
         "libc-bin",
         "netbase",
     ],
+    store_location = "ubuntu/16_0_4/builds",
 )
+
+bootstrap_image_macro(
+    name = "bootstrap_ubuntu_18_0_4",
+    date = "20190406",
+    image_tar = ":ubuntu_18_0_4_vanilla.tar",
+    output_image_name = "ubuntu_18_0_4",
+    packages = [
+        "ca-certificates",
+        "curl",
+        "libc-bin",
+        "netbase",
+    ],
+    store_location = "ubuntu/18_0_4/builds",
+)
+
 
 security_check(
     name = "security_metadata",
@@ -80,17 +147,6 @@ metadata_merge(
     ],
 )
 
-toolchain_container(
-    name = "image",
-    base = ":ubuntu1804_vanilla.tar",
-    cmd = [
-        "/bin/sh",
-        "-c",
-    ],
-    env = UBUNTU_ENV,
-    installables_tar = "@ubuntu1804_debs//file",
-    installation_cleanup_commands = "apt-get clean",
-)
 
 container_test(
     name = "image-test",
@@ -128,12 +184,6 @@ container_run_and_extract(
     image = ":builder.tar",
 )
 
-pkg_tar(
-    name = "overlay",
-    srcs = glob(["overlay/**/*"]),
-    package_dir = "/",
-    strip_prefix = "overlay/",
-)
 
 DEBIAN_ENV = {
     "DEBIAN_FRONTEND": "noninteractive",
@@ -152,58 +202,6 @@ container_image(
     ],
 )
 
-UBUNTU_VERSIONS = [
-    "16_0_4",
-    "18_0_4",
-]
-
-dockerfile_build(
-    name = "ubuntu_16_0_4",
-    base = ":ubuntu_16_0_4_vanilla",
-    dockerfile = ":Dockerfile.ubuntu",
-)
-
-dockerfile_build(
-    name = "ubuntu_18_0_4",
-    base = ":ubuntu_18_0_4_vanilla",
-    dockerfile = ":Dockerfile.ubuntu",
-)
-
-
-[docker_build(
-    name = "ubuntu_%s_vanilla" % version,
-    env = UBUNTU_ENV,
-    tars = [":ubuntu_%s_vanilla_reproducible" % version],
-) for version in UBUNTU_VERSIONS]
-
-bootstrap_image_macro(
-    name = "bootstrap_ubuntu_16_0_4",
-    date = "20190409",
-    image_tar = ":ubuntu_16_0_4_vanilla.tar",
-    output_image_name = "ubuntu_16_0_4",
-    packages = [
-        "ca-certificates",
-        "curl",
-        "libc-bin",
-        "netbase",
-    ],
-    store_location = "ubuntu/16_0_4/builds",
-)
-
-bootstrap_image_macro(
-    name = "bootstrap_ubuntu_18_0_4",
-    date = "20190406",
-    image_tar = ":ubuntu_18_0_4_vanilla.tar",
-    output_image_name = "ubuntu_18_0_4",
-    packages = [
-        "ca-certificates",
-        "curl",
-        "libc-bin",
-        "netbase",
-    ],
-    store_location = "ubuntu/18_0_4/builds",
-)
-
 
 toolchain_container(
     name = "image_intermediate",
@@ -220,11 +218,6 @@ toolchain_container(
     ],
 )
 
-# Set up `entrypoint` and cmd in the container. These cannot be set in the
-# `toolchain_container` rule as they would be consumed by intermediate
-# `container_image` rule in its implementation.
-# TODO(xingao): enable setting things like `entrypoint` and `cmd` in
-# `toolchain_container`.
 container_image(
     name = "image",
     base = ":image_intermediate",
