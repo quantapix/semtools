@@ -14,7 +14,6 @@ load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_extract")
 # load("@rules_python//python:defs.bzl", xxx)
 
 load("//bzls:dockerfile_build.bzl", "dockerfile_build",)
-load("//bzls:bootstrap_image.bzl", "bootstrap_image_macro",)
 
 licenses(["notice"])  # Apache 2.0
 
@@ -48,6 +47,8 @@ UBUS = [
 
 UBU_ENV = {
     "LANG": "C.UTF-8",
+    "LANGUAGE": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
     "DEBIAN_FRONTEND": "noninteractive",
     "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 }
@@ -56,7 +57,11 @@ UBU_ENV = {
   container_image(
     name = "%s" % n,
     env = UBU_ENV,
-    tars = [":%s_tar" % n],
+    tars = [
+      ":overlay.tar",
+      ":%s_tar" % n,
+    ],
+    # cmd = "/bin/bash",
   ) for n, _ in UBUS
 ]
 
@@ -80,54 +85,38 @@ UBU_ENV = {
       cmd = [
           "/bin/sh",
           "-c",
+          "/bin/bash",
       ],
       env = UBU_ENV,
       installables_tar = ":%s_debs",
       installation_cleanup_commands = "apt-get clean",
+      # installation_cleanup_commands = "rm -f /etc/init.d/.depend.boot /etc/init.d/.depend.start /etc/init.d/.depend.stop",
+      language_layers = [
+        # "@//clang:clang-ltl",
+        # "@//java:java11-ltl",
+        # "@//python:python-ltl",
+        # "@//bazel:bazel-ltl",
+        # "@//docker:docker-ltl",
+      ],
   ) for n, _ in UBUS
 ]
 
-dockerfile_build(
-    name = "old_dkr",
-    base = ":old",
-    dockerfile = ":Dockerfile.ubuntu",
-)
+[
+  container_image(
+      name = "%s_dev" % n,
+      base = ":%s_tlc" % n,
+      cmd = None,
+      entrypoint = ["/usr/local/bin/bazel"],
+  ) for n, _ in UBUS
+]
 
-dockerfile_build(
-    name = "new_dkr",
-    base = ":ubuntu_18_0_4_vanilla",
-    dockerfile = ":Dockerfile.ubuntu",
-)
-
-
-bootstrap_image_macro(
-    name = "bootstrap_ubuntu_16_0_4",
-    date = "20190409",
-    image_tar = ":ubuntu_16_0_4_vanilla.tar",
-    output_image_name = "ubuntu_16_0_4",
-    packages = [
-        "ca-certificates",
-        "curl",
-        "libc-bin",
-        "netbase",
-    ],
-    store_location = "ubuntu/16_0_4/builds",
-)
-
-bootstrap_image_macro(
-    name = "bootstrap_ubuntu_18_0_4",
-    date = "20190406",
-    image_tar = ":ubuntu_18_0_4_vanilla.tar",
-    output_image_name = "ubuntu_18_0_4",
-    packages = [
-        "ca-certificates",
-        "curl",
-        "libc-bin",
-        "netbase",
-    ],
-    store_location = "ubuntu/18_0_4/builds",
-)
-
+[
+  dockerfile_build(
+      name = "%s_dkr" % s,
+      base = ":%s" % s,
+      dockerfile = ":Dockerfile.ubuntu",
+  ) for n, _ in UBUS
+]
 
 security_check(
     name = "security_metadata",
@@ -146,7 +135,6 @@ metadata_merge(
         ":security_metadata.yaml",
     ],
 )
-
 
 container_test(
     name = "image-test",
@@ -184,47 +172,6 @@ container_run_and_extract(
     image = ":builder.tar",
 )
 
-
-DEBIAN_ENV = {
-    "DEBIAN_FRONTEND": "noninteractive",
-    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-    "PORT": "8080",
-}
-
-container_image(
-    name = "image",
-    cmd = "/bin/bash",
-    env = DEBIAN_ENV,
-    tars = [
-        # The overlay tar has to come first to actuall overwrite existing files.
-        ":overlay.tar",
-        "@debian9_tar//file",
-    ],
-)
-
-
-toolchain_container(
-    name = "image_intermediate",
-    base = "@ubuntu1604//image",
-    # Remove non-deterministic files.
-    installation_cleanup_commands = "rm -f /etc/init.d/.depend.boot /etc/init.d/.depend.start /etc/init.d/.depend.stop",
-    language_layers = [
-        "@layer_definitions//layers/ubuntu1604/clang:clang-ltl",
-        "@layer_definitions//layers/ubuntu1604/java:java-ltl",
-        "@layer_definitions//layers/ubuntu1604/java:java11-ltl",
-        "@layer_definitions//layers/ubuntu1604/python:python-ltl",
-        "@layer_definitions//layers/ubuntu1604/bazel:bazel-ltl",
-        "@layer_definitions//layers/ubuntu1604/docker:docker-ltl",
-    ],
-)
-
-container_image(
-    name = "image",
-    base = ":image_intermediate",
-    cmd = None,
-    entrypoint = ["/usr/local/bin/bazel"],
-)
-
 container_test(
     name = "image-test",
     configs = [
@@ -241,30 +188,3 @@ container_test(
 )
 
 
-toolchain_container(
-    name = "image",
-    base = "@ubuntu1604//image",
-    cmd = [
-        "/bin/sh",
-        "-c",
-        "/bin/bash",
-    ],
-    env = {
-        "LANG": "C.UTF-8",
-        "LANGUAGE": "C.UTF-8",
-        "LC_ALL": "C.UTF-8",
-        # PATH envvar is a special case, and currently only the one in the
-        # topmost layer is set. So that we override it here to include all.
-        "PATH": "$$PATH:/opt/python3.6/bin:/usr/local/go/bin",
-    },
-    installation_cleanup_commands = "rm -f /etc/init.d/.depend.boot /etc/init.d/.depend.start /etc/init.d/.depend.stop",
-    language_layers = [
-        "@layer_definitions//layers/ubuntu1604/clang:clang-ltl",
-        "@layer_definitions//layers/ubuntu1604/java:java-ltl",
-        "@layer_definitions//layers/ubuntu1604/java:java11-ltl",
-        "@layer_definitions//layers/ubuntu1604/python:python-ltl",
-        "@layer_definitions//layers/ubuntu1604/bazel:bazel-ltl",
-        "@layer_definitions//layers/ubuntu1604/docker:docker-ltl",
-        "@layer_definitions//layers/ubuntu1604/gcloud:gcloud-ltl",
-    ],
-)
