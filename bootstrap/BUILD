@@ -8,6 +8,7 @@ load("@io_bazel_rules_docker//contrib:test.bzl", "container_test",)
 load("@io_bazel_rules_docker//contrib/automatic_container_release:metadata_merge.bzl", "metadata_merge",)
 load("@io_bazel_rules_docker//contrib/automatic_container_release:packages_metadata.bzl", "packages_metadata",)
 load("@io_bazel_rules_docker//docker/package_managers:download_pkgs.bzl", "download_pkgs",)
+load("@io_bazel_rules_docker//docker/package_managers:install_pkgs.bzl", "install_pkgs")
 load("@io_bazel_rules_docker//docker/security:security_check.bzl", "security_check",)
 load("@io_bazel_rules_docker//docker/toolchain_container:toolchain_container.bzl", "toolchain_container",)
 load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_extract")
@@ -33,6 +34,14 @@ download_pkgs(
     ],
 )
 
+install_pkgs(
+    name = "image",
+    image_tar = "@focal//image",
+    installables_tar = ":debs.tar",
+    installation_cleanup_commands = "rm -rf /var/lib/apt/lists/*",
+    output_image_name = "image",
+)
+
 UBU_ENV = {
     "LANG": "C.UTF-8",
     "LANGUAGE": "C.UTF-8",
@@ -42,13 +51,9 @@ UBU_ENV = {
 }
 
 container_image(
-    name = "image",
+    name = "wrap",
+    base = ":image.tar",
     env = UBU_ENV,
-    tars = [
-        ":overlay.tar",
-        ":debs.tar",
-    ],
-    # cmd = "/bin/bash",
 )
 
 container_push(
@@ -59,8 +64,6 @@ container_push(
     repository = "boot",
     tag = "dev",
 )
-
-
 
 [
   toolchain_container(
@@ -124,4 +127,15 @@ container_run_and_extract(
     image = ":builder.tar",
 )
 
+container_test(
+    name = "bazel_test",
+    configs = ["//test:bootstrap.yaml"],
+    image = ":extended_alpine",
+)
 
+container_test(
+    name = "docker_test",
+    configs = ["//test:bootstrap.yaml"],
+    driver = "tar",
+    image = "@extended_alpine_dockerfile//image:dockerfile_image",
+)
