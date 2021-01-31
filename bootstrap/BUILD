@@ -21,6 +21,7 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
+# chain rules together with macros and args
 
 download_pkgs(
     name = "debs",
@@ -35,24 +36,24 @@ download_pkgs(
 )
 
 install_pkgs(
-    name = "image",
+    name = "base",
     image_tar = "@focal//image",
     installables_tar = ":debs.tar",
     installation_cleanup_commands = "rm -rf /var/lib/apt/lists/*",
-    output_image_name = "image",
+    output_image_name = "base",
 )
 
 UBU_ENV = {
+    "DEBIAN_FRONTEND": "noninteractive",
     "LANG": "C.UTF-8",
     "LANGUAGE": "C.UTF-8",
     "LC_ALL": "C.UTF-8",
-    "DEBIAN_FRONTEND": "noninteractive",
     "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 }
 
 container_image(
-    name = "wrap",
-    base = ":image.tar",
+    name = "image",
+    base = ":base.tar",
     env = UBU_ENV,
 )
 
