@@ -1,0 +1,6 @@
+WORKSPACE
+
+bazel-*
+
+old_patches
+.pytest_cache

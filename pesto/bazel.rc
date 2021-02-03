@@ -1,0 +1,109 @@
+###
+
+build -c opt
+# build -c fastbuild
+
+build --copt=-march=native
+build --host_copt=-march=native
+
+build --cpu=k8
+build --compiler=sys_gcc
+build --platforms=//:sys_platform
+build --host_platform=//:sys_platform
+build --crosstool_top=@pesto_cc//:toolchain
+build --host_crosstool_top=@pesto_cc//:toolchain
+
+# build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java9
+# build --java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
+
+# build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java9
+# build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
+
+# build --host_javabase=@java//:jdk11
+
+# build --python_top=@python//:pesto
+# build:sys --python_top=@python//:sys
+
+build --distinct_host_configuration=false
+build --experimental_enable_repo_mapping
+build --genrule_strategy=standalone
+build --python_path="/home/qpix/tools/tpy/bin/python"
+build --sandbox_debug
+build --spawn_strategy=standalone
+build --verbose_failures
+
+build --define framework_shared_object=true
+build --define=allow_oversize_protos=true
+build --define=grpc_no_ares=true
+build --define=use_fast_cpp_protos=true
+
+build --config=cuda
+test --config=cuda
+
+build:opt --copt=-Wno-sign-compare
+build:opt --define with_default_optimizations=true
+
+build:dynamic_kernels --copt=-DAUTOLOAD_DYNAMIC_KERNELS
+build:dynamic_kernels --define=dynamic_loaded_kernels=true
+
+build --define absl=1
+
+build --define with_gdr_support=true
+build --define with_jemalloc=true
+build --define with_ngraph_support=false
+build --define with_verbs_support=true
+build --define with_xla_support=true
+
+build --define=no_aws_support=true
+build --define=no_gcp_support=true
+build --define=no_hdfs_support=true
+build --define=no_ignite_support=true
+build --define=no_kafka_support=true
+
+build --define=INCLUDEDIR=$(PREFIX)/include
+build --define=LIBDIR=$(PREFIX)/lib
+build --define=PREFIX=/usr
+
+build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true
+# build:cuda_clang --define=using_cuda=true --define=using_cuda_clang=true --define=using_clang=true
+
+build:v2 --define=tf_api_version=2
+
+# build:download_clang_use_lld --linkopt='-fuse-ld=lld'
+
+# build:cuda_clang --config=download_clang_use_lld
+# test:cuda_clang --config=download_clang_use_lld
+
+build --action_env CUDA_TOOLKIT_PATH="/home/qpix/clone/pesto/lib/nvidia/upstream/cuda_cudnn"
+build --action_env CUDNN_INSTALL_PATH="/home/qpix/clone/pesto/lib/nvidia/upstream/cuda_cudnn"
+build --action_env LD_LIBRARY_PATH="/home/qpix/clone/pesto/lib/nvidia/upstream/cuda_cudnn/lib64:/home/qpix/clone/pesto/lib/nvidia/upstream/nccl/lib:/home/qpix/clone/pesto/lib/nvidia/upstream/tensorrt/lib"
+build --action_env NCCL_HDR_PATH="/home/qpix/tools/nccl/lib/../include"
+build --action_env NCCL_INSTALL_PATH="/home/qpix/tools/nccl/lib"
+build --action_env PYTHON_BIN_PATH="/home/qpix/tools/tpy/bin/python"
+build --action_env PYTHON_LIB_PATH="/usr/lib/python3.7/site-packages"
+build --action_env TENSORRT_INSTALL_PATH="/home/qpix/clone/pesto/lib/nvidia/upstream/tensorrt/targets/x86_64-linux-gnu/lib"
+build --action_env TF_CUDA_CLANG="0"
+build --action_env TF_CUDA_COMPUTE_CAPABILITIES="6.1,7.0"
+build --action_env TF_CUDA_VERSION="10.0"
+build --action_env TF_CUDNN_VERSION="7"
+build --action_env TF_NCCL_VERSION="2"
+build --action_env TF_NEED_CUDA="1"
+build --action_env TF_NEED_OPENCL_SYCL="0"
+build --action_env TF_NEED_ROCM="0"
+build --action_env TF_TENSORRT_VERSION="5.0.2"
+# build --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN="1"
+# build --action_env GCC_HOST_COMPILER_PATH="/usr/bin/gcc-7"
+# build --action_env TF_SYSTEM_LIBS="astor_archive,com_googlesource_code_re2,curl,gif_archive,jemalloc,jpeg,jsoncpp_git,lmdb,nasm,org_sqlite,pcre,png_archive,six_archive,snappy,swig,termcolor_archive,zlib_archive"
+
+
+build --override_repository=bazel_skylib=/home/qpix/clone/pesto/bzl/skylib/upstream
+build --override_repository=local_config_cuda=/home/qpix/clone/pesto/lib/nvidia/upstream
+build --override_repository=local_config_rocm=/home/qpix/clone/pesto/nil
+build --override_repository=local_config_tensorrt=/home/qpix/clone/pesto/lib/nvidia/upstream/tensorrt
+build --override_repository=org_tensorflow=/home/qpix/clone/pesto/tensorflow/upstream
+build --override_repository=protobuf_archive=/home/qpix/clone/pesto/google/protobuf/upstream
+build --override_repository=six_archive=/home/qpix/clone/pesto/py/six/upstream
+build --override_repository=swig=/home/qpix/clone/pesto/sys
+build --override_repository=zlib_archive=/home/qpix/clone/pesto/sys
+# build --override_repository=io_bazel_rules_closure=/home/qpix/clone/pesto/bzl/rules/closure/upstream
+

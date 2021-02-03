@@ -1,0 +1,629 @@
+# -*- Python -*-
+# Copyright 2018 Quantapix Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# =============================================================================
+
+major_version: "v0"
+minor_version: "1"
+default_target_cpu: "k8"
+
+default_toolchain {
+    cpu: "k8"
+    toolchain_identifier: "linux-k8-gcc"
+}
+
+toolchain {
+    toolchain_identifier: "linux-k8-gcc"
+
+    compiler: "gcc"
+    target_cpu: "k8"
+    abi_version: "gcc"
+    target_libc: "local"
+    abi_libc_version: "local"
+    host_system_name: "x86_64-pc-linux-gnu"
+    target_system_name: "x86_64-pc-linux-gnu"
+
+    supports_gold_linker: true
+    # supports_thin_archives: true
+    supports_start_end_lib: true
+    # supports_interface_shared_objects: true
+    # supports_embedded_runtimes: true
+    static_runtimes_filegroup: "static-runtime-libs-k8"
+    dynamic_runtimes_filegroup: "dynamic-runtime-libs-k8"
+    # supports_incremental_linker: true
+    # supports_normalizing_ar: true
+    # supports_fission: true
+    # supports_dsym: true
+    needsPic: true
+
+    # shared start
+    action_config {
+        action_name: "cc-flags-make-variable"
+        config_name: "cc-flags-make-variable"
+    }
+
+    # -fprofile-use -fprofile-correction
+
+    feature { name: "host" }
+    feature { name: "nonhost" }
+    feature {
+        name: "c++11"
+        provides: "c++std"
+        flag_set {
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            action: "linkstamp-compile"
+            flag_group {
+                flag: "-nostdinc++"
+                flag: "-std=c++11"
+                flag: "-Wc++14-extensions"
+                flag: "-Wc++2a-extensions"
+                flag: "-Wno-binary-literal"
+            }
+        }
+    }
+    feature {
+        name: "c++14"
+        provides: "c++std"
+        flag_set {
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            action: "linkstamp-compile"
+            flag_group {
+                flag: "-nostdinc++"
+                flag: "-std=c++14"
+                flag: "-Wc++11-compat"
+                flag: "-Wno-c++11-compat-binary-literal"
+                flag: "-Wc++2a-extensions"
+            }
+        }
+    }
+    feature {
+        name: "c++17"
+        provides: "c++std"
+        flag_set {
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            action: "linkstamp-compile"
+            flag_group {
+                # flag: "-nostdinc++"
+                flag: "-std=c++17"
+                flag: "-Wc++11-compat"
+                # flag: "-Wno-c++11-compat-binary-literal"
+                # flag: "-Wc++2a-extensions"
+            }
+        }
+    }
+    feature {
+        name: "c++2a"
+        provides: "c++std"
+        flag_set {
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            action: "linkstamp-compile"
+            flag_group {
+                # flag: "-nostdinc++"
+                flag: "-std=c++2a"
+                flag: "-Wc++11-compat"
+                # flag: "-Wno-c++11-compat-binary-literal"
+            }
+        }
+    }
+    feature {
+        name: "c++default"
+        enabled: true
+        flag_set {
+            with_feature {
+                not_feature: "c++11"
+                not_feature: "c++14"
+                not_feature: "c++17"
+                not_feature: "c++2a"
+            }
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            action: "linkstamp-compile"
+            flag_group {
+                flag: "-nostdinc++"
+                flag: "-std=c++11"
+                flag: "-Wc++14-extensions"
+                flag: "-Wc++2a-extensions"
+                flag: "-Wno-binary-literal"
+            }
+        }
+    }
+    feature {
+        name: "stdlib"
+        flag_set {
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-nodeps-dynamic-library"
+            flag_group {
+                flag: "-lm"
+                flag: "-lstdc++"
+            }
+        }
+    }
+    feature {
+        name: "parse_headers"
+        flag_set {
+            action: "c++-header-parsing"
+            flag_group {
+                flag: "-xc++-header"
+                flag: "-fsyntax-only"
+            }
+        }
+    }
+    feature {
+        name: "preprocess_headers"
+        flag_set {
+            action: "c++-header-preprocessing"
+            flag_group {
+                flag: "-xc++"
+                flag: "-E"
+            }
+        }
+    }
+    feature {
+        name: "determinism"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-Wno-builtin-macro-redefined"
+                flag: "-D__DATE__=\"redacted\""
+                flag: "-D__TIMESTAMP__=\"redacted\""
+                flag: "-D__TIME__=\"redacted\""
+            }
+        }
+    }
+    feature {
+        name: "alwayslink"
+        flag_set {
+            action: "c++-link-dynamic-library"
+            action: "c++-link-nodeps-dynamic-library"
+            action: "c++-link-executable"
+            flag_group {
+                flag: "-Wl,-no-as-needed"
+            }
+        }
+    }
+    feature {
+        name: "pie"
+        flag_set {
+            action: "assemble"
+            action: "preprocess-assemble"
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            action: "c++-module-codegen"
+            action: "cc-flags-make-variable"
+            action: "lto-backend"
+            action: "linkstamp-compile"
+            flag_group {
+                flag: "-mpie-copy-relocations"
+                flag: "-fPIE"
+            }
+        }
+        flag_set {
+            action: "cc-flags-make-variable"
+            action: "c++-link-executable"
+            flag_group {
+                flag: "-pie"
+            }
+        }
+    }
+    feature {
+        name: "pic"
+        flag_set {
+            with_feature {
+                not_feature: "pie"
+            }
+            action: "assemble"
+            action: "preprocess-assemble"
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-module-codegen"
+            action: "c++-module-compile"
+            action: "linkstamp-compile"
+            expand_if_all_available: "pic"
+            flag_group {
+                expand_if_all_available: "pic"
+                flag: "-fPIC"
+            }
+            flag_group {
+                expand_if_none_available: "pic"
+                flag: "-fPIE"
+            }
+        }
+    }
+    feature {
+        name: "hardening"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-U_FORTIFY_SOURCE"
+                flag: "-D_FORTIFY_SOURCE=1"
+                flag: "-fstack-protector-strong"
+            }
+        }
+        flag_set {
+            action: "c++-link-dynamic-library"
+            action: "c++-link-nodeps-dynamic-library"
+            flag_group {
+                flag: "-Wl,-z,relro,-z,now"
+            }
+        }
+        flag_set {
+            action: "c++-link-executable"
+            flag_group {
+                flag: "-pie"
+                flag: "-Wl,-z,relro,-z,now"
+            }
+        }
+    }
+    feature {
+        name: "warnings"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-Wall"
+                flag: "-Wno-unused-result"
+                flag: "-Wsign-compare"
+                # flag: "-Wno-free-nonheap-object"
+                # flag: "-Wunused-but-set-parameter"
+            }
+        }
+    }
+    feature {
+        name: "frame-pointer"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-fno-omit-frame-pointer"
+            }
+        }
+    }
+    feature {
+        name: "build-id"
+        flag_set {
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-nodeps-dynamic-library"
+            flag_group {
+                flag: "-Wl,--build-id=md5"
+                flag: "-Wl,--hash-style=gnu"
+            }
+        }
+    }
+    feature {
+        name: "no-canonical-prefixes"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-nodeps-dynamic-library"
+            flag_group {
+                flag:"-no-canonical-prefixes"
+                flag: "-fno-canonical-system-headers"
+            }
+        }
+    }
+    feature {
+        name: "disable-assertions"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-DNDEBUG"
+            }
+        }
+    }
+    feature {
+        name: "linker-bin-path"
+        flag_set {
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-nodeps-dynamic-library"
+            flag_group {
+                flag: "-B/usr/bin/"
+            }
+        }
+    }
+    feature {
+        name: "common"
+        implies: "stdlib"
+        implies: "c++17"
+        # implies: "c++2a"
+        implies: "determinism"
+        implies: "alwayslink"
+        implies: "warnings"
+        implies: "frame-pointer"
+        implies: "build-id"
+        implies: "no-canonical-prefixes"
+        implies: "linker-bin-path"
+    }
+    feature {
+        name: "fastbuild"
+        implies: "common"
+    }
+    feature {
+        name: "opt"
+        implies: "common"
+        implies: "disable-assertions"
+        implies: "hardening"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-g0"
+                flag: "-O2"
+                # flag: "-fwrapv"
+                flag: "-ffunction-sections"
+                flag: "-fdata-sections"
+            }
+        }
+        flag_set {
+            action: "c++-link-dynamic-library"
+            action: "c++-link-nodeps-dynamic-library"
+            action: "c++-link-executable"
+            flag_group {
+                flag: "-Wl,--gc-sections"
+            }
+        }
+    }
+    feature {
+        name: "dbg"
+        implies: "common"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-g"
+            }
+        }
+    }
+    feature {
+        name: "gold"
+        enabled: true
+        flag_set {
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-interface-dynamic-library"
+            flag_group {
+                expand_if_none_available: "lto"
+                flag: "-fuse-ld=gold"
+            }
+        }
+    }
+    feature {
+        name: "lto"
+        requires { feature: "nonhost" }
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            flag_group {
+                flag: "-flto=thin"
+            }
+        }
+        flag_set {
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-interface-dynamic-library"
+            flag_group {
+                flag: "-flto=thin"
+            }
+        }
+    }
+    feature {
+        name: "per_object_debug_info"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-module-codegen"
+            action: "assemble"
+            action: "preprocess-assemble"
+            action: "lto-backend"
+            flag_group {
+                flag: "-gsplit-dwarf"
+                flag: "-ggnu-pubnames"
+            }
+        }
+        flag_set {
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-interface-dynamic-library"
+            flag_group {
+                expand_if_all_available: "is_using_fission"
+                flag: "-Wl,--gdb-index"
+            }
+        }
+    }
+    # shared end
+
+    # project start
+    feature {
+        name: "python_flags"
+        implies: "pic"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            flag_group {
+                flag: "-pthread"
+                flag: "-fno-plt"
+                flag: "-fwrapv"
+            }
+        }
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-interface-dynamic-library"
+            flag_group {
+                flag: "-flto"
+                flag: "-flto-partition=none"
+                flag: "-fuse-linker-plugin"
+                flag: "-ffat-lto-objects"
+            }
+        }
+        flag_set {
+            action: "c++-link-executable"
+            action: "c++-link-dynamic-library"
+            action: "c++-link-interface-dynamic-library"
+            flag_group {
+                flag: "-ldl"
+                flag: "-lm"
+                flag: "-lpthread"
+                 flag: "-lutil"
+            }
+        }
+    }
+    feature {
+        name: "python_nodist"
+        implies: "python_flags"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            flag_group {
+                flag: "-std=c99"
+                flag: "-Wextra"
+                flag: "-Wno-unused-result"
+                flag: "-Wno-unused-parameter"
+                flag: "-Wno-missing-field-initializers"
+                flag: "-Wno-cast-function-type"
+                flag: "-Werror=implicit-function-declaration"
+            }
+        }
+    }
+    feature {
+        name: "python_core"
+        implies: "python_nodist"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            flag_group {
+                flag: "-DPy_BUILD_CORE"
+            }
+        }
+    }
+    feature {
+        name: "numpy_flags"
+        implies: "python_flags"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            flag_group {
+                flag: "-D_FILE_OFFSET_BITS=64"
+                flag: "-D_LARGEFILE_SOURCE=1"
+                flag: "-D_LARGEFILE64_SOURCE=1"
+            }
+        }
+    }
+    feature {
+        name: "numpy_mkl"
+        implies: "python_flags"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            flag_group {
+                flag: "-DSCIPY_MKL_H"
+                flag: "-DHAVE_CBLAS"
+            }
+        }
+    }
+    feature {
+        name: "numpy_core"
+        implies: "numpy_mkl"
+        flag_set {
+            action: "c-compile"
+            action: "c++-compile"
+            action: "c++-header-parsing"
+            action: "c++-header-preprocessing"
+            action: "c++-module-compile"
+            flag_group {
+                flag: "-DNPY_INTERNAL_BUILD=1"
+                flag: "-DHAVE_NPY_CONFIG_H=1"
+            }
+        }
+    }
+    # project end
+
+    # tool_path { name: "gcc" path: "clang/bin/crosstool_wrapper_driver_is_not_gcc" }
+
+    tool_path {name: "ar" path: "/usr/bin/ar"}
+    tool_path {name: "compat-ld" path: "/usr/bin/ld"}
+    tool_path {name: "cpp" path: "/usr/bin/cpp"}
+    tool_path {name: "dwp" path: "/usr/bin/dwp"}
+    tool_path {name: "gcc" path: "/usr/bin/gcc"}
+    tool_path {name: "gcov" path: "/usr/bin/gcov"}
+    tool_path {name: "ld" path: "/usr/bin/ld"}
+    tool_path {name: "nm" path: "/usr/bin/nm"}
+    tool_path {name: "objcopy" path: "/usr/bin/objcopy"}
+    tool_path {name: "objdump" path: "/usr/bin/objdump"}
+    tool_path {name: "strip" path: "/usr/bin/strip"}
+
+    linker_flag: "-pass-exit-codes"
+
+    objcopy_embed_flag: "-I"
+    objcopy_embed_flag: "binary"
+
+    linking_mode_flags {
+        mode: DYNAMIC
+    }
+
+    cxx_builtin_include_directory: "/usr/lib/gcc/x86_64-pc-linux-gnu/8.2.1/include"
+    cxx_builtin_include_directory: "/usr/local/include"
+    cxx_builtin_include_directory: "/usr/lib/gcc/x86_64-pc-linux-gnu/8.2.1/include-fixed"
+    cxx_builtin_include_directory: "/usr/include"
+    cxx_builtin_include_directory: "/usr/include/c++/8.2.1"
+    cxx_builtin_include_directory: "/usr/include/c++/8.2.1/x86_64-pc-linux-gnu"
+    cxx_builtin_include_directory: "/usr/include/c++/8.2.1/backward"
+    # cxx_builtin_include_directory: "/"
+
+    # builtin_sysroot: ""
+}

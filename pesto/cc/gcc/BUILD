@@ -1,0 +1,44 @@
+# -*- Python -*-
+# PULLED FROM BUILD!!!
+#
+
+load(
+    "@//cc:rule_defs.bzl",
+    "prep_toolchain",
+    "create_links",
+    "create_lists",
+    "create_toolchain",
+)
+
+_name = "gcc"
+prep_toolchain(_name)
+
+create_links(
+    "sys",
+    {
+        "ar": None,
+        "as": None,
+        "cpp": None,
+        "dwp": None,
+        "gcc": None,
+        "gcov": None,
+        "ld": None,
+        "nm": None,
+        "objcopy": None,
+        "objdump": None,
+        "profdata": "gprof",
+        "strip": None,
+    },
+)
+
+create_lists(
+    "sys",
+    {
+        "drivers": [],
+        "includes": [],
+        "libraries": [],
+        "xray": [],
+    },
+)
+
+create_toolchain("sys", _name)
