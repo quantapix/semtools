@@ -8,3 +8,8 @@ srcs
 tgt.*
 upstream
 util.sh
+
+bin
+generated
+lib
+*.patch
