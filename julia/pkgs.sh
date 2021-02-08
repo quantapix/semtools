@@ -1,5 +1,7 @@
 # julia
 
+# checksums at https://julialang-s3.julialang.org/bin/checksums
+
 init() {
     gpg="3673DF529D9049477F76B37566E3C7DC03D6E495"
     v1=$JL_OLD_VER
@@ -13,7 +15,7 @@ init() {
         $gpg \
         "https://julialang-s3.julialang.org/bin/linux/x64"/$(echo $v2 | cut -d. -f1-2) \
         "julia-$v2-linux-x86_64.tar.gz" \
-        "30b214c7f544c6589a20104eaa6764eb368cadac5fa834b7454b747043e5a2b8"
+        "72847bd2b4d4db9d5970512f79fd5a7f76ad56cf0f2ea5a80eff032364b19c8b"
 }
 
 run() {
