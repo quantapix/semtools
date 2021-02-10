@@ -1,14 +1,16 @@
 workspace(name = "semtools")
 
-local_repository(name = "bazel_gazelle", path = "./bazel/libs/srcs/gazelle",)
-local_repository(name = "bazel_skylib", path = "./bazel/libs/srcs/skylib",)
-local_repository(name = "bazel_toolchains", path = "./bazel/libs/srcs/toolchains",)
-local_repository(name = "io_bazel_rules_docker", path = "./bazel/libs/srcs/rules_docker",)
-local_repository(name = "io_bazel_rules_go", path = "./bazel/libs/srcs/rules_go",)
-local_repository(name = "io_bazel_rules_k8s", path = "./bazel/libs/srcs/rules_k8s",)
-local_repository(name = "io_bazel_rules_rust", path = "./bazel/libs/srcs/rules_rust",)
-local_repository(name = "rules_pkg", path = "./bazel/libs/srcs/rules_pkg",)
-local_repository(name = "rules_python", path = "./bazel/libs/srcs/rules_python",)
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(name = "bazel_gazelle", remote = "./bazel/libs/upstream/gazelle", branch = "master")
+git_repository(name = "bazel_skylib", remote = "./bazel/libs/upstream/skylib", branch = "master")
+git_repository(name = "bazel_toolchains", remote = "./bazel/libs/upstream/toolchains", branch = "master")
+git_repository(name = "io_bazel_rules_docker", remote = "./bazel/libs/upstream/rules_docker", branch = "master")
+git_repository(name = "io_bazel_rules_go", remote = "./bazel/libs/upstream/rules_go", branch = "master")
+git_repository(name = "io_bazel_rules_k8s", remote = "./bazel/libs/upstream/rules_k8s", branch = "master")
+git_repository(name = "io_bazel_rules_rust", remote = "./bazel/libs/upstream/rules_rust", branch = "master")
+git_repository(name = "rules_pkg", remote = "./bazel/libs/upstream/rules_pkg", branch = "master")
+git_repository(name = "rules_python", remote = "./bazel/libs/upstream/rules_python", branch = "master")
 
 [
   new_local_repository(
