@@ -1,7 +1,7 @@
 # python
 
 init() {
-    v=$PYTHON_VER
+    v=2.7.9
     fetch \
         "E3FF2839C048B25C084DEBE9B26995E310250568" \
         "https://www.python.org/ftp/python/$v" \
