@@ -12,18 +12,23 @@ make_tool(
     tags = ["manual"],
 )
 
+filegroup(
+    name = "sjsmake_tgt",
+    srcs = [ "sjsmake" ],
+)
+
 native_tool_toolchain(
     name = "built_make",
-    path = "make/bin/make",
-    target = ":make_tool",
+    # path = "make/bin/make",
+    # target = ":make_tool",
+    path = "sjsmake",
+    target = ":sjsmake_tgt",
+    visibility = ["//visibility:public"],
 )
 
 toolchain(
     name = "make_chain",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
+    # exec_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64",],
     toolchain = ":built_make",
     toolchain_type = "@rules_foreign_cc//tools/build_defs:make_toolchain",
 )
@@ -38,14 +43,12 @@ native_tool_toolchain(
     name = "built_cmake",
     path = "cmake/bin/cmake",
     target = ":cmake_tool",
+    visibility = ["//visibility:public"],
 )
 
 toolchain(
     name = "cmake_chain",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
+    # exec_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64",],
     toolchain = ":built_cmake",
     toolchain_type = "@rules_foreign_cc//tools/build_defs:cmake_toolchain",
 )
@@ -54,20 +57,19 @@ ninja_tool(
     name = "ninja_tool",
     ninja_srcs = "@ninja//:files",
     tags = ["manual"],
+    visibility = ["//ubuntu/libs/test:__pkg__"],
 )
 
 native_tool_toolchain(
     name = "built_ninja",
     path = "ninja/ninja",
     target = ":ninja_tool",
+    visibility = ["//visibility:public"],
 )
 
 toolchain(
     name = "ninja_chain",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
+    # exec_compatible_with = ["@platforms//os:linux", "@platforms//cpu:x86_64",],
     toolchain = ":built_ninja",
     toolchain_type = "@rules_foreign_cc//tools/build_defs:ninja_toolchain",
 )

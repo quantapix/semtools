@@ -1,5 +1,17 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_test")
 
+sh_library(
+    name = "ninja_lib",
+    srcs = ["//ubuntu/libs:ninja_tool"],
+)
+
+sh_test(
+    name = "ninja",
+    srcs = ["ninja.sh"],
+    args = ["true"],
+    deps = [":ninja_lib"],
+)
+
 cc_binary(
     name = "zlib_sample",
     srcs = ["zlib.cpp"],
