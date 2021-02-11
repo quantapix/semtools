@@ -1,29 +1,29 @@
-"""Dependencies for python tools and tests"""
+"""Python deps"""
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@rules_python//python:pip.bzl", "pip_install")
 
-def python_deps(name = "deps"):
-    """Fetches all required dependencies for rules_python tests and tools
-
-    Args:
-      name: name  # sudo apt install libssl-dev
-    """
-    maybe(
-        new_git_repository,
-        name = "python3",
-        remote = "/Users/qpix/clone/semtools/python/upstream",
-        tag = "v3.9.1",
-        build_file_content = """
+_files = """
 exports_files(["qpx_bin"])
 filegroup(
     name = "files",
     srcs = glob(["qpx_out/**"], exclude = ["**/* *"]),
     visibility = ["//visibility:public"],
 )
-""",
+"""
+
+# buildifier: disable=unnamed-macro
+def python_deps():
+    """Python deps"""
+
+    maybe(
+        new_git_repository,
+        name = "python3",
+        remote = "/Users/qpix/clone/semtools/python/upstream",
+        tag = "v3.9.1",
+        build_file_content = _files,
         patch_cmds = [
             "mkdir $(pwd)/qpx_out",
             "./configure --prefix=$(pwd)/qpx_out",
@@ -36,14 +36,7 @@ filegroup(
     maybe(
         http_archive,
         name = "python2",
-        build_file_content = """
-exports_files(["qpx_bin"])
-filegroup(
-    name = "files",
-    srcs = glob(["qpx_out/**"], exclude = ["**/* *"]),
-    visibility = ["//visibility:public"],
-)
-""",
+        build_file_content = _files,
         patch_cmds = [
             "mkdir $(pwd)/qpx_out",
             "./configure --prefix=$(pwd)/qpx_out",
