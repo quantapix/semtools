@@ -65,9 +65,11 @@ def ubuntu_libs_deps():
 
     native.register_toolchains(
         "@rules_foreign_cc//tools/build_defs:preinstalled_make_toolchain",
-        # "@//ubuntu/libs:make_toolchain",
-        "@//ubuntu/libs:cmake_toolchain",
-        "@//ubuntu/libs:ninja_toolchain",
+        "@rules_foreign_cc//tools/build_defs:preinstalled_cmake_toolchain",
+        "@rules_foreign_cc//tools/build_defs:preinstalled_ninja_toolchain",
+        "@//ubuntu/libs:make_chain",
+        "@//ubuntu/libs:cmake_chain",
+        "@//ubuntu/libs:ninja_chain",
     )
 
 """

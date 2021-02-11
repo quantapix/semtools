@@ -15,9 +15,8 @@ load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_extract")
 
 load("//bzls:dockerfile_build.bzl", "dockerfile_build",)
 
-licenses(["notice"])  # Apache 2.0
-
 package(default_visibility = ["//visibility:public"])
+licenses(["notice"])
 
 bzl_library(
     name = "lib",

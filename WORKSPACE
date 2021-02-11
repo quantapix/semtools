@@ -20,5 +20,5 @@ skylib_deps()
 load("@//ubuntu/libs:workspace.bzl", "ubuntu_libs_deps")
 ubuntu_libs_deps()
 
-load("@//python:workspace.bzl", "python_deps")
-python_deps()
+# load("@//python:workspace.bzl", "python_deps")
+# python_deps()

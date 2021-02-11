@@ -1,26 +1,32 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary")
-load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
-
-cmake_external(
-    name = "libz",
-    cache_entries = {
-        # fictive prefix to test prefix merging
-        "CMAKE_PREFIX_PATH": "/bac/def",
-    },
-    lib_source = "@zlib//:files",
-)
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_test")
 
 cc_binary(
-    name = "zlib_usage_example",
+    name = "zlib_sample",
     srcs = ["zlib.cpp"],
-    deps = [":libz"],
+    deps = ["//ubuntu/libs:libz"],
 )
 
 sh_test(
-    name = "test_zlib",
-    srcs = ["test_zlib.sh"],
-    data = [":zlib_usage_example"],
-    visibility = ["//:__pkg__"],
+    name = "zlib",
+    srcs = ["zlib.sh"],
+    data = [":zlib_sample"],
+)
+
+cc_test(
+    name = "nghttp2",
+    srcs = ["nghttp2.cpp"],
+    deps = ["//ubuntu/libs:nghttp2"],
+)
+
+cc_test(
+    name = "test_libunwind",
+    srcs = ["libunwind_test.c"],
+    deps = [":libunwind"],
+)
+
+test_suite(
+    name = "configure_libunwind_tests",
+    tests = [":test_libunwind"],
 )
 
 """
