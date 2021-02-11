@@ -6,9 +6,12 @@ init() {
         (cd upstream || exit
             [ -e buildtools ] || git clone -q https://github.com/bazelbuild/buildtools.git
             [ -e gazelle ] || git clone -q https://github.com/bazelbuild/bazel-gazelle.git gazelle
+            [ -e rules_cc ] || git clone -q https://github.com/bazelbuild/rules_cc.git
             [ -e rules_docker ] || git clone -q https://github.com/bazelbuild/rules_docker.git
+            [ -e rules_foreign_cc ] || git clone -q https://github.com/bazelbuild/rules_foreign_cc.git
             [ -e rules_go ] || git clone -q https://github.com/bazelbuild/rules_go.git
             [ -e rules_k8s ] || git clone -q https://github.com/bazelbuild/rules_k8s.git
+            [ -e rules_nodejs ] || git clone -q https://github.com/bazelbuild/rules_nodejs.git
             [ -e rules_pkg ] || git clone -q https://github.com/bazelbuild/rules_pkg.git
             [ -e rules_python ] || git clone -q https://github.com/bazelbuild/rules_python.git
             [ -e rules_rust ] || git clone -q https://github.com/bazelbuild/rules_rust.git
