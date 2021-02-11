@@ -8,7 +8,7 @@ load("@rules_python//python:defs.bzl", "py_runtime", "py_runtime_pair", "py_bina
 package(default_visibility=["//visibility:public"])
 licenses(["notice"])
 
-exports_files(glob(["*.bzl"] + glob(["*.yaml"]))
+exports_files(glob(["*.bzl"]) + glob(["*.yaml"]))
 
 py_runtime(
     name = "py2_runtime",

@@ -1,10 +1,10 @@
 """Ubuntu libs deps"""
 
-load("@rules_foreign_cc//:workspace_definitions.bzl", foreign_cc_deps = "rules_foreign_cc_dependencies")
-
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+
+load("@rules_foreign_cc//tools/build_defs/shell_toolchain/toolchains:ws_defs.bzl", shell_toolchain_deps = "workspace_part",)
 
 _files = """
 filegroup(
@@ -14,7 +14,7 @@ filegroup(
 """
 
 # buildifier: disable=unnamed-macro
-def ubu_libs_deps():
+def ubuntu_libs_deps():
     """Ubuntu libs deps"""
 
     maybe(
@@ -28,7 +28,7 @@ def ubu_libs_deps():
 
     maybe(
         new_git_repository,
-        name = "ninja_build",
+        name = "ninja",
         remote = "/Users/qpix/clone/semtools/ubuntu/libs/upstream/ninja",
         tag = "v1.10.2",
         build_file_content = _files,
@@ -46,77 +46,31 @@ def ubu_libs_deps():
         new_git_repository,
         name = "nghttp2",
         remote = "/Users/qpix/clone/semtools/ubuntu/libs/upstream/nghttp2",
-        tag = "v3.19.4",
+        tag = "v1.43.0",
         build_file_content = _files,
         # patch_args = ["-p1"],
         # patch_cmds = ["find . -name '*.sh' -exec sed -i.orig '1s|#!/usr/bin/env sh\\$|/bin/sh\\$|' {} +"],
         # patches = ["@rules_foreign_cc_tests//:nghttp2.patch"],
     )
 
-
-    foreign_cc_deps([
-        "//:built_ninja_toolchain_osx",
-        "//:built_ninja_toolchain_linux",
-    ])
-
-
-    load("//deps:repositories.bzl", "repositories")
-
-    repositories()
-
-
-
-load(
-    "//tools/build_defs/shell_toolchain/toolchains:ws_defs.bzl",
-    shell_toolchain_workspace_initalization = "workspace_part",
-)
-
-# buildifier: disable=unnamed-macro
-def rules_foreign_cc_dependencies(
-        native_tools_toolchains = [],
-        register_default_tools = True,
-        additional_shell_toolchain_mappings = [],
-        additional_shell_toolchain_package = None):
-    """Call this function from the WORKSPACE file to initialize rules_foreign_cc \
-    dependencies and let neccesary code generation happen \
-    (Code generation is needed to support different variants of the C++ Starlark API.).
-
-    Args:
-        native_tools_toolchains: pass the toolchains for toolchain types
-            '@rules_foreign_cc//tools/build_defs:cmake_toolchain' and
-            '@rules_foreign_cc//tools/build_defs:ninja_toolchain' with the needed platform constraints.
-            If you do not pass anything, registered default toolchains will be selected (see below).
-
-        register_default_tools: If True, the cmake and ninja toolchains, calling corresponding
-            preinstalled binaries by name (cmake, ninja) will be registered after
-            'native_tools_toolchains' without any platform constraints. The default is True.
-
-        additional_shell_toolchain_mappings: Mappings of the shell toolchain functions to
-            execution and target platforms constraints. Similar to what defined in
-            @rules_foreign_cc//tools/build_defs/shell_toolchain/toolchains:toolchain_mappings.bzl
-            in the TOOLCHAIN_MAPPINGS list. Please refer to example in @rules_foreign_cc//toolchain_examples.
-
-        additional_shell_toolchain_package: A package under which additional toolchains, referencing
-            the generated data for the passed additonal_shell_toolchain_mappings, will be defined.
-            This value is needed since register_toolchains() is called for these toolchains.
-            Please refer to example in @rules_foreign_cc//toolchain_examples.
-    """
-    repositories()
-
-    shell_toolchain_workspace_initalization(
-        additional_shell_toolchain_mappings,
-        additional_shell_toolchain_package,
+    maybe(
+        new_git_repository,
+        name = "zlib",
+        remote = "/Users/qpix/clone/semtools/ubuntu/libs/upstream/zlib",
+        tag = "v1.2.11",
+        build_file_content = _files,
     )
 
-    native.register_toolchains(*native_tools_toolchains)
-    if register_default_tools:
-        native.register_toolchains(
-            "@rules_foreign_cc//tools/build_defs:preinstalled_cmake_toolchain",
-            "@rules_foreign_cc//tools/build_defs:preinstalled_ninja_toolchain",
-            "@rules_foreign_cc//tools/build_defs:preinstalled_make_toolchain",
-        )
+    shell_toolchain_deps([], None)
 
+    native.register_toolchains(
+        "@rules_foreign_cc//tools/build_defs:preinstalled_make_toolchain",
+        # "@//ubuntu/libs:make_toolchain",
+        "@//ubuntu/libs:cmake_toolchain",
+        "@//ubuntu/libs:ninja_toolchain",
+    )
 
+"""
     http_archive(
         name = "libevent",
         build_file_content = _files,
@@ -126,17 +80,6 @@ def rules_foreign_cc_dependencies(
             "https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/libevent-2.1.8-stable.tar.gz",
         ],
         sha256 = "965cc5a8bb46ce4199a47e9b2c9e1cae3b137e8356ffdad6d94d3b9069b71dc2",
-    )
-
-    http_archive(
-        name = "zlib",
-        build_file_content = _files,
-        sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
-        strip_prefix = "zlib-1.2.11",
-        urls = [
-            "https://mirror.bazel.build/zlib.net/zlib-1.2.11.tar.gz",
-            "https://zlib.net/zlib-1.2.11.tar.gz",
-        ],
     )
 
     http_archive(
@@ -305,17 +248,6 @@ def rules_foreign_cc_dependencies(
     )
 
     http_archive(
-        name = "cmake_hello_world_variant_src",
-        build_file_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
-        strip_prefix = "cmake-hello-world-master",
-        urls = [
-            "https://mirror.bazel.build/github.com/jameskbride/cmake-hello-world/archive/master.zip",
-            "https://github.com/jameskbride/cmake-hello-world/archive/master.zip",
-        ],
-        sha256 = "d613cf222bbb05b8cff7a1c03c37345ed33744a4ebaf3a8bfd5f56a76e25ca08",
-    )
-
-    http_archive(
         name = "gmp",
         build_file_content = _files,
         strip_prefix = "gmp-6.2.1",
@@ -358,3 +290,4 @@ def rules_foreign_cc_dependencies(
         ],
         sha256 = "f83c604cde80a49af91345a1ff3f4558958202989fb768e6508963e24ea2524c",
     )
+"""

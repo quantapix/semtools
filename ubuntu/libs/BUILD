@@ -1,33 +1,80 @@
+load("@rules_foreign_cc//for_workspace:make_build.bzl", "make_tool")
 load("@rules_foreign_cc//for_workspace:ninja_build.bzl", "ninja_tool")
+load("@rules_foreign_cc//for_workspace:cmake_build.bzl", "cmake_tool")
+
+load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
+load("@rules_foreign_cc//tools/build_defs/native_tools:native_tools_toolchain.bzl", "native_tool_toolchain")
+
+make_tool(
+    name = "make_tool",
+    make_srcs = "@make//:files",
+    tags = ["manual"],
+)
+
+native_tool_toolchain(
+    name = "built_make",
+    path = "make/bin/make",
+    target = ":make_tool",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "make_toolchain",
+    exec_compatible_with = [
+        #"@platforms//os:linux",
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":built_make",
+    toolchain_type = "@rules_foreign_cc//tools/build_defs:make_toolchain",
+)
+
+cmake_tool(
+    name = "cmake_tool",
+    cmake_srcs = "@cmake//:files",
+    tags = ["manual"],
+)
+
+native_tool_toolchain(
+    name = "built_cmake",
+    path = "cmake/bin/cmake",
+    target = ":cmake_tool",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "cmake_toolchain",
+    exec_compatible_with = [
+        #"@platforms//os:linux",
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":built_cmake",
+    toolchain_type = "@rules_foreign_cc//tools/build_defs:cmake_toolchain",
+)
 
 ninja_tool(
     name = "ninja_tool",
-    ninja_srcs = "@ninja_build//:all",
+    ninja_srcs = "@ninja//:files",
+    tags = ["manual"],
 )
 
-sh_library(
-    name = "ninja_",
-    srcs = [":ninja_tool"],
+native_tool_toolchain(
+    name = "built_ninja",
+    path = "ninja/ninja",
+    target = ":ninja_tool",
+    visibility = ["//visibility:public"],
 )
 
-sh_test(
-    name = "test_ninja_version",
-    srcs = ["test_ninja_version.sh"],
-    args = ["true"],
-    visibility = ["//:__pkg__"],
-    deps = [":ninja_"],
-)
-
-
-
-load("@rules_cc//cc:defs.bzl", "cc_binary")
-load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
-
-load("@rules_foreign_cc//for_workspace:cmake_build.bzl", "cmake_tool")
-
-cmake_tool(
-    name = "cmaketool",
-    cmake_srcs = "@cmake//:all",
+toolchain(
+    name = "ninja_toolchain",
+    exec_compatible_with = [
+        #"@platforms//os:linux",
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":built_ninja",
+    toolchain_type = "@rules_foreign_cc//tools/build_defs:ninja_toolchain",
 )
 
 cmake_external(
@@ -36,104 +83,5 @@ cmake_external(
         # fictive prefix to test prefix merging
         "CMAKE_PREFIX_PATH": "/bac/def",
     },
-    lib_source = "@zlib//:all",
-)
-
-cmake_external(
-    name = "libpng",
-    cache_entries = {
-        "ZLIB_ROOT": "$EXT_BUILD_DEPS/libz",
-    },
-    lib_source = "@libpng//:all",
-    out_include_dir = "include/libpng16",
-    static_libraries = ["libpng16.a"],
-    deps = [":libz"],
-)
-
-cc_binary(
-    name = "libpng_usage_example",
-    srcs = ["libpng_usage_example.cpp"],
-    deps = [
-        ":libpng",
-        ":libz",
-    ],
-)
-
-cc_binary(
-    name = "zlib_usage_example",
-    srcs = ["zlib-example.cpp"],
-    deps = [":libz"],
-)
-
-sh_test(
-    name = "test_zlib",
-    srcs = ["test_zlib.sh"],
-    data = [":zlib_usage_example"],
-    visibility = ["//:__pkg__"],
-)
-
-sh_test(
-    name = "test_libpng",
-    srcs = ["test_libpng.sh"],
-    args = ["$(location bazel-icon-transparent.png) out.png"],
-    data = [
-        "bazel-icon-transparent.png",
-        ":libpng_usage_example",
-    ],
-    visibility = ["//:__pkg__"],
-)
-
-cmake_external(
-    name = "freetype",
-    cache_entries = {
-        "PNG_LIBRARY": "$EXT_BUILD_DEPS/libpng/lib/libpng16.a",
-        "PNG_PNG_INCLUDE_DIR": "$EXT_BUILD_DEPS/libpng/include",
-        "ZLIB_ROOT": "$EXT_BUILD_DEPS/libz",
-    },
-    lib_source = "@freetype//:all",
-    out_include_dir = "include/freetype2",
-    static_libraries = ["libfreetype.a"],
-    deps = [
-        ":libpng",
-        ":libz",
-    ],
-)
-
-cmake_external(
-    name = "libgd",
-    cache_entries = {
-        "BUILD_SHARED_LIBS": "OFF",
-        "BUILD_STATIC_LIBS": "ON",
-        "ENABLE_FREETYPE": "1",
-        "ENABLE_PNG": "1",
-        "FREETYPE_INCLUDE_DIRS": "$EXT_BUILD_DEPS/freetype/include/freetype2",
-        "FREETYPE_LIBRARY": "$EXT_BUILD_DEPS/freetype/lib/libfreetype.a",
-        "PNG_LIBRARY": "$EXT_BUILD_DEPS/libpng/lib/libpng16.a",
-        "PNG_PNG_INCLUDE_DIR": "$EXT_BUILD_DEPS/libpng/include",
-        "ZLIB_ROOT": "$EXT_BUILD_DEPS/libz",
-    },
-    defines = ["HAVE_LIBPNG"],
-    lib_source = "@libgd//:all",
-    deps = [
-        ":freetype",
-        ":libpng",
-        ":libz",
-    ],
-)
-
-cc_binary(
-    name = "libgd_with_png_example",
-    srcs = ["arc.c"],
-    deps = [
-        ":libgd",
-    ],
-)
-
-sh_test(
-    name = "test_libgd",
-    srcs = ["test_libgd.sh"],
-    data = [
-        ":libgd_with_png_example",
-    ],
-    visibility = ["//:__pkg__"],
+    lib_source = "@zlib//:files",
 )
