@@ -13,25 +13,38 @@ make_tool(
 )
 
 genrule(
-    name="fifos",
-    srcs = ["tgt.fifos"],
+    name="start_fifos",
+    srcs = [],
     outs = ["read", "write"],
     cmd = "\n".join([
+        "set -euxo pipefail",
         "rm -f $(location {}) $(location {})".format(":read", ":write"),
         "mkfifo $(location {}) $(location {})".format(":read", ":write"),
+        "(",
+        " cat >$(location {}) <&3 &".format(":read") +
+        " (while true; do cat <$(location {}); sleep 0.1; done) >&4 &".format(":write", ":write"),
+        ")",
     ]),
 )
 
 genrule(
+    name="stop_fifos",
+    srcs = [],
+    outs = [],
+    cmd = "rm -f $(location {}) $(location {})".format(":read", ":write"),
+    tools = [":read", ":write"],
+)
+
+genrule(
     name = "make_wrap",
-    srcs = [":read", ":write"],
+    srcs = ["fifo_r", "fifo_w"],
     outs = ["make_wrap.sh"],
     cmd = "\n".join([
         "cat << EOF > make_wrap.sh",
         "#!/bin/bash",
-        "set -euo pipefail",
-        "exec 3<$(location {})".format(":read"),
-        "exec 4>$(location {})".format(":write"),
+        "set -euxo pipefail",
+        "exec 3<$(location {})".format("fifo_r"),
+        "exec 4>$(location {})".format("fifo_w"),
         "MAKEFLAGS=\" -j --jobserver-fds=3,4\" $(location {}) \"$$@\"".format(":make_tool"),
         "EOF"
     ]),
@@ -95,8 +108,14 @@ toolchain(
     toolchain_type = "@rules_foreign_cc//tools/build_defs:ninja_toolchain",
 )
 
-cmake_external(
+configure_make(
     name = "libz",
+    lib_source = "@zlib//:files",
+    visibility = ["//visibility:public"],
+)
+
+cmake_external(
+    name = "libz_cmake",
     cache_entries = {
         "CMAKE_PREFIX_PATH": "/qpx",
     },

@@ -1,18 +1,13 @@
 
+.PHONY: all clean
 
-#!/bin/bash
-set -euo pipefail
-JOBSERVER=${JOBSERVER:-$HOME/.jobserver}
-NPROC=${1:-$(nproc)}
-mkdir -p $JOBSERVER
-rm -f $JOBSERVER/rd $JOBSERVER/wr
-mkfifo $JOBSERVER/rd $JOBSERVER/wr
-echo "jobserver: ; +cat >$JOBSERVER/rd <&3 & ( while true; do cat <$JOBSERVER/wr; sleep 0.1; done ) >&4 & wait" | make -f - -j $NPROC jobserver
+all: tgt.bzl
 
-
-#!/bin/bash
-set -euo pipefail
-MAKE=${MAKE:-make}
-exec 3<$JOBSERVER/rd
-exec 4>$JOBSERVER/wr
-MAKEFLAGS=" -j --jobserver-fds=3,4" ${MAKE} "$@"
+tgt.bzl: 
+		mkfifo fifo_{r,w}
+		+cat <&3 >fifo_r & echo $$! >pids
+		( while true; do [ -e fifo_w ] || exit; cat <fifo_w; sleep 0.1; done ) >&4 & echo $$! >>pids
+		bazel build //ubuntu/libs:libz
+		cat > fifo_w <<- ""
+		kill $$(<pids)
+		rm -f fifo_{r,w} pids
