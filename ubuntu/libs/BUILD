@@ -12,17 +12,38 @@ make_tool(
     tags = ["manual"],
 )
 
-filegroup(
-    name = "sjsmake_tgt",
-    srcs = [ "sjsmake" ],
+genrule(
+    name="fifos",
+    srcs = ["tgt.fifos"],
+    outs = ["read", "write"],
+    cmd = "\n".join([
+        "rm -f $(location {}) $(location {})".format(":read", ":write"),
+        "mkfifo $(location {}) $(location {})".format(":read", ":write"),
+    ]),
+)
+
+genrule(
+    name = "make_wrap",
+    srcs = [":read", ":write"],
+    outs = ["make_wrap.sh"],
+    cmd = "\n".join([
+        "cat << EOF > make_wrap.sh",
+        "#!/bin/bash",
+        "set -euo pipefail",
+        "exec 3<$(location {})".format(":read"),
+        "exec 4>$(location {})".format(":write"),
+        "MAKEFLAGS=\" -j --jobserver-fds=3,4\" $(location {}) \"$$@\"".format(":make_tool"),
+        "EOF"
+    ]),
+    tools = [":make_tool"],
 )
 
 native_tool_toolchain(
     name = "built_make",
     # path = "make/bin/make",
     # target = ":make_tool",
-    path = "sjsmake",
-    target = ":sjsmake_tgt",
+    path = "make_wrap.sh",
+    target = ":make_wrap",
     visibility = ["//visibility:public"],
 )
 
