@@ -1,11 +1,7 @@
-
-package(default_visibility=["//visibility:public"])
-
-licenses(["notice"])
+load("//:rule_defs.bzl", "install", "profile")
 
 exports_files(["rule_defs.bzl"])
 
-load("//:rule_defs.bzl", "install", "profile")
 
 install("cc_gcc", "@cc_gcc//:make", outs=["bin/gcc"])
 install("cc_llvm", "@cc_llvm//:cmake", outs=["bin/clang"])

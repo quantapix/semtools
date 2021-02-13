@@ -1,14 +1,11 @@
 
-
 def sources():
     native.filegroup(
         name="sources",
         srcs=native.glob(["**/*"]),
     )
 
-
 std = "std/"
-
 
 def bdir():
     o = "bdir"
@@ -23,9 +20,7 @@ def bdir():
         ]),
     )
 
-
 _bdir = ":bdir"
-
 
 def configure():
     c = "@sys//:autoconf"
@@ -44,9 +39,7 @@ def configure():
         tools=[c, i],
     )
 
-
 _hook = "//:BUILD.bazel"
-
 
 def makefile(outs=["Makefile"], prefix="@std", preps=[], hooks=[], opts=[]):
     prefix = Label(prefix).workspace_root
@@ -69,11 +62,9 @@ def makefile(outs=["Makefile"], prefix="@std", preps=[], hooks=[], opts=[]):
         tools=[_hook, c] + hooks,
     )
 
-
 _m = "@sys//:make"
 _mf = "-j$$(nproc)"
 _cm = "@sys//:cmake"
-
 
 def make(tgts=[], opts=[]):
     mf = " ".join(opts) + " " + _mf
@@ -88,7 +79,6 @@ def make(tgts=[], opts=[]):
         ]),
         tools=[_m],
     )
-
 
 def cmake(tgts=[], prefix="@std"):
     prefix = Label(prefix).workspace_root
@@ -109,7 +99,6 @@ def cmake(tgts=[], prefix="@std"):
         ]),
         tools=[_hook, _cm, _m],
     )
-
 
 def install(name, src, outs=[]):
     b = "@{}//{}".format(name, _bdir)
@@ -133,7 +122,6 @@ def install(name, src, outs=[]):
         ] + [f.format(o, o, o) for o in outs[:-1]]),
         tools=[b, _m],
     )
-
 
 def profile(name, src, opts=[], libs=[]):
     mf = " ".join(opts)

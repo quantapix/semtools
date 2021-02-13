@@ -1,16 +1,13 @@
-
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 def libs(pairs):
-
     for n, o in pairs:
-        native.cc_library(
+        cc_library(
             name=n,
             linkopts=["-l" + o],
         )
 
-
 def links(names):
-
     for o in names:
         n = o.replace("-", "_").replace(".", "_")
         native.genrule(

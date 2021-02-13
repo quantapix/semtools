@@ -6,7 +6,6 @@ load("@rules_foreign_cc//tools/build_defs:configure.bzl", "configure_make")
 
 # buildifier: disable=unnamed-macro
 def python_tgts():
-    """Python deps"""
 
     configure_make(
         name = "libunwind",

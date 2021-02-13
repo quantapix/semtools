@@ -23,17 +23,14 @@ syslibs = [
     # "nsync",
 ]
 
-
 def if_any_system_libs(a, b=[]):
     return a
-
 
 def if_system_lib(lib, a, b=[]):
     if lib in syslibs:
         return a
     else:
         return b
-
 
 def if_not_system_lib(lib, a, b=[]):
     return if_system_lib(lib, b, a)

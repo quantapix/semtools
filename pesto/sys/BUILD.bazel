@@ -1,24 +1,24 @@
 
-package(default_visibility=["//visibility:public"])
-
-licenses(["notice"])
+load("//:rule_defs.bzl", "libs", "links")
 
 exports_files(["build_defs.bzl"] + glob(["bin/*"]))
 
-load("//:rule_defs.bzl", "libs", "links")
 
-libs((
+libs(
+  pairs = (
     ("curl", "curl"),
     ("gif", "gif"),
     ("lmdb", "lmdb"),
     ("pcre", "pcre"),
     ("sqlite", "sqlite3"),
     ("zlib", "z"),
-))
+  )
+)
 
 alias(name="org_sqlite", actual="sqlite")
 
-links((
+links(
+  names = (
     "autoconf",
     "cmake",
     "emacs",
@@ -27,7 +27,8 @@ links((
     "nasm",
     "python3",
     "swig",
-))
+  )
+)
 
 py_library(name="python_lib")
 
