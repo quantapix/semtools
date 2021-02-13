@@ -1,10 +1,12 @@
-load("@rules_foreign_cc//for_workspace:make_build.bzl", "make_tool")
+# load("@rules_foreign_cc//for_workspace:make_build.bzl", "make_tool")
 load("@rules_foreign_cc//for_workspace:ninja_build.bzl", "ninja_tool")
 load("@rules_foreign_cc//for_workspace:cmake_build.bzl", "cmake_tool")
 
 load("@rules_foreign_cc//tools/build_defs:configure.bzl", "configure_make")
 load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
 load("@rules_foreign_cc//tools/build_defs/native_tools:native_tools_toolchain.bzl", "native_tool_toolchain")
+
+load(":utils.bzl", "make_tool")
 
 make_tool(
     name = "make_tool",

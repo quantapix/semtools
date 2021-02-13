@@ -1,7 +1,6 @@
 """Ubuntu libs deps"""
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 load("@rules_foreign_cc//tools/build_defs/shell_toolchain/toolchains:ws_defs.bzl", shell_toolchain_deps = "workspace_part",)
@@ -18,12 +17,11 @@ def ubuntu_libs_deps():
     """Ubuntu libs deps"""
 
     maybe(
-        http_archive,
+        new_git_repository,
         name = "make",
+        remote = "/Users/qpix/clone/semtools/ubuntu/libs/upstream/make",
+        branch = "qdev",
         build_file_content = _files,
-        sha256 = "e05fdde47c5f7ca45cb697e973894ff4f5d79e13b750ed57d7b66d8defc78e19",
-        strip_prefix = "make-4.3",
-        urls = ["http://mirror.rit.edu/gnu/make/make-4.3.tar.gz",],
     )
 
     maybe(

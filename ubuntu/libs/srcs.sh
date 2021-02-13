@@ -9,6 +9,7 @@ init() {
             [ -e libgit2 ] || git clone -q https://github.com/libgit2/libgit2.git
             [ -e libssh2 ] || git clone -q https://github.com/libssh2/libssh2.git
             [ -e libwhich ] || git clone -q https://github.com/vtjnash/libwhich.git
+            [ -e make ] || git clone -q https://github.com/mirror/make.git
             [ -e nghttp2 ] || git clone -q https://github.com/nghttp2/nghttp2.git
             [ -e ninja ] || git clone -q https://github.com/ninja-build/ninja.git
             [ -e zlib ] || git clone -q https://github.com/madler/zlib.git
