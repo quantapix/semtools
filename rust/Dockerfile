@@ -28,3 +28,12 @@ ENV RUST_VERSION=1.49.0 \
     CARGO_HOME=${DST}/cargo \
     PATH=${DST}/cargo/bin:$PATH
 COPY --from=tmp_src ${DST} ${DST}
+
+FROM rust:1.41.0 as build-env
+WORKDIR /app
+ADD . /app
+RUN cargo build --release
+
+FROM gcr.io/distroless/cc
+COPY --from=build-env /app/target/release/hello-world-distroless /
+CMD ["./hello-world-distroless"]
